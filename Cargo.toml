@@ -1,0 +1,38 @@
+[package]
+name = "hako"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["ping", "fetch", "hash", "native-tls"]
+ping = ["dep:socket2"]
+fetch = []
+hash = ["dep:md-5", "dep:sha2"]
+native-tls = ["dep:native-tls"]
+rustls = ["dep:rustls", "dep:rustls-native-certs"]
+
+[dependencies]
+md-5 = { version = "0.11", optional = true }
+sha2 = { version = "0.11", optional = true }
+native-tls = { version = "0.2", optional = true }
+rustls = { version = "0.23", optional = true, features = ["ring"] }
+rustls-native-certs = { version = "0.8", optional = true }
+
+[target.'cfg(unix)'.dependencies]
+socket2 = { version = "0.6", optional = true }
+
+[target.'cfg(all(unix, not(target_os = "linux")))'.dependencies]
+nix = { version = "0.31", features = ["net"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_NetworkManagement_IpHelper",
+  "Win32_Networking_WinSock",
+] }
+
+[profile.release]
+strip = true    # Automatically strip symbols from the binary.
+opt-level = "z" # optimize for size
+lto = true      # lto
+panic = "abort"
