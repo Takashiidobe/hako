@@ -4,6 +4,7 @@ mod hello;
 mod httpserver;
 mod overwrite;
 mod rand;
+mod tar;
 mod time;
 #[cfg(feature = "fetch")]
 mod fetch;
@@ -37,7 +38,9 @@ fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
 }
 
 fn list_commands() -> Vec<&'static str> {
+    #[allow(unused_mut)]
     let mut cmds = vec!["hello", "time", "rand", "overwrite", "dig", "httpserver"];
+    cmds.push("tar");
     #[cfg(feature = "fetch")]
     cmds.push("fetch");
     #[cfg(feature = "ping")]
@@ -76,6 +79,7 @@ fn main() {
             dig::run(out, &dns, &rest)
         }
         "httpserver" => httpserver::run(out, &SystemFs, &args),
+        "tar" => tar::run(out, &SystemFs, &args),
         #[cfg(feature = "fetch")]
         "fetch" => fetch::run(out, &SystemNet, &args),
         #[cfg(feature = "ping")]
@@ -100,6 +104,7 @@ fn main() {
                     dig::run(out, &dns, &r)
                 }
                 "httpserver" => httpserver::run(out, &SystemFs, &rest),
+                "tar" => tar::run(out, &SystemFs, &rest),
                 #[cfg(feature = "fetch")]
                 "fetch" => fetch::run(out, &SystemNet, &rest),
                 #[cfg(feature = "ping")]

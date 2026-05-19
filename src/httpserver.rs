@@ -1,26 +1,17 @@
-use std::io::{self, BufRead, BufReader, Write};
-use std::net::{Ipv4Addr, TcpListener, TcpStream};
+use std::io::{self, Write};
+use std::net::Ipv4Addr;
 
 use crate::deps::DirFs;
 
 pub fn run(out: &mut impl Write, fs: &impl DirFs, args: &[String]) -> io::Result<()> {
     let (dir, port) = parse_args(args)?;
-    let listener = TcpListener::bind(("0.0.0.0", port))?;
     writeln!(out, "Serving {dir}")?;
     writeln!(out, "  http://localhost:{port}")?;
     for ip in local_addrs() {
         writeln!(out, "  http://{ip}:{port}")?;
     }
     writeln!(out)?;
-    for stream in listener.incoming() {
-        match stream {
-            Ok(s) => {
-                let _ = serve_connection(fs, &dir, s);
-            }
-            Err(e) => eprintln!("connection error: {e}"),
-        }
-    }
-    Ok(())
+    serve(fs, &dir, port)
 }
 
 fn parse_args(args: &[String]) -> io::Result<(String, u16)> {
@@ -36,7 +27,69 @@ fn parse_args(args: &[String]) -> io::Result<(String, u16)> {
     }
 }
 
-fn serve_connection(fs: &impl DirFs, root: &str, stream: TcpStream) -> io::Result<()> {
+#[cfg(feature = "smol-runtime")]
+fn serve(fs: &impl DirFs, dir: &str, port: u16) -> io::Result<()> {
+    smol::block_on(async move {
+        let listener = smol::net::TcpListener::bind(("0.0.0.0", port)).await?;
+        loop {
+            match listener.accept().await {
+                Ok((stream, _)) => {
+                    let _ = serve_connection_async(fs, dir, stream).await;
+                }
+                Err(e) => eprintln!("connection error: {e}"),
+            }
+        }
+    })
+}
+
+#[cfg(not(feature = "smol-runtime"))]
+fn serve(fs: &impl DirFs, dir: &str, port: u16) -> io::Result<()> {
+    use std::net::TcpListener;
+
+    let listener = TcpListener::bind(("0.0.0.0", port))?;
+    for stream in listener.incoming() {
+        match stream {
+            Ok(s) => {
+                let _ = serve_connection_sync(fs, dir, s);
+            }
+            Err(e) => eprintln!("connection error: {e}"),
+        }
+    }
+    Ok(())
+}
+
+#[cfg(feature = "smol-runtime")]
+async fn serve_connection_async(
+    fs: &impl DirFs,
+    root: &str,
+    mut stream: smol::net::TcpStream,
+) -> io::Result<()> {
+    use futures_lite::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+
+    let mut reader = BufReader::new(&mut stream);
+    let mut request_line = String::new();
+    reader.read_line(&mut request_line).await?;
+
+    loop {
+        let mut line = String::new();
+        reader.read_line(&mut line).await?;
+        if line == "\r\n" || line.is_empty() {
+            break;
+        }
+    }
+
+    let response = response_for_request(fs, root, &request_line);
+    stream.write_all(&response.to_bytes()).await
+}
+
+#[cfg(not(feature = "smol-runtime"))]
+fn serve_connection_sync(
+    fs: &impl DirFs,
+    root: &str,
+    stream: std::net::TcpStream,
+) -> io::Result<()> {
+    use std::io::{BufRead, BufReader};
+
     let mut reader = BufReader::new(&stream);
     let mut request_line = String::new();
     reader.read_line(&mut request_line)?;
@@ -50,11 +103,14 @@ fn serve_connection(fs: &impl DirFs, root: &str, stream: TcpStream) -> io::Resul
         }
     }
 
+    response_for_request(fs, root, &request_line).write_to(&stream)
+}
+
+fn response_for_request(fs: &impl DirFs, root: &str, request_line: &str) -> Response {
     let mut parts = request_line.split_whitespace();
     let _method = parts.next().unwrap_or("GET");
     let path = parts.next().unwrap_or("/");
-
-    handle_request(fs, root, path).write_to(&stream)
+    handle_request(fs, root, path)
 }
 
 pub(crate) struct Response {
@@ -96,15 +152,22 @@ impl Response {
         }
     }
 
+    #[cfg(not(feature = "smol-runtime"))]
     fn write_to(&self, mut w: impl Write) -> io::Result<()> {
-        write!(w, "HTTP/1.1 {} {}\r\n", self.status, self.reason)?;
-        write!(w, "Content-Type: {}\r\n", self.content_type)?;
-        write!(w, "Content-Length: {}\r\n", self.body.len())?;
+        w.write_all(&self.to_bytes())
+    }
+
+    fn to_bytes(&self) -> Vec<u8> {
+        let mut out = Vec::new();
+        write!(out, "HTTP/1.1 {} {}\r\n", self.status, self.reason).unwrap();
+        write!(out, "Content-Type: {}\r\n", self.content_type).unwrap();
+        write!(out, "Content-Length: {}\r\n", self.body.len()).unwrap();
         if let Some(loc) = &self.location {
-            write!(w, "Location: {loc}\r\n")?;
+            write!(out, "Location: {loc}\r\n").unwrap();
         }
-        write!(w, "Connection: close\r\n\r\n")?;
-        w.write_all(&self.body)
+        write!(out, "Connection: close\r\n\r\n").unwrap();
+        out.extend_from_slice(&self.body);
+        out
     }
 }
 
@@ -328,6 +391,12 @@ mod tests {
                 .get(path)
                 .cloned()
                 .ok_or_else(|| io::Error::other(format!("{path}: not found")))
+        }
+        fn write_bytes(&self, _: &str, _: &[u8]) -> io::Result<()> {
+            unimplemented!()
+        }
+        fn create_dir_all(&self, _: &str) -> io::Result<()> {
+            unimplemented!()
         }
         fn is_dir(&self, path: &str) -> bool {
             self.dirs.contains(&path.to_string())

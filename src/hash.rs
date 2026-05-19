@@ -68,6 +68,12 @@ mod tests {
         fn read_bytes(&self, path: &str) -> io::Result<Vec<u8>> {
             self.0.get(path).cloned().ok_or_else(|| io::Error::other("not found"))
         }
+        fn write_bytes(&self, _: &str, _: &[u8]) -> io::Result<()> {
+            unimplemented!()
+        }
+        fn create_dir_all(&self, _: &str) -> io::Result<()> {
+            unimplemented!()
+        }
         fn is_dir(&self, _: &str) -> bool { false }
         fn list_dir(&self, _: &str) -> io::Result<Vec<String>> { Ok(vec![]) }
     }

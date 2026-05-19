@@ -172,6 +172,8 @@ fn parse_a_records(buf: &[u8], id: u16) -> std::io::Result<Vec<Ipv4Addr>> {
 
 pub trait DirFs: Fs {
     fn read_bytes(&self, path: &str) -> std::io::Result<Vec<u8>>;
+    fn write_bytes(&self, path: &str, content: &[u8]) -> std::io::Result<()>;
+    fn create_dir_all(&self, path: &str) -> std::io::Result<()>;
     fn is_dir(&self, path: &str) -> bool;
     fn list_dir(&self, path: &str) -> std::io::Result<Vec<String>>;
 }
@@ -179,6 +181,12 @@ pub trait DirFs: Fs {
 impl DirFs for SystemFs {
     fn read_bytes(&self, path: &str) -> std::io::Result<Vec<u8>> {
         std::fs::read(path)
+    }
+    fn write_bytes(&self, path: &str, content: &[u8]) -> std::io::Result<()> {
+        std::fs::write(path, content)
+    }
+    fn create_dir_all(&self, path: &str) -> std::io::Result<()> {
+        std::fs::create_dir_all(path)
     }
     fn is_dir(&self, path: &str) -> bool {
         std::fs::metadata(path).map(|m| m.is_dir()).unwrap_or(false)
@@ -324,6 +332,15 @@ pub trait Net {
 #[cfg(feature = "fetch")]
 pub struct SystemNet;
 
+#[cfg(all(feature = "fetch-sync", feature = "fetch-smol"))]
+compile_error!("fetch-sync cannot be combined with async fetch backends");
+
+#[cfg(all(
+    feature = "fetch",
+    not(any(feature = "fetch-sync", feature = "fetch-smol"))
+))]
+compile_error!("enable one of fetch-sync or fetch-smol");
+
 #[cfg(feature = "fetch")]
 fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
     let (tls, rest) = if let Some(r) = url.strip_prefix("https://") {
@@ -352,20 +369,32 @@ fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
 }
 
 #[cfg(feature = "fetch")]
-fn http_exchange(mut stream: impl std::io::Read + std::io::Write, host: &str, path: &str) -> std::io::Result<Vec<u8>> {
-    use std::io::{BufRead, BufReader, Read};
-
-    write!(stream, "GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n")?;
-    stream.flush()?;
-
-    let mut reader = BufReader::new(stream);
-    let mut status_line = String::new();
-    reader.read_line(&mut status_line)?;
-    let status = status_line
+fn parse_http_status(status_line: &str) -> std::io::Result<u16> {
+    status_line
         .split_whitespace()
         .nth(1)
         .and_then(|s| s.parse::<u16>().ok())
-        .ok_or_else(|| std::io::Error::other("invalid HTTP status line"))?;
+        .ok_or_else(|| std::io::Error::other("invalid HTTP status line"))
+}
+
+#[cfg(feature = "fetch-sync")]
+fn write_http_request(mut stream: impl std::io::Write, host: &str, path: &str) -> std::io::Result<()> {
+    write!(
+        stream,
+        "GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n"
+    )?;
+    stream.flush()
+}
+
+#[cfg(feature = "fetch-sync")]
+fn sync_http_exchange(mut stream: impl std::io::Read + std::io::Write, host: &str, path: &str) -> std::io::Result<Vec<u8>> {
+    use std::io::{BufRead, BufReader, Read};
+
+    write_http_request(&mut stream, host, path)?;
+    let mut reader = BufReader::new(stream);
+    let mut status_line = String::new();
+    reader.read_line(&mut status_line)?;
+    let status = parse_http_status(&status_line)?;
 
     loop {
         let mut line = String::new();
@@ -384,56 +413,145 @@ fn http_exchange(mut stream: impl std::io::Read + std::io::Write, host: &str, pa
     Ok(body)
 }
 
-#[cfg(feature = "fetch")]
-impl Net for SystemNet {
-    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
-        use std::net::TcpStream;
-        use std::time::Duration;
+#[cfg(feature = "fetch-smol")]
+async fn async_http_exchange<RW>(stream: RW, host: &str, path: &str) -> std::io::Result<Vec<u8>>
+where
+    RW: futures_lite::io::AsyncRead + futures_lite::io::AsyncWrite + Unpin,
+{
+    use futures_lite::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 
-        let (tls, host, port, path) = parse_url(url)?;
-        let stream = TcpStream::connect((&*host, port))?;
-        stream.set_read_timeout(Some(Duration::from_secs(10)))?;
+    let mut stream = stream;
+    stream
+        .write_all(format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n").as_bytes())
+        .await?;
+    stream.flush().await?;
 
-        if tls {
-            #[cfg(feature = "native-tls")]
-            {
-                let connector = native_tls::TlsConnector::new()
-                    .map_err(|e| std::io::Error::other(e.to_string()))?;
-                let tls_stream = connector
-                    .connect(&host, stream)
-                    .map_err(|e| std::io::Error::other(e.to_string()))?;
-                return http_exchange(tls_stream, &host, &path);
-            }
+    let mut reader = BufReader::new(stream);
+    let mut status_line = String::new();
+    reader.read_line(&mut status_line).await?;
+    let status = parse_http_status(&status_line)?;
 
-            #[cfg(all(feature = "rustls", not(feature = "native-tls")))]
-            {
-                use rustls::pki_types::ServerName;
-                use std::sync::Arc;
+    loop {
+        let mut line = String::new();
+        reader.read_line(&mut line).await?;
+        if line == "\r\n" || line.is_empty() {
+            break;
+        }
+    }
 
-                let mut root_store = rustls::RootCertStore::empty();
-                for cert in rustls_native_certs::load_native_certs().certs {
-                    root_store.add(cert).ok();
-                }
-                let config = Arc::new(
-                    rustls::ClientConfig::builder()
-                        .with_root_certificates(root_store)
-                        .with_no_client_auth(),
-                );
-                let server_name = ServerName::try_from(host.as_str())
-                    .map_err(|e| std::io::Error::other(e.to_string()))?
-                    .to_owned();
-                let conn = rustls::ClientConnection::new(config, server_name)
-                    .map_err(|e| std::io::Error::other(e.to_string()))?;
-                return http_exchange(rustls::StreamOwned::new(conn, stream), &host, &path);
-            }
+    if !(200..300).contains(&status) {
+        return Err(std::io::Error::other(format!("HTTP {status}")));
+    }
 
-            #[cfg(not(any(feature = "native-tls", feature = "rustls")))]
-            return Err(std::io::Error::other(
-                "https:// requires the native-tls or rustls feature",
-            ));
+    let mut body = Vec::new();
+    reader.read_to_end(&mut body).await?;
+    Ok(body)
+}
+
+#[cfg(feature = "fetch-sync")]
+fn sync_get(url: &str) -> std::io::Result<Vec<u8>> {
+    use std::net::TcpStream;
+    use std::time::Duration;
+
+    let (tls, host, port, path) = parse_url(url)?;
+    let stream = TcpStream::connect((&*host, port))?;
+    stream.set_read_timeout(Some(Duration::from_secs(10)))?;
+
+    if tls {
+        #[cfg(feature = "native-tls")]
+        {
+            let connector = native_tls::TlsConnector::new()
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            let tls_stream = connector
+                .connect(&host, stream)
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            return sync_http_exchange(tls_stream, &host, &path);
         }
 
-        http_exchange(stream, &host, &path)
+        #[cfg(all(feature = "rustls", not(feature = "native-tls")))]
+        {
+            use rustls::pki_types::ServerName;
+            use std::sync::Arc;
+
+            let mut root_store = rustls::RootCertStore::empty();
+            for cert in rustls_native_certs::load_native_certs().certs {
+                root_store.add(cert).ok();
+            }
+            let config = Arc::new(
+                rustls::ClientConfig::builder()
+                    .with_root_certificates(root_store)
+                    .with_no_client_auth(),
+            );
+            let server_name = ServerName::try_from(host.as_str())
+                .map_err(|e| std::io::Error::other(e.to_string()))?
+                .to_owned();
+            let conn = rustls::ClientConnection::new(config, server_name)
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            return sync_http_exchange(rustls::StreamOwned::new(conn, stream), &host, &path);
+        }
+
+        #[cfg(not(any(feature = "native-tls", feature = "rustls")))]
+        return Err(std::io::Error::other(
+            "https:// requires the native-tls or rustls feature",
+        ));
+    }
+
+    sync_http_exchange(stream, &host, &path)
+}
+
+#[cfg(feature = "fetch-sync")]
+impl Net for SystemNet {
+    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
+        sync_get(url)
+    }
+}
+
+#[cfg(feature = "fetch-smol")]
+impl Net for SystemNet {
+    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
+        smol::block_on(async move {
+            let (tls, host, port, path) = parse_url(url)?;
+            let stream = smol::net::TcpStream::connect((host.as_str(), port)).await?;
+            if tls {
+                #[cfg(feature = "native-tls")]
+                {
+                    let tls_stream = async_native_tls::connect(host.as_str(), stream)
+                        .await
+                        .map_err(|e| std::io::Error::other(e.to_string()))?;
+                    return async_http_exchange(tls_stream, &host, &path).await;
+                }
+
+                #[cfg(all(feature = "rustls", not(feature = "native-tls")))]
+                {
+                    use futures_rustls::TlsConnector;
+                    use rustls::pki_types::ServerName;
+                    use std::sync::Arc;
+
+                    let mut root_store = rustls::RootCertStore::empty();
+                    for cert in rustls_native_certs::load_native_certs().certs {
+                        root_store.add(cert).ok();
+                    }
+                    let config = Arc::new(
+                        rustls::ClientConfig::builder()
+                            .with_root_certificates(root_store)
+                            .with_no_client_auth(),
+                    );
+                    let server_name = ServerName::try_from(host.as_str())
+                        .map_err(|e| std::io::Error::other(e.to_string()))?
+                        .to_owned();
+                    let connector = TlsConnector::from(config);
+                    let tls_stream = connector.connect(server_name, stream).await?;
+                    return async_http_exchange(tls_stream, &host, &path).await;
+                }
+
+                #[cfg(not(any(feature = "native-tls", feature = "rustls")))]
+                return Err(std::io::Error::other(
+                    "https:// requires the native-tls or rustls feature",
+                ));
+            }
+
+            async_http_exchange(stream, &host, &path).await
+        })
     }
 }
 
