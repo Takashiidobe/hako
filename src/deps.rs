@@ -1,6 +1,47 @@
 use std::net::Ipv4Addr;
 use std::time::SystemTime;
 
+pub struct UnameInfo {
+    pub sysname: String,
+    pub nodename: String,
+    pub release: String,
+    pub version: String,
+    pub machine: String,
+}
+
+pub trait Hostname {
+    fn hostname(&self) -> std::io::Result<String>;
+}
+
+pub trait Uname {
+    fn uname(&self) -> std::io::Result<UnameInfo>;
+}
+
+pub struct SystemInfo;
+
+#[cfg(unix)]
+impl Hostname for SystemInfo {
+    fn hostname(&self) -> std::io::Result<String> {
+        nix::unistd::gethostname()
+            .map(|n| n.to_string_lossy().into_owned())
+            .map_err(std::io::Error::from)
+    }
+}
+
+#[cfg(unix)]
+impl Uname for SystemInfo {
+    fn uname(&self) -> std::io::Result<UnameInfo> {
+        let u = nix::sys::utsname::uname().map_err(std::io::Error::from)?;
+        Ok(UnameInfo {
+            sysname: u.sysname().to_string_lossy().into_owned(),
+            nodename: u.nodename().to_string_lossy().into_owned(),
+            release: u.release().to_string_lossy().into_owned(),
+            version: u.version().to_string_lossy().into_owned(),
+            machine: u.machine().to_string_lossy().into_owned(),
+        })
+    }
+}
+
 pub trait Clock {
     fn now(&self) -> SystemTime;
 }
@@ -46,6 +87,7 @@ impl Rng for SystemRng {
 pub trait Fs {
     fn read(&self, path: &str) -> std::io::Result<String>;
     fn write(&self, path: &str, content: &str) -> std::io::Result<()>;
+    fn is_file(&self, path: &str) -> bool;
 }
 
 pub struct SystemFs;
@@ -56,6 +98,46 @@ impl Fs for SystemFs {
     }
     fn write(&self, path: &str, content: &str) -> std::io::Result<()> {
         std::fs::write(path, content)
+    }
+    fn is_file(&self, path: &str) -> bool {
+        std::path::Path::new(path).is_file()
+    }
+}
+
+pub trait Env {
+    fn vars(&self) -> Vec<(String, String)>;
+    fn var(&self, key: &str) -> Option<String>;
+}
+
+pub struct SystemEnv;
+
+impl Env for SystemEnv {
+    fn vars(&self) -> Vec<(String, String)> {
+        std::env::vars().collect()
+    }
+    fn var(&self, key: &str) -> Option<String> {
+        std::env::var(key).ok()
+    }
+}
+
+pub trait Whois {
+    fn query(&self, server: &str, query: &str) -> std::io::Result<String>;
+}
+
+pub struct TcpWhois;
+
+impl Whois for TcpWhois {
+    fn query(&self, server: &str, query: &str) -> std::io::Result<String> {
+        use std::io::{Read, Write};
+        use std::net::TcpStream;
+        use std::time::Duration;
+
+        let mut stream = TcpStream::connect((server, 43u16))?;
+        stream.set_read_timeout(Some(Duration::from_secs(10)))?;
+        write!(stream, "{query}\r\n")?;
+        let mut response = String::new();
+        stream.read_to_string(&mut response)?;
+        Ok(response)
     }
 }
 
@@ -203,7 +285,12 @@ impl DirFs for SystemFs {
 
 #[cfg(feature = "ping")]
 pub trait Icmp {
-    fn send_ping(&self, dest: std::net::Ipv4Addr, seq: u16, payload: &[u8]) -> std::io::Result<std::time::Duration>;
+    fn send_ping(
+        &self,
+        dest: std::net::Ipv4Addr,
+        seq: u16,
+        payload: &[u8],
+    ) -> std::io::Result<std::time::Duration>;
 }
 
 #[cfg(feature = "ping")]
@@ -242,7 +329,12 @@ fn build_icmp_echo(seq: u16, payload: &[u8]) -> Vec<u8> {
 
 #[cfg(all(feature = "ping", unix))]
 impl Icmp for SystemIcmp {
-    fn send_ping(&self, dest: std::net::Ipv4Addr, seq: u16, payload: &[u8]) -> std::io::Result<std::time::Duration> {
+    fn send_ping(
+        &self,
+        dest: std::net::Ipv4Addr,
+        seq: u16,
+        payload: &[u8],
+    ) -> std::io::Result<std::time::Duration> {
         use socket2::{Domain, Protocol, Socket, Type};
         use std::mem::MaybeUninit;
         use std::net::SocketAddrV4;
@@ -267,7 +359,10 @@ impl Icmp for SystemIcmp {
             return Err(std::io::Error::other("ICMP response too short"));
         }
         if data[0] != 0 {
-            return Err(std::io::Error::other(format!("unexpected ICMP type {}", data[0])));
+            return Err(std::io::Error::other(format!(
+                "unexpected ICMP type {}",
+                data[0]
+            )));
         }
 
         Ok(rtt)
@@ -276,12 +371,17 @@ impl Icmp for SystemIcmp {
 
 #[cfg(all(feature = "ping", target_os = "windows"))]
 impl Icmp for SystemIcmp {
-    fn send_ping(&self, dest: std::net::Ipv4Addr, seq: u16, payload: &[u8]) -> std::io::Result<std::time::Duration> {
+    fn send_ping(
+        &self,
+        dest: std::net::Ipv4Addr,
+        seq: u16,
+        payload: &[u8],
+    ) -> std::io::Result<std::time::Duration> {
         use std::ptr;
         use std::time::Duration;
         use windows_sys::Win32::Foundation::INVALID_HANDLE_VALUE;
         use windows_sys::Win32::NetworkManagement::IpHelper::{
-            IcmpCloseHandle, IcmpCreateFile, IcmpSendEcho, ICMP_ECHO_REPLY,
+            ICMP_ECHO_REPLY, IcmpCloseHandle, IcmpCreateFile, IcmpSendEcho,
         };
 
         let _ = seq; // Windows API doesn't expose seq; RTT comes from reply struct
@@ -319,7 +419,12 @@ impl Icmp for SystemIcmp {
 
 #[cfg(all(feature = "ping", not(any(unix, target_os = "windows"))))]
 impl Icmp for SystemIcmp {
-    fn send_ping(&self, _dest: std::net::Ipv4Addr, _seq: u16, _payload: &[u8]) -> std::io::Result<std::time::Duration> {
+    fn send_ping(
+        &self,
+        _dest: std::net::Ipv4Addr,
+        _seq: u16,
+        _payload: &[u8],
+    ) -> std::io::Result<std::time::Duration> {
         Err(std::io::Error::other("ping not supported on this platform"))
     }
 }
@@ -378,7 +483,11 @@ fn parse_http_status(status_line: &str) -> std::io::Result<u16> {
 }
 
 #[cfg(feature = "fetch-sync")]
-fn write_http_request(mut stream: impl std::io::Write, host: &str, path: &str) -> std::io::Result<()> {
+fn write_http_request(
+    mut stream: impl std::io::Write,
+    host: &str,
+    path: &str,
+) -> std::io::Result<()> {
     write!(
         stream,
         "GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n"
@@ -387,7 +496,11 @@ fn write_http_request(mut stream: impl std::io::Write, host: &str, path: &str) -
 }
 
 #[cfg(feature = "fetch-sync")]
-fn sync_http_exchange(mut stream: impl std::io::Read + std::io::Write, host: &str, path: &str) -> std::io::Result<Vec<u8>> {
+fn sync_http_exchange(
+    mut stream: impl std::io::Read + std::io::Write,
+    host: &str,
+    path: &str,
+) -> std::io::Result<Vec<u8>> {
     use std::io::{BufRead, BufReader, Read};
 
     write_http_request(&mut stream, host, path)?;
@@ -422,7 +535,9 @@ where
 
     let mut stream = stream;
     stream
-        .write_all(format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n").as_bytes())
+        .write_all(
+            format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n").as_bytes(),
+        )
         .await?;
     stream.flush().await?;
 
@@ -558,6 +673,98 @@ impl Net for SystemNet {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(any(feature = "fetch-sync", feature = "fetch-smol"))]
+    use std::io::Cursor;
+    #[cfg(feature = "fetch-smol")]
+    use std::io::Read;
+    #[cfg(feature = "fetch-sync")]
+    use std::io::{Read, Write};
+    #[cfg(feature = "fetch-smol")]
+    use std::pin::Pin;
+    #[cfg(feature = "fetch-smol")]
+    use std::task::{Context, Poll};
+
+    #[cfg(feature = "fetch-sync")]
+    struct SyncTestStream {
+        read: Cursor<Vec<u8>>,
+        written: Vec<u8>,
+    }
+
+    #[cfg(feature = "fetch-sync")]
+    impl SyncTestStream {
+        fn new(read: &[u8]) -> Self {
+            Self {
+                read: Cursor::new(read.to_vec()),
+                written: Vec::new(),
+            }
+        }
+    }
+
+    #[cfg(feature = "fetch-sync")]
+    impl Read for SyncTestStream {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            self.read.read(buf)
+        }
+    }
+
+    #[cfg(feature = "fetch-sync")]
+    impl Write for SyncTestStream {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            self.written.extend_from_slice(buf);
+            Ok(buf.len())
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    struct AsyncTestStream {
+        read: Cursor<Vec<u8>>,
+        written: Vec<u8>,
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    impl AsyncTestStream {
+        fn new(read: &[u8]) -> Self {
+            Self {
+                read: Cursor::new(read.to_vec()),
+                written: Vec::new(),
+            }
+        }
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    impl futures_lite::io::AsyncRead for AsyncTestStream {
+        fn poll_read(
+            mut self: Pin<&mut Self>,
+            _cx: &mut Context<'_>,
+            buf: &mut [u8],
+        ) -> Poll<std::io::Result<usize>> {
+            Poll::Ready(self.read.read(buf))
+        }
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    impl futures_lite::io::AsyncWrite for AsyncTestStream {
+        fn poll_write(
+            mut self: Pin<&mut Self>,
+            _cx: &mut Context<'_>,
+            buf: &[u8],
+        ) -> Poll<std::io::Result<usize>> {
+            self.written.extend_from_slice(buf);
+            Poll::Ready(Ok(buf.len()))
+        }
+
+        fn poll_flush(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+            Poll::Ready(Ok(()))
+        }
+
+        fn poll_close(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+            Poll::Ready(Ok(()))
+        }
+    }
 
     #[test]
     fn build_query_encodes_domain() {
@@ -614,5 +821,86 @@ mod tests {
         let mut pkt = vec![0x12, 0x34, 0x81, 0x83]; // rcode=3 NXDOMAIN
         pkt.extend_from_slice(&[0u8; 8]);
         assert!(parse_a_records(&pkt, 0x1234).is_err());
+    }
+
+    #[cfg(feature = "fetch")]
+    #[test]
+    fn parse_url_defaults_path_and_port() {
+        let (tls, host, port, path) = parse_url("http://example.com").unwrap();
+        assert!(!tls);
+        assert_eq!(host, "example.com");
+        assert_eq!(port, 80);
+        assert_eq!(path, "/");
+    }
+
+    #[cfg(feature = "fetch")]
+    #[test]
+    fn parse_url_preserves_https_path_and_port() {
+        let (tls, host, port, path) = parse_url("https://example.com:8443/a/b").unwrap();
+        assert!(tls);
+        assert_eq!(host, "example.com");
+        assert_eq!(port, 8443);
+        assert_eq!(path, "/a/b");
+    }
+
+    #[cfg(feature = "fetch")]
+    #[test]
+    fn parse_http_status_rejects_malformed_line() {
+        let err = parse_http_status("nonsense").unwrap_err();
+        assert_eq!(err.to_string(), "invalid HTTP status line");
+    }
+
+    #[cfg(feature = "fetch-sync")]
+    #[test]
+    fn sync_http_exchange_writes_request_and_reads_body() {
+        let response = b"HTTP/1.0 200 OK\r\nContent-Length: 5\r\n\r\nhello";
+        let mut stream = SyncTestStream::new(response);
+
+        let body = sync_http_exchange(&mut stream, "example.com", "/hello").unwrap();
+
+        assert_eq!(
+            stream.written,
+            b"GET /hello HTTP/1.0\r\nHost: example.com\r\nConnection: close\r\n\r\n"
+        );
+        assert_eq!(body, b"hello");
+    }
+
+    #[cfg(feature = "fetch-sync")]
+    #[test]
+    fn sync_http_exchange_rejects_non_success_status() {
+        let response = b"HTTP/1.0 404 Not Found\r\nContent-Length: 0\r\n\r\n";
+        let mut stream = SyncTestStream::new(response);
+
+        let err = sync_http_exchange(&mut stream, "example.com", "/missing").unwrap_err();
+
+        assert_eq!(err.to_string(), "HTTP 404");
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    #[test]
+    fn async_http_exchange_writes_request_and_reads_body() {
+        let response = b"HTTP/1.0 200 OK\r\nContent-Length: 5\r\n\r\nhello";
+        let mut stream = AsyncTestStream::new(response);
+
+        let body =
+            smol::block_on(async_http_exchange(&mut stream, "example.com", "/hello")).unwrap();
+
+        assert_eq!(
+            stream.written,
+            b"GET /hello HTTP/1.0\r\nHost: example.com\r\nConnection: close\r\n\r\n"
+        );
+        assert_eq!(body, b"hello");
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    #[test]
+    fn async_http_exchange_rejects_non_success_status() {
+        let response = b"HTTP/1.0 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
+        let mut stream = AsyncTestStream::new(response);
+
+        let err =
+            smol::block_on(async_http_exchange(&mut stream, "example.com", "/broken")).unwrap_err();
+
+        assert_eq!(err.to_string(), "HTTP 500");
     }
 }

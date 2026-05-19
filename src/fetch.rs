@@ -14,23 +14,7 @@ pub fn run(out: &mut impl Write, net: &impl Net, args: &[String]) -> io::Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deps::Net;
-
-    struct FakeNet(Vec<u8>);
-
-    impl Net for FakeNet {
-        fn get(&self, _url: &str) -> io::Result<Vec<u8>> {
-            Ok(self.0.clone())
-        }
-    }
-
-    struct FailNet;
-
-    impl Net for FailNet {
-        fn get(&self, _url: &str) -> io::Result<Vec<u8>> {
-            Err(io::Error::other("connection refused"))
-        }
-    }
+    use crate::mock::{FailNet, FakeNet};
 
     #[test]
     fn prints_body() {
@@ -51,11 +35,13 @@ mod tests {
     fn wrong_arg_count_errors() {
         let mut out = Vec::new();
         assert!(run(&mut out, &FakeNet(vec![]), &[]).is_err());
-        assert!(run(
-            &mut out,
-            &FakeNet(vec![]),
-            &["http://a.com".into(), "extra".into()]
-        )
-        .is_err());
+        assert!(
+            run(
+                &mut out,
+                &FakeNet(vec![]),
+                &["http://a.com".into(), "extra".into()]
+            )
+            .is_err()
+        );
     }
 }

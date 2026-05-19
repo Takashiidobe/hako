@@ -355,64 +355,7 @@ fn dir_listing(request_path: &str, entries: &[String]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deps::{DirFs, Fs};
-    use std::collections::HashMap;
-
-    struct FakeFs {
-        files: HashMap<String, Vec<u8>>,
-        dirs: Vec<String>,
-    }
-
-    impl FakeFs {
-        fn new(files: &[(&str, &[u8])], dirs: &[&str]) -> Self {
-            Self {
-                files: files
-                    .iter()
-                    .map(|(k, v)| (k.to_string(), v.to_vec()))
-                    .collect(),
-                dirs: dirs.iter().map(|s| s.to_string()).collect(),
-            }
-        }
-    }
-
-    impl Fs for FakeFs {
-        fn read(&self, path: &str) -> io::Result<String> {
-            self.read_bytes(path)
-                .map(|b| String::from_utf8_lossy(&b).into_owned())
-        }
-        fn write(&self, _: &str, _: &str) -> io::Result<()> {
-            unimplemented!()
-        }
-    }
-
-    impl DirFs for FakeFs {
-        fn read_bytes(&self, path: &str) -> io::Result<Vec<u8>> {
-            self.files
-                .get(path)
-                .cloned()
-                .ok_or_else(|| io::Error::other(format!("{path}: not found")))
-        }
-        fn write_bytes(&self, _: &str, _: &[u8]) -> io::Result<()> {
-            unimplemented!()
-        }
-        fn create_dir_all(&self, _: &str) -> io::Result<()> {
-            unimplemented!()
-        }
-        fn is_dir(&self, path: &str) -> bool {
-            self.dirs.contains(&path.to_string())
-        }
-        fn list_dir(&self, path: &str) -> io::Result<Vec<String>> {
-            let prefix = format!("{path}/");
-            let mut entries: Vec<String> = self
-                .files
-                .keys()
-                .filter(|k| k.starts_with(&prefix))
-                .map(|k| k[prefix.len()..].to_string())
-                .collect();
-            entries.sort();
-            Ok(entries)
-        }
-    }
+    use crate::mock::FakeFs;
 
     #[test]
     fn serves_file() {

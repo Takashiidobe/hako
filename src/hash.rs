@@ -44,43 +44,11 @@ fn hash_bytes(algo: Algo, data: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deps::{DirFs, Fs};
-    use std::collections::HashMap;
-
-    struct FakeFs(HashMap<String, Vec<u8>>);
-
-    impl FakeFs {
-        fn new(files: &[(&str, &[u8])]) -> Self {
-            Self(files.iter().map(|(k, v)| (k.to_string(), v.to_vec())).collect())
-        }
-    }
-
-    impl Fs for FakeFs {
-        fn read(&self, path: &str) -> io::Result<String> {
-            self.read_bytes(path).map(|b| String::from_utf8_lossy(&b).into_owned())
-        }
-        fn write(&self, _: &str, _: &str) -> io::Result<()> {
-            unimplemented!()
-        }
-    }
-
-    impl DirFs for FakeFs {
-        fn read_bytes(&self, path: &str) -> io::Result<Vec<u8>> {
-            self.0.get(path).cloned().ok_or_else(|| io::Error::other("not found"))
-        }
-        fn write_bytes(&self, _: &str, _: &[u8]) -> io::Result<()> {
-            unimplemented!()
-        }
-        fn create_dir_all(&self, _: &str) -> io::Result<()> {
-            unimplemented!()
-        }
-        fn is_dir(&self, _: &str) -> bool { false }
-        fn list_dir(&self, _: &str) -> io::Result<Vec<String>> { Ok(vec![]) }
-    }
+    use crate::mock::FakeFs;
 
     #[test]
     fn md5_empty() {
-        let fs = FakeFs::new(&[("f", b"")]);
+        let fs = FakeFs::new(&[("f", b"")], &[]);
         let mut out = Vec::new();
         run(&mut out, &fs, Algo::Md5, &["f".into()]).unwrap();
         assert_eq!(out, b"d41d8cd98f00b204e9800998ecf8427e  f\n");
@@ -88,7 +56,7 @@ mod tests {
 
     #[test]
     fn md5_known() {
-        let fs = FakeFs::new(&[("f", b"hello world\n")]);
+        let fs = FakeFs::new(&[("f", b"hello world\n")], &[]);
         let mut out = Vec::new();
         run(&mut out, &fs, Algo::Md5, &["f".into()]).unwrap();
         assert_eq!(out, b"6f5902ac237024bdd0c176cb93063dc4  f\n");
@@ -96,7 +64,7 @@ mod tests {
 
     #[test]
     fn sha256_empty() {
-        let fs = FakeFs::new(&[("f", b"")]);
+        let fs = FakeFs::new(&[("f", b"")], &[]);
         let mut out = Vec::new();
         run(&mut out, &fs, Algo::Sha256, &["f".into()]).unwrap();
         assert_eq!(
@@ -107,7 +75,7 @@ mod tests {
 
     #[test]
     fn sha256_known() {
-        let fs = FakeFs::new(&[("f", b"hello world\n")]);
+        let fs = FakeFs::new(&[("f", b"hello world\n")], &[]);
         let mut out = Vec::new();
         run(&mut out, &fs, Algo::Sha256, &["f".into()]).unwrap();
         assert_eq!(
@@ -118,7 +86,7 @@ mod tests {
 
     #[test]
     fn multiple_files() {
-        let fs = FakeFs::new(&[("a", b"foo"), ("b", b"bar")]);
+        let fs = FakeFs::new(&[("a", b"foo"), ("b", b"bar")], &[]);
         let mut out = Vec::new();
         run(&mut out, &fs, Algo::Sha256, &["a".into(), "b".into()]).unwrap();
         let body = String::from_utf8(out).unwrap();
@@ -128,9 +96,15 @@ mod tests {
 
     #[test]
     fn missing_file_continues() {
-        let fs = FakeFs::new(&[("exists", b"data")]);
+        let fs = FakeFs::new(&[("exists", b"data")], &[]);
         let mut out = Vec::new();
-        run(&mut out, &fs, Algo::Md5, &["missing".into(), "exists".into()]).unwrap();
+        run(
+            &mut out,
+            &fs,
+            Algo::Md5,
+            &["missing".into(), "exists".into()],
+        )
+        .unwrap();
         let body = String::from_utf8(out).unwrap();
         assert!(body.contains("exists"));
         assert!(!body.contains("missing"));

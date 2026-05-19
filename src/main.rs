@@ -1,27 +1,33 @@
 mod deps;
 mod dig;
-mod hello;
-mod httpserver;
-mod overwrite;
-mod rand;
-mod tar;
-mod time;
+mod env;
+mod hostname;
 #[cfg(feature = "fetch")]
 mod fetch;
 #[cfg(feature = "hash")]
 mod hash;
+mod hello;
+mod httpserver;
+#[cfg(test)]
+mod mock;
+mod overwrite;
 #[cfg(feature = "ping")]
 mod ping;
+mod rand;
+mod tar;
+mod time;
+mod uname;
+mod which;
+mod whois;
 
-use std::env;
 use std::io;
 use std::net::Ipv4Addr;
 
-use deps::{SystemClock, SystemFs, SystemRng, UdpDns};
-#[cfg(feature = "fetch")]
-use deps::SystemNet;
 #[cfg(feature = "ping")]
 use deps::SystemIcmp;
+#[cfg(feature = "fetch")]
+use deps::SystemNet;
+use deps::{SystemClock, SystemEnv, SystemFs, SystemInfo, SystemRng, TcpWhois, UdpDns};
 
 fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
     let ns = args
@@ -38,9 +44,20 @@ fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
 }
 
 fn list_commands() -> Vec<&'static str> {
-    #[allow(unused_mut)]
-    let mut cmds = vec!["hello", "time", "rand", "overwrite", "dig", "httpserver"];
-    cmds.push("tar");
+    let mut cmds = vec![
+        "hello",
+        "time",
+        "rand",
+        "overwrite",
+        "dig",
+        "httpserver",
+        "tar",
+        "env",
+        "which",
+        "whois",
+        "hostname",
+        "uname",
+    ];
     #[cfg(feature = "fetch")]
     cmds.push("fetch");
     #[cfg(feature = "ping")]
@@ -54,7 +71,7 @@ fn list_commands() -> Vec<&'static str> {
 }
 
 fn main() {
-    let mut args: Vec<String> = env::args().collect();
+    let mut args: Vec<String> = std::env::args().collect();
     let argv0 = args.remove(0);
     let cmd = std::path::Path::new(&argv0)
         .file_name()
@@ -68,59 +85,46 @@ fn main() {
         return;
     }
 
+    let known = list_commands();
+    let (subcmd, rest): (&str, Vec<String>) = if known.contains(&cmd) {
+        (cmd, args)
+    } else {
+        let subcmd = args.first().map(String::as_str).unwrap_or("");
+        let rest = args.iter().skip(1).cloned().collect();
+        (subcmd, rest)
+    };
+
     let out = &mut io::stdout();
-    let result = match cmd {
-        "hello" => hello::run(out, &args),
+    let result = match subcmd {
+        "hello" => hello::run(out, &rest),
         "time" => time::run(out, &SystemClock),
         "rand" => rand::run(out, &mut SystemRng::new()),
-        "overwrite" => overwrite::run(out, &SystemFs, &args),
+        "overwrite" => overwrite::run(out, &SystemFs, &rest),
         "dig" => {
-            let (dns, rest) = dig_dns(&args);
-            dig::run(out, &dns, &rest)
+            let (dns, r) = dig_dns(&rest);
+            dig::run(out, &dns, &r)
         }
-        "httpserver" => httpserver::run(out, &SystemFs, &args),
-        "tar" => tar::run(out, &SystemFs, &args),
+        "httpserver" => httpserver::run(out, &SystemFs, &rest),
+        "tar" => tar::run(out, &SystemFs, &rest),
+        "env" => env::run(out, &SystemEnv, &rest),
+        "which" => which::run(out, &SystemEnv, &SystemFs, &rest),
+        "whois" => whois::run(out, &TcpWhois, &rest),
+        "hostname" => hostname::run(out, &SystemInfo),
+        "uname" => uname::run(out, &SystemInfo, &rest),
         #[cfg(feature = "fetch")]
-        "fetch" => fetch::run(out, &SystemNet, &args),
+        "fetch" => fetch::run(out, &SystemNet, &rest),
         #[cfg(feature = "ping")]
         "ping" => {
-            let (dns, rest) = dig_dns(&args);
-            ping::run(out, &SystemIcmp, &dns, &rest)
+            let (dns, r) = dig_dns(&rest);
+            ping::run(out, &SystemIcmp, &dns, &r)
         }
         #[cfg(feature = "hash")]
-        "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &args),
+        "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
         #[cfg(feature = "hash")]
-        "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &args),
+        "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
         _ => {
-            let subcmd = args.first().map(String::as_str).unwrap_or("");
-            let rest: Vec<String> = args.iter().skip(1).cloned().collect();
-            match subcmd {
-                "hello" => hello::run(out, &rest),
-                "time" => time::run(out, &SystemClock),
-                "rand" => rand::run(out, &mut SystemRng::new()),
-                "overwrite" => overwrite::run(out, &SystemFs, &rest),
-                "dig" => {
-                    let (dns, r) = dig_dns(&rest);
-                    dig::run(out, &dns, &r)
-                }
-                "httpserver" => httpserver::run(out, &SystemFs, &rest),
-                "tar" => tar::run(out, &SystemFs, &rest),
-                #[cfg(feature = "fetch")]
-                "fetch" => fetch::run(out, &SystemNet, &rest),
-                #[cfg(feature = "ping")]
-                "ping" => {
-                    let (dns, r) = dig_dns(&rest);
-                    ping::run(out, &SystemIcmp, &dns, &r)
-                }
-                #[cfg(feature = "hash")]
-                "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
-                #[cfg(feature = "hash")]
-                "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
-                _ => {
-                    eprintln!("usage: {} <{}> [args...]", cmd, list_commands().join("|"));
-                    return;
-                }
-            }
+            eprintln!("usage: {} <{}> [args...]", cmd, list_commands().join("|"));
+            return;
         }
     };
 

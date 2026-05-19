@@ -23,24 +23,8 @@ pub fn run(out: &mut impl Write, dns: &impl Dns, args: &[String]) -> io::Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deps::Dns;
+    use crate::mock::{FailDns, FakeDns};
     use std::net::Ipv4Addr;
-
-    struct FakeDns(Vec<Ipv4Addr>);
-
-    impl Dns for FakeDns {
-        fn lookup_a(&self, _domain: &str) -> io::Result<Vec<Ipv4Addr>> {
-            Ok(self.0.clone())
-        }
-    }
-
-    struct FailDns;
-
-    impl Dns for FailDns {
-        fn lookup_a(&self, _domain: &str) -> io::Result<Vec<Ipv4Addr>> {
-            Err(io::Error::other("timeout"))
-        }
-    }
 
     #[test]
     fn prints_each_record() {

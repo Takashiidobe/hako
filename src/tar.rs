@@ -3,7 +3,7 @@ use std::path::{Component, Path, PathBuf};
 
 use tar_core::parse::{Limits, ParseEvent, ParsedEntry, Parser};
 
-use crate::deps::{DirFs, Fs};
+use crate::deps::DirFs;
 
 pub fn run(out: &mut impl Write, fs: &impl DirFs, args: &[String]) -> io::Result<()> {
     let (mode, archive) = parse_args(args)?;
@@ -101,8 +101,8 @@ fn visit_archive(
                     return Err(io::Error::other("truncated tar entry"));
                 }
                 visit(entry, &data[start..end])?;
-                let padded = padded_size(size)
-                    .ok_or_else(|| io::Error::other("entry padding overflow"))?;
+                let padded =
+                    padded_size(size).ok_or_else(|| io::Error::other("entry padding overflow"))?;
                 offset = start
                     .checked_add(padded)
                     .ok_or_else(|| io::Error::other("archive offset overflow"))?;
@@ -136,93 +136,13 @@ fn safe_path(raw: &[u8]) -> io::Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::cell::RefCell;
-    use std::collections::{HashMap, HashSet};
-    use tar_core::builder::EntryBuilder;
+    use crate::mock::FakeFs;
     use tar_core::EntryType;
-
-    struct FakeFs {
-        files: RefCell<HashMap<String, Vec<u8>>>,
-        dirs: RefCell<HashSet<String>>,
-    }
-
-    impl FakeFs {
-        fn new(files: &[(&str, &[u8])], dirs: &[&str]) -> Self {
-            Self {
-                files: RefCell::new(
-                    files
-                        .iter()
-                        .map(|(k, v)| (k.to_string(), v.to_vec()))
-                        .collect(),
-                ),
-                dirs: RefCell::new(dirs.iter().map(|d| d.to_string()).collect()),
-            }
-        }
-
-        fn file(&self, path: &str) -> Option<Vec<u8>> {
-            self.files.borrow().get(path).cloned()
-        }
-
-        fn has_dir(&self, path: &str) -> bool {
-            self.dirs.borrow().contains(path)
-        }
-    }
-
-    impl Fs for FakeFs {
-        fn read(&self, path: &str) -> io::Result<String> {
-            self.read_bytes(path)
-                .map(|b| String::from_utf8_lossy(&b).into_owned())
-        }
-
-        fn write(&self, path: &str, content: &str) -> io::Result<()> {
-            self.write_bytes(path, content.as_bytes())
-        }
-    }
-
-    impl DirFs for FakeFs {
-        fn read_bytes(&self, path: &str) -> io::Result<Vec<u8>> {
-            self.files
-                .borrow()
-                .get(path)
-                .cloned()
-                .ok_or_else(|| io::Error::other(format!("{path}: not found")))
-        }
-
-        fn write_bytes(&self, path: &str, content: &[u8]) -> io::Result<()> {
-            self.files
-                .borrow_mut()
-                .insert(path.to_string(), content.to_vec());
-            Ok(())
-        }
-
-        fn create_dir_all(&self, path: &str) -> io::Result<()> {
-            let mut current = PathBuf::new();
-            for component in Path::new(path).components() {
-                if let Component::Normal(seg) = component {
-                    current.push(seg);
-                    self.dirs
-                        .borrow_mut()
-                        .insert(current.to_string_lossy().into_owned());
-                }
-            }
-            Ok(())
-        }
-
-        fn is_dir(&self, path: &str) -> bool {
-            self.has_dir(path)
-        }
-
-        fn list_dir(&self, _: &str) -> io::Result<Vec<String>> {
-            Ok(vec![])
-        }
-    }
+    use tar_core::builder::EntryBuilder;
 
     #[test]
     fn lists_entries() {
-        let archive = archive_bytes(&[
-            dir_entry("docs/"),
-            file_entry("docs/readme.txt", b"hello"),
-        ]);
+        let archive = archive_bytes(&[dir_entry("docs/"), file_entry("docs/readme.txt", b"hello")]);
         let mut out = Vec::new();
         list_archive(&mut out, &archive).unwrap();
         assert_eq!(out, b"docs/\ndocs/readme.txt\n");
@@ -230,14 +150,14 @@ mod tests {
 
     #[test]
     fn extracts_files_and_dirs() {
-        let archive = archive_bytes(&[
-            dir_entry("docs/"),
-            file_entry("docs/readme.txt", b"hello"),
-        ]);
+        let archive = archive_bytes(&[dir_entry("docs/"), file_entry("docs/readme.txt", b"hello")]);
         let fs = FakeFs::new(&[], &[]);
         extract_archive(&fs, &archive).unwrap();
         assert!(fs.has_dir("docs"));
-        assert_eq!(fs.file("docs/readme.txt").as_deref(), Some(b"hello".as_slice()));
+        assert_eq!(
+            fs.file("docs/readme.txt").as_deref(),
+            Some(b"hello".as_slice())
+        );
     }
 
     #[test]
