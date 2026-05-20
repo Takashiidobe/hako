@@ -14,10 +14,29 @@ fetch-smol = ["fetch", "smol-runtime"]
 hash = ["dep:md-5", "dep:sha2"]
 native-tls = ["dep:native-tls", "dep:async-native-tls"]
 rustls = ["dep:rustls", "dep:rustls-native-certs", "dep:futures-rustls"]
+embedded-tls = [
+  "dep:embedded-tls",
+  "dep:embedded-io",
+  "dep:embedded-io-adapters",
+  "dep:rand_core",
+]
+embedded-tls-webpki = [
+  "embedded-tls",
+  "embedded-tls/webpki",
+  "embedded-tls/alloc",
+  "dep:rustls-webpki",
+]
 
 [dependencies]
 async-native-tls = { version = "0.6", optional = true, default-features = false, features = [
   "runtime-smol",
+] }
+embedded-io-adapters = { version = "0.7", optional = true, default-features = false, features = [
+  "std",
+] }
+embedded-io = { version = "0.7", optional = true }
+embedded-tls = { version = "0.18", optional = true, default-features = false, features = [
+  "std",
 ] }
 futures-lite = { version = "2.6", optional = true }
 futures-rustls = { version = "0.26", optional = true, default-features = false, features = [
@@ -25,10 +44,15 @@ futures-rustls = { version = "0.26", optional = true, default-features = false, 
 ] }
 md-5 = { version = "0.11", optional = true }
 native-tls = { version = "0.2", optional = true }
+rand_core = { version = "0.6", optional = true, features = ["getrandom"] }
 rustls = { version = "0.23", optional = true, default-features = false, features = [
   "std",
   "ring",
   "tls12",
+] }
+rustls-webpki = { version = "0.101", optional = true, default-features = false, features = [
+  "alloc",
+  "std",
 ] }
 rustls-native-certs = { version = "0.8", optional = true }
 sha2 = { version = "0.11", optional = true }

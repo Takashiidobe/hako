@@ -14,6 +14,7 @@ mod overwrite;
 #[cfg(feature = "ping")]
 mod ping;
 mod rand;
+mod sleep;
 mod tar;
 mod time;
 mod uname;
@@ -48,6 +49,7 @@ fn list_commands() -> Vec<&'static str> {
         "hello",
         "time",
         "rand",
+        "sleep",
         "overwrite",
         "dig",
         "httpserver",
@@ -99,6 +101,7 @@ fn main() {
         "hello" => hello::run(out, &rest),
         "time" => time::run(out, &SystemClock),
         "rand" => rand::run(out, &mut SystemRng::new()),
+        "sleep" => sleep::run(out, &SystemClock, &rest),
         "overwrite" => overwrite::run(out, &SystemFs, &rest),
         "dig" => {
             let (dns, r) = dig_dns(&rest);

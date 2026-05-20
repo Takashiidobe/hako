@@ -1,5 +1,5 @@
 use std::net::Ipv4Addr;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
 pub struct UnameInfo {
     pub sysname: String,
@@ -46,11 +46,21 @@ pub trait Clock {
     fn now(&self) -> SystemTime;
 }
 
+pub trait Sleeper {
+    fn sleep(&self, duration: Duration);
+}
+
 pub struct SystemClock;
 
 impl Clock for SystemClock {
     fn now(&self) -> SystemTime {
         SystemTime::now()
+    }
+}
+
+impl Sleeper for SystemClock {
+    fn sleep(&self, duration: Duration) {
+        std::thread::sleep(duration);
     }
 }
 
@@ -441,6 +451,13 @@ pub struct SystemNet;
 compile_error!("fetch-sync cannot be combined with async fetch backends");
 
 #[cfg(all(
+    feature = "embedded-tls",
+    feature = "fetch-smol",
+    not(any(feature = "native-tls", feature = "rustls"))
+))]
+compile_error!("embedded-tls provider is only implemented for fetch-sync");
+
+#[cfg(all(
     feature = "fetch",
     not(any(feature = "fetch-sync", feature = "fetch-smol"))
 ))]
@@ -482,6 +499,46 @@ fn parse_http_status(status_line: &str) -> std::io::Result<u16> {
         .ok_or_else(|| std::io::Error::other("invalid HTTP status line"))
 }
 
+#[cfg(feature = "fetch")]
+fn redirect_location(
+    headers: &[(String, String)],
+    current_url: &str,
+) -> std::io::Result<Option<String>> {
+    let Some((_, value)) = headers
+        .iter()
+        .find(|(name, _)| name.eq_ignore_ascii_case("location"))
+    else {
+        return Ok(None);
+    };
+
+    let location = value.trim();
+    if location.starts_with("http://") || location.starts_with("https://") {
+        return Ok(Some(location.to_string()));
+    }
+
+    let (tls, host, port, path) = parse_url(current_url)?;
+    let scheme = if tls { "https" } else { "http" };
+    let authority = if (tls && port == 443) || (!tls && port == 80) {
+        host
+    } else {
+        format!("{host}:{port}")
+    };
+
+    if location.starts_with('/') {
+        Ok(Some(format!("{scheme}://{authority}{location}")))
+    } else {
+        let base = path.rsplit_once('/').map(|(base, _)| base).unwrap_or("");
+        Ok(Some(format!("{scheme}://{authority}{base}/{location}")))
+    }
+}
+
+#[cfg(feature = "fetch-sync")]
+struct HttpResponse {
+    status: u16,
+    headers: Vec<(String, String)>,
+    body: Vec<u8>,
+}
+
 #[cfg(feature = "fetch-sync")]
 fn write_http_request(
     mut stream: impl std::io::Write,
@@ -496,11 +553,11 @@ fn write_http_request(
 }
 
 #[cfg(feature = "fetch-sync")]
-fn sync_http_exchange(
+fn sync_http_response(
     mut stream: impl std::io::Read + std::io::Write,
     host: &str,
     path: &str,
-) -> std::io::Result<Vec<u8>> {
+) -> std::io::Result<HttpResponse> {
     use std::io::{BufRead, BufReader, Read};
 
     write_http_request(&mut stream, host, path)?;
@@ -509,21 +566,38 @@ fn sync_http_exchange(
     reader.read_line(&mut status_line)?;
     let status = parse_http_status(&status_line)?;
 
+    let mut headers = Vec::new();
     loop {
         let mut line = String::new();
         reader.read_line(&mut line)?;
         if line == "\r\n" || line.is_empty() {
             break;
         }
-    }
-
-    if !(200..300).contains(&status) {
-        return Err(std::io::Error::other(format!("HTTP {status}")));
+        if let Some((name, value)) = line.trim_end_matches(['\r', '\n']).split_once(':') {
+            headers.push((name.trim().to_string(), value.trim().to_string()));
+        }
     }
 
     let mut body = Vec::new();
     reader.read_to_end(&mut body)?;
-    Ok(body)
+    Ok(HttpResponse {
+        status,
+        headers,
+        body,
+    })
+}
+
+#[cfg(all(feature = "fetch-sync", test))]
+fn sync_http_exchange(
+    stream: impl std::io::Read + std::io::Write,
+    host: &str,
+    path: &str,
+) -> std::io::Result<Vec<u8>> {
+    let response = sync_http_response(stream, host, path)?;
+    if !(200..300).contains(&response.status) {
+        return Err(std::io::Error::other(format!("HTTP {}", response.status)));
+    }
+    Ok(response.body)
 }
 
 #[cfg(feature = "fetch-smol")]
@@ -563,10 +637,119 @@ where
     Ok(body)
 }
 
+#[cfg(all(feature = "fetch-sync", feature = "embedded-tls"))]
+fn embedded_tls_http_response(
+    stream: std::net::TcpStream,
+    host: &str,
+    path: &str,
+) -> std::io::Result<HttpResponse> {
+    use embedded_io::Error as _;
+    use embedded_io_adapters::std::FromStd;
+    #[cfg(not(feature = "embedded-tls-webpki"))]
+    use embedded_tls::blocking::UnsecureProvider;
+    use embedded_tls::blocking::{Aes128GcmSha256, TlsConfig, TlsConnection, TlsContext, TlsError};
+    #[cfg(feature = "embedded-tls-webpki")]
+    use embedded_tls::blocking::{CryptoProvider, TlsVerifier};
+
+    #[cfg(feature = "embedded-tls-webpki")]
+    struct WebPkiProvider {
+        rng: rand_core::OsRng,
+        verifier: embedded_tls::webpki::CertVerifier<Aes128GcmSha256, std::time::SystemTime, 8192>,
+    }
+
+    #[cfg(feature = "embedded-tls-webpki")]
+    impl CryptoProvider for WebPkiProvider {
+        type CipherSuite = Aes128GcmSha256;
+        type Signature = &'static [u8];
+
+        fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+            &mut self.rng
+        }
+
+        fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes128GcmSha256>, TlsError> {
+            Ok(&mut self.verifier)
+        }
+    }
+
+    struct TlsStd<T>(T);
+
+    impl<T> std::io::Read for TlsStd<T>
+    where
+        T: embedded_io::Read<Error = TlsError>,
+    {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            match self.0.read(buf) {
+                Ok(n) => Ok(n),
+                Err(TlsError::ConnectionClosed) => Ok(0),
+                Err(TlsError::IoError) => Ok(0),
+                Err(e) => Err(std::io::Error::new(
+                    e.kind().into(),
+                    format!("embedded-tls read: {e}"),
+                )),
+            }
+        }
+    }
+
+    impl<T> std::io::Write for TlsStd<T>
+    where
+        T: embedded_io::Write<Error = TlsError>,
+    {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            self.0.write(buf).map_err(|e| {
+                std::io::Error::new(e.kind().into(), format!("embedded-tls write: {e}"))
+            })
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            self.0.flush().map_err(|e| {
+                std::io::Error::new(e.kind().into(), format!("embedded-tls flush: {e}"))
+            })
+        }
+    }
+
+    let mut read_record_buffer = [0u8; 16640];
+    let mut write_record_buffer = [0u8; 16640];
+    let config = TlsConfig::new()
+        .with_server_name(host)
+        .enable_rsa_signatures();
+    #[cfg(feature = "embedded-tls-webpki")]
+    let ca_der = std::env::var("HAKO_EMBEDDED_TLS_CA_DER")
+        .map_err(|_| std::io::Error::other("HAKO_EMBEDDED_TLS_CA_DER is required"))?;
+    #[cfg(feature = "embedded-tls-webpki")]
+    let ca_der = std::fs::read(ca_der)?;
+    #[cfg(feature = "embedded-tls-webpki")]
+    let config = config.with_ca(embedded_tls::blocking::Certificate::X509(&ca_der));
+    let mut tls = TlsConnection::new(
+        FromStd::new(stream),
+        &mut read_record_buffer,
+        &mut write_record_buffer,
+    );
+    #[cfg(feature = "embedded-tls-webpki")]
+    let provider = WebPkiProvider {
+        rng: rand_core::OsRng,
+        verifier: embedded_tls::webpki::CertVerifier::new(),
+    };
+    #[cfg(not(feature = "embedded-tls-webpki"))]
+    let provider = UnsecureProvider::new::<Aes128GcmSha256>(rand_core::OsRng);
+    tls.open(TlsContext::new(&config, provider))
+        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
+
+    sync_http_response(TlsStd(tls), host, path)
+}
+
 #[cfg(feature = "fetch-sync")]
 fn sync_get(url: &str) -> std::io::Result<Vec<u8>> {
+    sync_get_inner(url, 0)
+}
+
+#[cfg(feature = "fetch-sync")]
+fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
     use std::net::TcpStream;
     use std::time::Duration;
+
+    if redirects > 5 {
+        return Err(std::io::Error::other("too many redirects"));
+    }
 
     let (tls, host, port, path) = parse_url(url)?;
     let stream = TcpStream::connect((&*host, port))?;
@@ -580,7 +763,11 @@ fn sync_get(url: &str) -> std::io::Result<Vec<u8>> {
             let tls_stream = connector
                 .connect(&host, stream)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
-            return sync_http_exchange(tls_stream, &host, &path);
+            return handle_sync_response(
+                sync_http_response(tls_stream, &host, &path)?,
+                url,
+                redirects,
+            );
         }
 
         #[cfg(all(feature = "rustls", not(feature = "native-tls")))]
@@ -602,16 +789,48 @@ fn sync_get(url: &str) -> std::io::Result<Vec<u8>> {
                 .to_owned();
             let conn = rustls::ClientConnection::new(config, server_name)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
-            return sync_http_exchange(rustls::StreamOwned::new(conn, stream), &host, &path);
+            return handle_sync_response(
+                sync_http_response(rustls::StreamOwned::new(conn, stream), &host, &path)?,
+                url,
+                redirects,
+            );
         }
 
-        #[cfg(not(any(feature = "native-tls", feature = "rustls")))]
+        #[cfg(all(
+            feature = "embedded-tls",
+            not(any(feature = "native-tls", feature = "rustls"))
+        ))]
+        return handle_sync_response(
+            embedded_tls_http_response(stream, &host, &path)?,
+            url,
+            redirects,
+        );
+
+        #[cfg(not(any(feature = "native-tls", feature = "rustls", feature = "embedded-tls")))]
         return Err(std::io::Error::other(
-            "https:// requires the native-tls or rustls feature",
+            "https:// requires the native-tls, rustls, or embedded-tls feature",
         ));
     }
 
-    sync_http_exchange(stream, &host, &path)
+    handle_sync_response(sync_http_response(stream, &host, &path)?, url, redirects)
+}
+
+#[cfg(feature = "fetch-sync")]
+fn handle_sync_response(
+    response: HttpResponse,
+    url: &str,
+    redirects: usize,
+) -> std::io::Result<Vec<u8>> {
+    if (300..400).contains(&response.status) {
+        if let Some(next) = redirect_location(&response.headers, url)? {
+            return sync_get_inner(&next, redirects + 1);
+        }
+    }
+
+    if !(200..300).contains(&response.status) {
+        return Err(std::io::Error::other(format!("HTTP {}", response.status)));
+    }
+    Ok(response.body)
 }
 
 #[cfg(feature = "fetch-sync")]
@@ -659,9 +878,13 @@ impl Net for SystemNet {
                     return async_http_exchange(tls_stream, &host, &path).await;
                 }
 
-                #[cfg(not(any(feature = "native-tls", feature = "rustls")))]
+                #[cfg(not(any(
+                    feature = "native-tls",
+                    feature = "rustls",
+                    feature = "embedded-tls"
+                )))]
                 return Err(std::io::Error::other(
-                    "https:// requires the native-tls or rustls feature",
+                    "https:// requires the native-tls, rustls, or embedded-tls feature",
                 ));
             }
 
@@ -848,6 +1071,25 @@ mod tests {
     fn parse_http_status_rejects_malformed_line() {
         let err = parse_http_status("nonsense").unwrap_err();
         assert_eq!(err.to_string(), "invalid HTTP status line");
+    }
+
+    #[cfg(feature = "fetch")]
+    #[test]
+    fn redirect_location_accepts_absolute_url() {
+        let headers = vec![(
+            "Location".to_string(),
+            "https://example.org/new".to_string(),
+        )];
+        let next = redirect_location(&headers, "https://example.com/old").unwrap();
+        assert_eq!(next.as_deref(), Some("https://example.org/new"));
+    }
+
+    #[cfg(feature = "fetch")]
+    #[test]
+    fn redirect_location_resolves_absolute_path() {
+        let headers = vec![("location".to_string(), "/new".to_string())];
+        let next = redirect_location(&headers, "https://example.com/old").unwrap();
+        assert_eq!(next.as_deref(), Some("https://example.com/new"));
     }
 
     #[cfg(feature = "fetch-sync")]

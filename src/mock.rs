@@ -1,14 +1,13 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::net::Ipv4Addr;
+use std::time::Duration;
 
 #[cfg(feature = "ping")]
 use crate::deps::Icmp;
 #[cfg(feature = "fetch")]
 use crate::deps::Net;
-use crate::deps::{DirFs, Dns, Env, Fs};
-#[cfg(feature = "ping")]
-use std::time::Duration;
+use crate::deps::{DirFs, Dns, Env, Fs, Sleeper};
 
 pub struct FakeDns(pub Vec<Ipv4Addr>);
 
@@ -80,6 +79,20 @@ impl Env for FakeEnv {
     }
     fn var(&self, key: &str) -> Option<String> {
         self.0.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
+    }
+}
+
+pub struct FakeSleeper(pub RefCell<Vec<Duration>>);
+
+impl FakeSleeper {
+    pub fn new() -> Self {
+        Self(RefCell::new(Vec::new()))
+    }
+}
+
+impl Sleeper for FakeSleeper {
+    fn sleep(&self, duration: Duration) {
+        self.0.borrow_mut().push(duration);
     }
 }
 
