@@ -35,7 +35,7 @@ license = "Apache-2.0"
 repository = "https://github.com/drogue-iot/embedded-tls"
 
 [features]
-alloc = []
+alloc = ["webpki?/std"]
 default = [
     "std",
     "log",
