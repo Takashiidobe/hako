@@ -1,0 +1,1549 @@
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 564612.769 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564642.774 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564702.785 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564732.790 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564762.796 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564822.806 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564882.817 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564912.822 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 564972.833 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565002.839 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565062.849 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565092.855 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565122.860 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565152.865 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565182.871 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 565202.059      EncryptedData(0)
+ TRACE device            > 565202.059 [host] disabling scanning
+ INFO  device            > 565212.876 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565272.887 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565332.897 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565362.903 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565452.919 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565482.924 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565542.935 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565572.940 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565632.951 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565692.962 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565722.967 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565752.972 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565782.978 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 565812.983 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 565845.952 failed to get script 0 from config: empty
+ INFO  device            > 565848.357 app not found
+ DEBUG device            > 565860.353 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 565865.952 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 565963.010 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566023.020 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566053.026 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566083.031 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566143.042 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566233.058 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566263.063 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566323.074 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566473.101 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566503.106 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566563.117 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566593.122 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566623.127 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566653.133 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566713.143 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566743.149 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566773.154 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566803.160 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566923.181 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 566953.186 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567013.197 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567043.202 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567073.208 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567103.213 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567133.218 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567163.224 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567193.229 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567223.235 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567253.240 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567313.251 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567343.256 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567403.267 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 567433.592 No HCE app found! :(
+ INFO  device            > 567433.594 timeout while waiting for digit
+ INFO  device            > 567442.391 init leds...
+ DEBUG device            > 567450.791 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 567455.991 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 567463.277 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567523.288 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567553.293 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567583.299 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567613.304 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567643.310 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567673.315 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567703.320 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567763.331 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567823.342 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567913.358 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 567943.363 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568003.374 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568033.379 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568063.385 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568093.390 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568153.401 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568243.417 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568363.438 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568393.443 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568423.449 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568543.470 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568573.475 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568603.481 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568633.486 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568663.491 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568693.497 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568723.502 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568753.508 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 568783.513 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 568802.060      EncryptedData(0)
+ TRACE device            > 568802.061 [host] disabling scanning
+ INFO  device            > 569053.561 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569083.566 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569173.582 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569203.588 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569233.593 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569263.598 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569323.609 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569383.620 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569413.625 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569443.630 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 569449.230 failed to get script 0 from config: empty
+ INFO  device            > 569459.231 app not found
+ INFO  device            > 569460.430 init nfc...
+ INFO  device            > 569461.231 init nfc...
+ DEBUG device            > 569469.630 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 569473.636 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 569476.030 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 569503.641 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569593.657 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569623.663 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569653.668 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569743.684 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569773.689 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 569801.676 No HCE app found! :(
+ INFO  device            > 569801.677 timeout while waiting for digit
+ INFO  device            > 569863.705 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 569864.070 No HCE app found! :(
+ INFO  device            > 569864.072 timeout while waiting for digit
+ INFO  device            > 569872.073 init leds...
+ DEBUG device            > 569879.669 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 569886.029 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 569923.716 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569953.721 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 569983.727 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570013.732 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570043.737 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570103.748 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570133.754 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570223.770 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570253.775 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570343.791 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570373.796 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570403.802 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570433.807 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570553.828 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570583.834 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570613.839 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570673.850 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570703.855 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570733.860 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570823.876 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570853.882 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570883.887 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570913.893 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 570943.898 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571033.914 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571093.925 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571123.930 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571183.941 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571243.951 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571273.957 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571303.962 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571333.967 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571363.973 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571393.978 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571513.999 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571544.005 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571574.010 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571634.021 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571664.026 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571694.032 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571754.042 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571784.048 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571814.053 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571844.058 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571874.064 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571934.074 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571964.080 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 571994.085 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572024.091 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572054.096 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572084.101 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572114.107 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572144.112 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572174.117 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572204.123 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 572213.269 No HCE app found! :(
+ INFO  device            > 572213.270 timeout while waiting for digit
+ INFO  device            > 572224.068 init leds...
+ DEBUG device            > 572230.868 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 572234.128 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 572236.068 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 572294.139 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572324.144 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572354.150 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 572402.062      EncryptedData(0)
+ TRACE device            > 572402.062 [host] disabling scanning
+ INFO  device            > 572414.160 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572444.166 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572474.171 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572504.176 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572534.182 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572744.219 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572774.224 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572804.230 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572834.235 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572924.251 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 572954.257 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 573060.107 failed to get script 0 from config: empty
+ INFO  device            > 573062.511 app not found
+ DEBUG device            > 573070.907 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 573074.278 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 573076.107 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 573104.283 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573164.294 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573194.299 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573224.305 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573254.310 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573284.315 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573314.321 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573344.326 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573464.347 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573494.353 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573554.363 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573584.369 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573614.374 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573644.380 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573674.385 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573734.396 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573794.406 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 573824.412 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574064.454 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574094.460 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574154.470 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574244.486 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574274.492 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574334.502 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574364.508 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574484.529 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574514.534 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574544.540 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574574.545 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574634.556 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 574664.150 No HCE app found! :(
+ INFO  device            > 574664.151 timeout while waiting for digit
+ DEBUG device            > 574669.745 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 574676.065 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 574844.593 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574874.598 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574934.609 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 574964.614 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575114.641 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575144.646 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575204.657 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575264.668 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575324.678 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575354.684 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575384.689 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575444.700 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575474.705 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575504.711 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575534.716 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575594.727 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575624.732 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575684.743 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575714.748 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575744.753 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575804.764 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575834.770 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575894.780 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 575984.796 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 576002.063      EncryptedData(0)
+ TRACE device            > 576002.063 [host] disabling scanning
+ INFO  device            > 576074.812 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576104.818 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576134.823 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576164.828 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576224.839 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576284.850 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576314.855 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576374.866 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576434.876 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576464.882 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576494.887 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576524.892 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576614.909 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 576663.702 failed to get script 0 from config: empty
+ INFO  device            > 576672.104 app not found
+ INFO  device            > 576673.703 init nfc...
+ INFO  device            > 576675.303 init nfc...
+ INFO  device            > 576704.924 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576734.930 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576794.941 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576824.946 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576914.962 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 576944.967 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577034.983 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577124.999 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577185.010 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577245.021 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577305.031 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577365.042 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577395.047 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577455.058 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577485.063 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577575.079 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577665.095 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577695.101 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577755.111 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577875.133 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577905.138 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577935.144 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577965.149 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 577995.154 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578025.160 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578085.170 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578145.181 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578175.186 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578205.192 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578235.197 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578295.208 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578355.218 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578385.224 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578415.229 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578475.240 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578505.245 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578595.261 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578625.267 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578655.272 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578715.283 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578745.288 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578775.293 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578865.309 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578895.315 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578925.320 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 578985.331 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579045.342 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579075.347 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579105.352 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579135.358 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579165.363 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579195.368 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579255.379 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579285.384 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579315.390 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579345.395 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579375.401 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579435.411 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579495.422 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579555.433 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579585.438 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 579602.064      EncryptedData(0)
+ TRACE device            > 579602.064 [host] disabling scanning
+ INFO  device            > 579615.443 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579645.449 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579675.454 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579765.470 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579795.476 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579825.481 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579855.486 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579885.492 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579915.497 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 579945.502 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580005.513 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580035.518 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580065.524 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580095.529 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580125.535 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580155.540 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580215.551 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 580272.899 failed to get script 0 from config: empty
+ INFO  device            > 580275.304 app not found
+ INFO  device            > 580275.561 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 580279.699 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 580286.139 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 580305.567 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580365.577 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580395.583 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580425.588 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580455.594 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580485.599 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580515.604 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580695.636 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580725.642 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580755.647 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580785.652 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580815.658 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580905.674 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580935.679 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580965.684 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 580995.690 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581025.695 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 581045.383 No HCE app found! :(
+ INFO  device            > 581045.385 timeout while waiting for digit
+ INFO  device            > 581055.701 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581085.706 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581115.711 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581145.717 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581205.727 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581235.733 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581295.743 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581385.760 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581445.770 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581475.776 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581535.786 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581565.792 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581595.797 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581625.802 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581655.808 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581685.813 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581715.819 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581745.824 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581775.829 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 581810.579 No HCE app found! :(
+ INFO  device            > 581810.581 timeout while waiting for digit
+ INFO  device            > 581819.778 init leds...
+ DEBUG device            > 581819.779 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 581835.840 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 581836.178 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 581865.845 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 581895.851 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582015.872 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582045.877 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582075.883 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582135.893 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582165.899 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582225.909 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582255.915 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582285.920 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582315.926 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582405.942 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582435.947 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582465.952 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582495.958 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582525.963 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582555.968 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582585.974 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582736.000 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582766.006 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582826.016 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582886.027 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582916.033 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582946.038 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 582976.043 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583036.054 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583066.059 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583126.070 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583186.081 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 583202.065      EncryptedData(0)
+ TRACE device            > 583202.065 [host] disabling scanning
+ INFO  device            > 583216.086 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583246.091 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583276.097 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583306.102 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583336.108 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583366.113 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583396.118 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583426.124 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583456.129 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583486.134 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583516.140 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583546.145 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583576.151 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583606.156 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583636.161 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583726.177 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583786.188 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583816.193 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583846.199 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 583875.818 failed to get script 0 from config: empty
+ INFO  device            > 583878.625 app not found
+ DEBUG device            > 583890.618 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 583896.178 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 583906.209 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583936.215 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583966.220 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 583996.225 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584026.231 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584056.236 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584086.242 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584116.247 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584146.252 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584176.258 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584266.274 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584296.279 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584356.290 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584386.295 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584416.301 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584446.306 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584536.322 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584566.327 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584596.333 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584626.338 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584686.349 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584716.354 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584746.359 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584806.370 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584836.375 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584866.381 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584896.386 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584926.392 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 584986.402 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585046.413 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585076.418 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585106.424 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585136.429 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585166.434 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585196.440 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585226.445 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585286.456 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585316.461 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585436.483 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585466.488 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585496.493 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585556.504 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585586.509 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585616.515 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585646.520 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585676.525 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585706.531 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585736.536 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585766.542 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585796.547 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585826.552 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585856.558 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585916.568 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585946.574 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 585976.579 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586036.590 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586066.595 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586096.601 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586126.606 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586156.611 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586186.617 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586276.633 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586306.638 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586366.649 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586396.654 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586426.660 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586456.665 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586486.670 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586516.676 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586546.681 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586576.686 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586606.692 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586636.697 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586666.702 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586756.719 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586786.724 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 586802.067      EncryptedData(0)
+ TRACE device            > 586802.067 [host] disabling scanning
+ INFO  device            > 586876.740 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586906.745 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586936.751 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 586966.756 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587056.772 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587086.777 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587116.783 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587266.809 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587296.815 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587326.820 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587416.836 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 587479.817 failed to get script 0 from config: empty
+ INFO  device            > 587488.218 app not found
+ INFO  device            > 587489.418 init nfc...
+ INFO  device            > 587490.218 init nfc...
+ DEBUG device            > 587499.817 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 587506.217 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 587536.857 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587596.868 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587686.884 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587836.911 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587866.916 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 587876.664 No HCE app found! :(
+ INFO  device            > 587876.665 timeout while waiting for digit
+ DEBUG device            > 587889.857 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 587896.257 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 587896.921 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587926.927 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587956.932 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 587986.938 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588016.943 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588046.948 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588106.959 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588166.970 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588286.991 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588347.002 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588377.007 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588407.012 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588437.018 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588467.023 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588557.039 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588587.044 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588617.050 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588647.055 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588677.061 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588707.066 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588737.071 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588767.077 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588797.082 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588827.087 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588857.093 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588887.098 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588917.104 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 588977.114 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589007.120 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589067.130 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589157.146 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589187.152 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589217.157 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589247.162 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 589275.898 No HCE app found! :(
+ INFO  device            > 589275.899 timeout while waiting for digit
+ INFO  device            > 589277.168 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589285.897 init leds...
+ DEBUG device            > 589291.097 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 589296.217 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 589307.173 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 589307.498 No HCE app found! :(
+ INFO  device            > 589307.499 timeout while waiting for digit
+ INFO  device            > 589316.697 init leds...
+ DEBUG device            > 589320.297 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 589326.257 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 589337.179 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 589363.898 No HCE app found! :(
+ INFO  device            > 589363.899 timeout while waiting for digit
+ INFO  device            > 589367.184 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589373.497 init leds...
+ DEBUG device            > 589380.297 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 589386.257 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 589397.189 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589427.195 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589517.211 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589547.216 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589577.221 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589637.232 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589697.243 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589727.248 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589877.275 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589907.280 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589937.286 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589967.291 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 589997.296 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590117.318 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590177.328 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590207.334 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590297.350 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590327.355 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590357.360 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 590402.068      EncryptedData(0)
+ TRACE device            > 590402.068 [host] disabling scanning
+ INFO  device            > 590417.371 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590447.376 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590507.387 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590567.398 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590597.403 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590627.409 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590657.414 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590687.419 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590717.425 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590747.430 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590777.436 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590807.441 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590837.446 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590897.457 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590927.462 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590957.468 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 590987.473 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591017.478 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591047.484 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591077.489 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 591089.096 failed to get script 0 from config: empty
+ INFO  device            > 591098.298 app not found
+ INFO  device            > 591099.097 init nfc...
+ INFO  device            > 591099.897 init nfc...
+ DEBUG device            > 591099.900 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 591107.495 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 591116.297 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 591137.500 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591167.505 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591197.511 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591257.521 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591287.527 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591317.532 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591347.537 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591407.548 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591437.553 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591527.569 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591557.575 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591587.580 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591617.586 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591677.596 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591707.602 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591767.612 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591797.618 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591827.623 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591887.634 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 591977.650 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592037.660 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592097.671 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592127.676 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592187.687 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592217.693 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592247.698 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592277.703 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592307.709 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592367.719 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592397.725 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592427.730 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592457.735 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592487.741 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592504.684 requested system config format after reboot.
+ INFO  device            > 592504.741 formatting events partition
+ INFO  device            > 592504.753 HCE: got 11817445486644690962 pubkeys
+ INFO  device            > 592505.075 initiation OK
+ INFO  device            > 592505.075 Formatting user db...
+ INFO  device            > 592505.133 HCE: got 40532461070844000 pubkeys
+ INFO  device            > 592505.172 initiation OK
+ INFO  device            > 592505.224 Format system config...
+ INFO  device            > 592505.224 HCE: got 40532461070843959 pubkeys
+ INFO  device            > 592505.242 initiation OK
+ INFO  device            > 592505.243 HCE: got 40532461070843928 pubkeys
+ WARN  device            > 592505.288 conn:1: bad timestamp
+ INFO  device            > 592505.304 initiation OK
+ INFO  device            > 592505.304 Formatted!
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 592515.290 init keypad...
+ INFO  device            > 592515.291 init done!
+ INFO  device            > 592515.937 init nfc...
+ INFO  device            > 592517.137 init nfc...
+ INFO  device            > 592517.746 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 592519.936 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 592526.296 [host] disconnect events: Connection Terminated By Local Host
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 592577.757 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 592697.778 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592757.789 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592787.794 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592817.800 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592847.805 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592877.810 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592907.816 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592937.821 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 592967.826 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593027.837 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593057.842 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593087.848 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593117.853 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593237.875 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593297.885 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593387.901 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593417.907 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593537.928 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593567.933 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593597.939 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593627.944 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593717.960 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593777.971 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593807.976 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593867.987 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593897.992 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 593958.003 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 594002.069      EncryptedData(0)
+ TRACE device            > 594002.069 [host] disabling scanning
+ INFO  device            > 594048.019 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594078.024 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594108.030 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594138.035 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594168.040 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594198.046 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594228.051 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594258.056 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594288.062 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594318.067 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594348.073 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594378.078 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594408.083 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594498.099 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594528.105 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594618.121 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594648.126 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594678.131 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 594699.137 failed to get script 0 from config: empty
+ INFO  device            > 594708.137 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594708.339 app not found
+ INFO  device            > 594709.538 init nfc...
+ INFO  device            > 594710.338 init nfc...
+ DEBUG device            > 594720.737 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 594726.337 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 594738.142 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594828.158 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594858.164 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594888.169 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594918.174 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 594978.185 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595008.190 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595038.196 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595068.201 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595098.207 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595128.212 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595158.217 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 595170.384 No HCE app found! :(
+ INFO  device            > 595170.386 timeout while waiting for digit
+ DEBUG device            > 595179.978 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 595186.337 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 595218.228 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595278.239 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595308.244 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595368.255 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595398.260 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595428.265 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595518.281 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595548.287 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595608.297 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595668.308 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595698.314 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595728.319 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595878.346 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 595968.362 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596058.378 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596088.383 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596118.388 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596148.394 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596208.404 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596238.410 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596268.415 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596328.426 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596358.431 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596388.437 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596418.442 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596448.447 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596478.453 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596598.474 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596628.479 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596658.485 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596688.490 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596838.517 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596868.522 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596898.528 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596928.533 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 596958.538 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597078.560 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597168.576 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597198.581 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597228.586 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597258.592 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597288.597 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597318.603 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ DEBUG device            > 597602.071      EncryptedData(0)
+ TRACE device            > 597602.071 [host] disabling scanning
+ INFO  device            > 597618.656 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597648.661 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 597682.379 No HCE app found! :(
+ INFO  device            > 597682.380 timeout while waiting for digit
+ INFO  device            > 597692.778 init leds...
+ DEBUG device            > 597700.778 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 597706.378 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 597708.672 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597738.677 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597798.688 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597828.693 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597858.699 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 597888.704 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598038.731 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598068.736 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  device            > 598308.817 failed to get script 0 from config: empty
+ INFO  device            > 598311.622 app not found
+ DEBUG device            > 598320.418 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 598326.378 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 598338.784 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598368.790 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598428.800 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598458.806 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598488.811 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598518.816 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598548.822 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598578.827 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598608.832 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598728.854 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598758.859 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598788.865 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 598818.870 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599148.929 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599178.934 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599238.945 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599268.950 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599328.961 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599344.422 No HCE app found! :(
+ INFO  device            > 599344.423 timeout while waiting for digit
+ DEBUG device            > 599350.017 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 599356.377 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 599358.966 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599388.972 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599448.982 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599569.004 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599599.009 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599687.622 No HCE app found! :(
+ INFO  device            > 599687.623 timeout while waiting for digit
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599698.018 No HCE app found! :(
+ INFO  device            > 599698.020 timeout while waiting for digit
+ DEBUG device            > 599700.417 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 599716.377 [host] disconnect events: Connection Terminated By Local Host
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599720.422 No HCE app found! :(
+ INFO  device            > 599720.423 timeout while waiting for digit
+ DEBUG device            > 599730.417 [host] disconnect events: Connection Terminated By Local Host
+ DEBUG device            > 599736.377 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 599762.417 persist init: crc invalid
+ DEBUG device            > 599762.417      Error: [EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP]
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599762.417 No socket matched! Not sending RST because incoming packet is RST
+ TRACE device            > 599762.417 [host] cancel connection create
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599762.440 init power...
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599772.303 Measured: ENETUNREACH
+ INFO  device            > 599774.303 No socket matched! sending RST
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599809.046 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ TRACE device            > 599826.390 [host] enabling extended advertising
+ TRACE device            > 599826.390 [link][poll_accept] connection accepted: state: [EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM, EPERM]
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599826.390 No socket matched! sending RST
+ INFO  device            > 599826.390 Measured: ENETDOWN
+ TRACE device            > 599826.391 [host] cancel connection create
+ INFO  device            > 599826.794 init qspi flash...
+ DEBUG device            > 599826.794      [EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP, EOPNOTSUPP]
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599827.623 No HCE app found! :(
+ INFO  device            > 599827.625 timeout while waiting for digit
+ INFO  device            > 599828.798 app not found
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599829.663 No HCE app found! :(
+ INFO  device            > 599829.663 card payload: signature verify failed
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599829.663 pin: checking...
+ INFO  device            > 599829.663 card: checking...
+ INFO  device            > 599831.391 No socket matched! sending RST
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599839.052 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ DEBUG device            > 599840.796 [host] disconnect events: Connection Terminated By Local Host
+ INFO  device            > 599869.067 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599899.073 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ INFO  device            > 599929.078 Card doesn't contain the Akiles APP ID 2048. Not an Akiles card
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599966.292 timeout while waiting for digit
+ WARN  ak_flasher::crash > failed to decode defmt data
+ INFO  device            > 599967.075 pubkey: check_root_pubkey OK
+ WARN  ak_flasher::crash > failed to decode defmt data
+ WARN  device            > 599967.317 I/O error when decrypting pending payload
+ INFO  device            > 599967.317 timeout while waiting for digit
+ INFO  device            > 599967.317 timeout while waiting for digit
+ INFO  device            > 0000.000 resetreas: 4
+ INFO  device            > 0000.000 valid: true
+ INFO  device            > 0000.387 init qspi flash...
+ INFO  device            > 0000.388 id: [194, 40, 21]
+ INFO  device            > 0000.388 status: 66
+ INFO  device            > 0000.388 persist init: crc valid, data=Data { crash_count: 0, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 57349981350890, major_generation: 1, minor_generation: 3155 }
+ INFO  device            > 0000.388 persist write data=Data { crash_count: 1, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 57349981350890, major_generation: 1, minor_generation: 3155 }
+ INFO  device            > 0000.388 persist write data=Data { crash_count: 1, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3155 }
+ INFO  device            > 0000.393 init twi...
+ INFO  device            > 0000.393 wiggling SCL...
+ INFO  device            > 0000.393 doing start+stop
+ INFO  device            > 0000.393 init power...
+ INFO  device            > 0000.393 init leds...
+ INFO  device            > 0000.397 init nfc...
+ INFO  device            > 0000.403 init buzzer...
+ INFO  device            > 0000.403 init keypad...
+ INFO  device            > 0000.403 init done!
+ INFO  device            > 0000.408 persist write data=Data { crash_count: 1, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3156 }
+ INFO  device            > 0000.408 initialized boot counter 1.3156
+ INFO  device            > 0000.408 FACT_CONFIG_1, v2: Ok, serial 1
+ INFO  device            > 0000.409 FACT_CONFIG_2, v2: Ok, serial 0
+ INFO  device            > 0000.409 SYSTEM_CONFIG_1, v2: Ok, serial 1
+ INFO  device            > 0000.409 SYSTEM_CONFIG_2, v2: Ok, serial 0
+ INFO  device            > 0000.471 USER_CONFIG, serial 357
+ INFO  device            > 0000.485 Hardware ID: hw_419751sj9c3h7ux4rm1h
+ WARN  device            > 0000.514 Memory buffer too big. 44536 bytes needed
+ INFO  device            > 0000.515 [host] using packet pool with MTU 492 capacity 32
+ INFO  device            > 0000.515 [host] filter accept list size: 8
+ INFO  device            > 0000.516 [host] setting txq to 3, fragmenting at 251
+ INFO  device            > 0000.516 [host] configuring host buffers (1 packets of size 255)
+ INFO  device            > 0000.516 [host] initialized
+ INFO  device            > 0000.516 ble: address: BdAddr([c1, 92, a8, 14, f5, d8])
+ INFO  device            > 0000.516 Loading static peers...
+ INFO  device            > 0000.530 ble peer: BdAddr([49, be, 0a, 7e, d5, e0]) (Peripheral) true
+ DEBUG device            > 0000.969 [host] connect events: 0
+ DEBUG device            > 0000.969 [host] disconnect events: 0
+ DEBUG device            > 0000.969 [host] rx errors: 0
+ WARN  device            > 0000.969 [ble] high duty advertising
+ TRACE device            > 0000.969 [host] enabling extended advertising
+ INFO  device            > 0000.969 status BleStatus=MissingPeripheral
+ INFO  device            > 0000.969 connect: No peers needed, sleeping.
+ INFO  device            > 0000.974 power: mains=false bat=true  vbat=4339 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 0000.977 loading scripts...
+ INFO  device            > 0000.977 waiting for keypress
+ DEBUG device            > 0001.084 ============ SEND
+ DEBUG device            > 0001.084      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0001.084      Initiation(InitiationPacket { message: InitiationMessage { eph_pub: PublicKey { bytes: [100, 99, 40, 153, 201, 106, 235, 198, 55, 112, 153, 233, 60, 229, 16, 96, 188, 62, 204, 92, 155, 52, 219, 238, 207, 49, 159, 162, 182, 63, 109, 47] }, static_pub_ciphertext: [57, 191, 47, 210, 11, 184, 77, 88, 224, 14, 54, 182, 106, 19, 199, 221, 139, 54, 129, 15, 149, 181, 89, 7, 49, 209, 128, 236, 164, 122, 226, 180], static_pub_tag: [163, 30, 158, 50, 10, 93, 226, 183, 241, 231, 149, 78, 116, 104, 19, 209], timestamp_ciphertext: [238, 131, 140, 8, 240, 196, 134, 52, 142, 12, 204, 68], timestamp_tag: [17, 57, 149, 58, 195, 196, 159, 82, 1, 255, 48, 147, 234, 15, 169, 83] } })
+ INFO  device            > 0001.085 dispatch: link 1 down, loopbacking error
+ WARN  device            > 0001.085 could not get the time from backend: Io(ConnectionReset)
+ INFO  device            > 0001.099 nfc enabled: true
+ INFO  device            > 0001.099 nfc sleep
+ INFO  device            > 0001.102 capacitance calibrated: 2
+ INFO  device            > 0001.103 Measured: 108
+ INFO  device            > 0001.114 script 0. code size: 32 bytes
+ INFO  device            > 0001.191 script task starting
+ INFO  device            > 0001.191 script 0: starting
+ TRACE device            > 0001.193 [host] connection with handle ConnHandle(16) established to BdAddr([49, be, 0a, 7e, d5, e0])
+ TRACE device            > 0001.193 [link][poll_accept] connection accepted: state: state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 0, sar = PacketReassembly { state: None }, sent = 0, since_sent = 1192 ms, recvd = 0, since_recvd = 1192 ms, blocked sends = 0
+ INFO  device            > 0001.193 status BleStatus=Ok
+ WARN  device            > 0001.193 [ble] standard advertising
+ WARN  device            > 0001.193 advertising failed: BleHost(Hci(Command Disallowed))
+ TRACE device            > 0001.193 [host] disabling advertising
+ INFO  device            > 0001.337 link: connected 1
+ INFO  device            > 0001.337 [ble] l2cap channel ChannelIndex(0), state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 16, cred in = 16, ref = 2, sent = 0, recvd = 0, blocked send = 0, blocked receive = 0 created, starting
+ DEBUG device            > 0002.150 ============ RECEIVED
+ DEBUG device            > 0002.150      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0002.150      Initiation(InitiationPacket { message: InitiationMessage { eph_pub: PublicKey { bytes: [114, 239, 52, 97, 248, 30, 226, 158, 21, 210, 67, 60, 251, 81, 56, 176, 42, 179, 1, 96, 196, 97, 99, 235, 94, 133, 236, 168, 189, 71, 205, 25] }, static_pub_ciphertext: [97, 91, 209, 176, 120, 68, 77, 160, 187, 196, 85, 132, 255, 145, 219, 37, 242, 36, 134, 106, 144, 197, 124, 210, 104, 246, 181, 212, 247, 84, 48, 200], static_pub_tag: [104, 56, 75, 10, 200, 54, 91, 251, 66, 21, 144, 73, 188, 109, 1, 194], timestamp_ciphertext: [207, 230, 224, 20, 57, 162, 233, 57, 150, 141, 207, 29], timestamp_tag: [68, 250, 179, 57, 148, 6, 162, 218, 227, 44, 132, 41, 118, 176, 62, 200] } })
+ DEBUG device            > 0002.201 ============ SEND
+ DEBUG device            > 0002.201      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0002.201      Response(ResponsePacket { message: ResponseMessage { eph_pub: PublicKey { bytes: [246, 107, 249, 138, 67, 164, 243, 131, 220, 77, 70, 153, 132, 238, 96, 102, 246, 177, 102, 151, 76, 185, 197, 28, 178, 230, 39, 192, 17, 65, 17, 2] }, empty_tag: [34, 206, 96, 151, 183, 112, 8, 63, 67, 10, 99, 203, 230, 82, 72, 211] } })
+ DEBUG device            > 0002.940 ============ RECEIVED
+ DEBUG device            > 0002.940      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0002.940      EncryptedData(DataHeader { nonce_part: 0 })
+ DEBUG device            > 0002.940      Tcp(Packet(port: 1, control: Fin, seq: 0, ack: 0, win: 894, len: 2))
+ INFO  device            > 0002.941 request code: 18
+ WARN  device            > 0002.941 root pubkey found in config
+ DEBUG device            > 0002.941 ============ SEND
+ DEBUG device            > 0002.941      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0002.941      PlaintextData(timestamp=0)
+ DEBUG device            > 0002.941      Tcp(Packet(port: 1, control: None, seq: 0, ack: 3, win: 1341, len: 3))
+ DEBUG device            > 0002.942 rtte: sampling at seq=3
+ INFO  device            > 0002.943 persist write data=Data { crash_count: 1, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3157 }
+ DEBUG device            > 0003.740 ============ RECEIVED
+ DEBUG device            > 0003.740      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0003.740      EncryptedData(DataHeader { nonce_part: 1 })
+ DEBUG device            > 0003.740      Tcp(Packet(port: 1, control: None, seq: 3, ack: 3, win: 894, len: 0))
+ DEBUG device            > 0003.740 rtte: sample=798 rtt=1413 dev=379 cwin=768 rto=2929
+ DEBUG device            > 0003.740 ============ SEND
+ DEBUG device            > 0003.740      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0003.740      PlaintextData(timestamp=1)
+ DEBUG device            > 0003.740      Tcp(Packet(port: 1, control: Fin, seq: 3, ack: 3, win: 1341, len: 137))
+ DEBUG device            > 0003.741 rtte: sampling at seq=141
+ DEBUG device            > 0004.540 ============ RECEIVED
+ DEBUG device            > 0004.540      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0004.540      EncryptedData(DataHeader { nonce_part: 2 })
+ DEBUG device            > 0004.540      Tcp(Packet(port: 1, control: None, seq: 3, ack: 141, win: 894, len: 0))
+ DEBUG device            > 0004.540 rtte: sample=799 rtt=1337 dev=419 cwin=1024 rto=3013
+ DEBUG device            > 0004.546 ============ RECEIVED
+ DEBUG device            > 0004.546      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0004.546      EncryptedData(DataHeader { nonce_part: 3 })
+ DEBUG device            > 0004.546      Tcp(Packet(port: 2, control: Fin, seq: 0, ack: 0, win: 894, len: 2))
+ INFO  device            > 0004.547 request code: 21
+ WARN  device            > 0004.547 root pubkey found in config
+ INFO  device            > 0004.547 FIRMWARE UPDATE COMMIT!
+ DEBUG device            > 0004.646 ============ SEND
+ DEBUG device            > 0004.646      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0004.646      PlaintextData(timestamp=2)
+ DEBUG device            > 0004.646      Tcp(Packet(port: 2, control: Fin, seq: 0, ack: 3, win: 1341, len: 2))
+ DEBUG device            > 0004.646 rtte: sampling at seq=3
+ DEBUG device            > 0005.340 ============ RECEIVED
+ DEBUG device            > 0005.340      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0005.340      EncryptedData(DataHeader { nonce_part: 4 })
+ DEBUG device            > 0005.340      Tcp(Packet(port: 2, control: None, seq: 3, ack: 3, win: 894, len: 0))
+ DEBUG device            > 0005.340 rtte: sample=694 rtt=1400 dev=402 cwin=768 rto=3008
+ DEBUG device            > 0005.346 ============ RECEIVED
+ DEBUG device            > 0005.346      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0005.346      EncryptedData(DataHeader { nonce_part: 5 })
+ DEBUG device            > 0005.346      Tcp(Packet(port: 3, control: Fin, seq: 0, ack: 0, win: 894, len: 2))
+ INFO  device            > 0005.347 request code: 18
+ WARN  device            > 0005.347 root pubkey found in config
+ DEBUG device            > 0005.347 ============ SEND
+ DEBUG device            > 0005.347      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0005.347      PlaintextData(timestamp=3)
+ DEBUG device            > 0005.347      Tcp(Packet(port: 3, control: None, seq: 0, ack: 3, win: 1341, len: 3))
+ DEBUG device            > 0005.348 rtte: sampling at seq=3
+ INFO  device            > 0005.349 persist write data=Data { crash_count: 1, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3158 }
+ DEBUG device            > 0006.140 ============ RECEIVED
+ DEBUG device            > 0006.140      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0006.140      EncryptedData(DataHeader { nonce_part: 6 })
+ DEBUG device            > 0006.140      Tcp(Packet(port: 3, control: None, seq: 3, ack: 3, win: 894, len: 0))
+ DEBUG device            > 0006.140 rtte: sample=792 rtt=1412 dev=380 cwin=768 rto=2932
+ DEBUG device            > 0006.140 ============ SEND
+ DEBUG device            > 0006.140      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0006.140      PlaintextData(timestamp=3)
+ DEBUG device            > 0006.140      Tcp(Packet(port: 3, control: Fin, seq: 3, ack: 3, win: 1341, len: 138))
+ DEBUG device            > 0006.141 rtte: sampling at seq=142
+ WARN  device            > 0006.193 [ble] standard advertising
+ TRACE device            > 0006.193 [host] enabling extended advertising
+ DEBUG device            > 0006.940 ============ RECEIVED
+ DEBUG device            > 0006.940      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0006.940      EncryptedData(DataHeader { nonce_part: 7 })
+ DEBUG device            > 0006.940      Tcp(Packet(port: 3, control: None, seq: 3, ack: 142, win: 894, len: 0))
+ DEBUG device            > 0006.940 rtte: sample=799 rtt=1336 dev=420 cwin=1024 rto=3016
+ DEBUG device            > 0006.947 ============ RECEIVED
+ DEBUG device            > 0006.947      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0006.947      EncryptedData(DataHeader { nonce_part: 8 })
+ DEBUG device            > 0006.947      Tcp(Packet(port: 4, control: Fin, seq: 0, ack: 0, win: 894, len: 2))
+ INFO  device            > 0006.948 request code: 18
+ WARN  device            > 0006.948 root pubkey found in config
+ DEBUG device            > 0006.948 ============ SEND
+ DEBUG device            > 0006.948      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0006.948      PlaintextData(timestamp=4)
+ DEBUG device            > 0006.948      Tcp(Packet(port: 4, control: None, seq: 0, ack: 3, win: 1341, len: 3))
+ DEBUG device            > 0006.948 rtte: sampling at seq=3
+ INFO  device            > 0006.949 persist write data=Data { crash_count: 1, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3159 }
+ DEBUG device            > 0007.740 ============ RECEIVED
+ DEBUG device            > 0007.740      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0007.740      EncryptedData(DataHeader { nonce_part: 9 })
+ DEBUG device            > 0007.740      Tcp(Packet(port: 4, control: None, seq: 3, ack: 3, win: 894, len: 0))
+ DEBUG device            > 0007.740 rtte: sample=791 rtt=1412 dev=381 cwin=768 rto=2936
+ DEBUG device            > 0007.740 ============ SEND
+ DEBUG device            > 0007.740      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0007.740      PlaintextData(timestamp=5)
+ DEBUG device            > 0007.740      Tcp(Packet(port: 4, control: Fin, seq: 3, ack: 3, win: 1341, len: 138))
+ DEBUG device            > 0007.741 rtte: sampling at seq=142
+ DEBUG device            > 0008.540 ============ RECEIVED
+ DEBUG device            > 0008.540      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0008.540      EncryptedData(DataHeader { nonce_part: 10 })
+ DEBUG device            > 0008.540      Tcp(Packet(port: 4, control: None, seq: 3, ack: 142, win: 894, len: 0))
+ DEBUG device            > 0008.540 rtte: sample=799 rtt=1336 dev=420 cwin=1024 rto=3016
+ DEBUG device            > 0011.100 ============ SEND
+ DEBUG device            > 0011.100      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0011.100      PlaintextData(timestamp=8)
+ DEBUG device            > 0011.100      Tcp(Packet(port: 128, control: Fin, seq: 0, ack: 0, win: 64, len: 2))
+ DEBUG device            > 0011.101 rtte: sampling at seq=3
+ DEBUG device            > 0011.743 ============ RECEIVED
+ DEBUG device            > 0011.743      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 0011.743      EncryptedData(DataHeader { nonce_part: 11 })
+ DEBUG device            > 0011.743      Tcp(Packet(port: 128, control: Fin, seq: 0, ack: 3, win: 1341, len: 10))
+ DEBUG device            > 0011.743 rtte: sample=642 rtt=1393 dev=413 cwin=768 rto=3045
+ DEBUG device            > 0011.743 ============ SEND
+ DEBUG device            > 0011.743      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 0011.743      PlaintextData(timestamp=9)
+ DEBUG device            > 0011.743      Tcp(Packet(port: 128, control: None, seq: 3, ack: 11, win: 54, len: 0))
+ INFO  device            > 0011.744 response code: Success
+ INFO  device            > 0015.736 [ble] connection parameters for ConnHandle(16) updated: interval = 40 ms, latency = 0, timeout = 8000 ms
+ INFO  device            > 0022.016 [ble] connection parameters for ConnHandle(16) updated: interval = 400 ms, latency = 3, timeout = 16000 ms
+ INFO  device            > 0030.979 power: mains=false bat=true  vbat=4355 vbat_low=None vsys=2812 vsys_low=None
+ DEBUG device            > 0060.969 [host] connect events: 1
+ DEBUG device            > 0060.969 [host] disconnect events: 0
+ DEBUG device            > 0060.969 [host] rx errors: 0
+ DEBUG device            > 0060.969 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 49224 ms, recvd = 31, since_recvd = 49226 ms, blocked sends = 0
+ DEBUG device            > 0060.969 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0060.985 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0090.990 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 0120.410 persist write data=Data { crash_count: 0, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3159 }
+ DEBUG device            > 0120.969 [host] connect events: 1
+ DEBUG device            > 0120.969 [host] disconnect events: 0
+ DEBUG device            > 0120.969 [host] rx errors: 0
+ DEBUG device            > 0120.969 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 109224 ms, recvd = 31, since_recvd = 109226 ms, blocked sends = 0
+ DEBUG device            > 0120.969 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0120.995 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0151.001 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 0180.969 [host] connect events: 1
+ DEBUG device            > 0180.969 [host] disconnect events: 0
+ DEBUG device            > 0180.969 [host] rx errors: 0
+ DEBUG device            > 0180.969 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 169225 ms, recvd = 31, since_recvd = 169226 ms, blocked sends = 0
+ DEBUG device            > 0180.970 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0181.006 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 0240.970 [host] connect events: 1
+ DEBUG device            > 0240.970 [host] disconnect events: 0
+ DEBUG device            > 0240.970 [host] rx errors: 0
+ DEBUG device            > 0240.970 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 229225 ms, recvd = 31, since_recvd = 229227 ms, blocked sends = 0
+ DEBUG device            > 0240.970 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0241.017 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 0300.970 [host] connect events: 1
+ DEBUG device            > 0300.970 [host] disconnect events: 0
+ DEBUG device            > 0300.970 [host] rx errors: 0
+ DEBUG device            > 0300.970 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 289226 ms, recvd = 31, since_recvd = 289227 ms, blocked sends = 0
+ DEBUG device            > 0300.970 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0301.027 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 0360.971 [host] connect events: 1
+ DEBUG device            > 0360.971 [host] disconnect events: 0
+ DEBUG device            > 0360.971 [host] rx errors: 0
+ DEBUG device            > 0360.971 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 349226 ms, recvd = 31, since_recvd = 349228 ms, blocked sends = 0
+ DEBUG device            > 0360.971 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0361.038 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0391.044 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 0420.971 [host] connect events: 1
+ DEBUG device            > 0420.971 [host] disconnect events: 0
+ DEBUG device            > 0420.971 [host] rx errors: 0
+ DEBUG device            > 0420.971 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 409226 ms, recvd = 31, since_recvd = 409228 ms, blocked sends = 0
+ DEBUG device            > 0420.971 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0451.054 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ DEBUG device            > 0480.971 [host] connect events: 1
+ DEBUG device            > 0480.971 [host] disconnect events: 0
+ DEBUG device            > 0480.971 [host] rx errors: 0
+ DEBUG device            > 0480.971 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 469227 ms, recvd = 31, since_recvd = 469228 ms, blocked sends = 0
+ DEBUG device            > 0480.972 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0481.060 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0511.065 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2820 vsys_low=None
+ DEBUG device            > 0540.972 [host] connect events: 1
+ DEBUG device            > 0540.972 [host] disconnect events: 0
+ DEBUG device            > 0540.972 [host] rx errors: 0
+ DEBUG device            > 0540.972 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 12, since_sent = 529227 ms, recvd = 31, since_recvd = 529229 ms, blocked sends = 0
+ DEBUG device            > 0540.972 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 15, cred in = 12, ref = 3, sent = 10, recvd = 13, blocked send = 0, blocked receive = 0
+ INFO  device            > 0541.070 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 0571.076 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0601.081 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0631.087 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0661.092 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0691.097 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2808 vsys_low=None
+ INFO  device            > 0721.103 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0781.113 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0811.119 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0901.135 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0961.145 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 0991.151 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1111.172 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1201.188 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1321.210 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 1351.215 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1441.231 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1471.236 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1591.258 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 1616.328 nfc wakeup
+ INFO  device            > 1616.389 got card, uid = [08, c2, 35, 4b]
+ INFO  device            > 1616.409 trying hce app_id [f3, 7a, bd, c6, a7, 0d, 72, c1, 5d, 63, b9, ca]
+ INFO  device            > 1616.409 tx: [00, a4, 04, 0c, 0c, f3, 7a, bd, c6, a7, 0d, 72, c1, 5d, 63, b9, ca, 00]
+ INFO  device            > 1616.530 rx: [90, 00]
+ INFO  device            > 1616.530 HCE app found!
+ INFO  device            > 1616.589 tx: [90, 00, 00, 00, 5a, 01, 0c, 18, 10, 62, 03, 31, 42, c5, 03, 6f, a3, c5, 01, 1f, 20, 08, 17, c2, bf, 5a, 56, 9b, c5, 41, b5, e5, 45, f2, 01, be, 2a, 4e, 73, af, ad, aa, ce, e4, 0b, 82, 0e, a4, 20, a7, 2b, c6, 7d, 22, 02, 08, 3c, 18, 19, 08, e2, 34, f9, 71, 89, 69, 50, de, ca, 4c, 18, 1c, cd, 99, f1, 02, 8b, ce, 69, d1, 13, 04, 5c, 18, 1e, 45, 40, 2a, a4, 6f, 38, c4, 21, 7f, a2, 00]
+ INFO  device            > 1616.643 rx: [01, 73, 56, 58, df, 85, c0, 49, 7e, ea, ed, 5f, 4f, 2b, 0a, 97, fe, 73, 81, 78, bb, f5, cf, cb, dd, 91, 00, ed, 98, 4f, b7, 53, 1d, 7f, 71, e6, 42, af, e8, 3d, 19, a3, b4, a7, bb, f4, a2, 11, 43, c5, f0, bd, e9, 9b, 61, 47, 40, 1e, 1b, 08, 71, 44, db, 01, 40, 12, 3b, 9e, 19, 72, f1, 3e, 9f, 4f, 4b, b0, 25, 3e, c5, 18, dc, f5, 1a, 27, 73, 02, 06, e0, f7, 62, 74, 08, 77, 43, ae, 52, f1, 90, 0a, f6, 19, 68, 02, d4, 9a, 66, 58, 87, 52]
+ INFO  device            > 1616.693 initiation OK
+ INFO  device            > 1616.693 tx: [90, 00, 00, 00, 31, 01, 45, f4, 9e, 26, 35, 88, 75, 70, d6, 08, 8f, 1c, 49, 07, 62, d2, e2, cf, 23, 77, a2, 19, f6, b2, 2d, 1b, c0, 88, c3, 85, 51, 3b, 45, e0, a0, 81, e4, 8e, 95, 97, 63, e0, c9, 29, 72, 9f, 56, 9c, 00]
+ INFO  device            > 1616.713 rx: [02, 12, b0, d5, bd, 63, 2b, aa, 1d, c2, c5, 1e, 65, 20, ee, e8, 18, 21]
+ INFO  device            > 1616.714 tx: [90, 00, 00, 00, 12, 01, 43, f6, 71, 66, fb, a9, d8, a5, 7b, 58, 5b, 02, fa, 30, ed, b1, 70, 00]
+ INFO  device            > 1616.724 rx: [ff]
+ INFO  device            > 1616.724 HCE: got 1 pubkeys
+ INFO  device            > 1616.724 got card! handling it.
+ INFO  device            > 1616.747 status CommStatus=Active
+ DEBUG device            > 1616.777 ============ SEND
+ DEBUG device            > 1616.777      Header { kind: Data, send_path: [1], return_path: [], qos: Standard }
+ DEBUG device            > 1616.777      Initiation(InitiationPacket { message: InitiationMessage { eph_pub: PublicKey { bytes: [186, 53, 93, 3, 193, 69, 164, 156, 167, 140, 173, 196, 229, 2, 237, 179, 132, 212, 12, 83, 72, 40, 135, 253, 223, 75, 10, 160, 108, 191, 11, 80] }, static_pub_ciphertext: [194, 137, 84, 162, 232, 248, 26, 98, 240, 32, 51, 57, 87, 203, 31, 233, 157, 177, 18, 70, 86, 213, 108, 255, 97, 207, 18, 94, 3, 28, 48, 70], static_pub_tag: [0, 135, 17, 180, 86, 46, 7, 189, 23, 142, 185, 127, 102, 62, 109, 176], timestamp_ciphertext: [129, 85, 166, 60, 88, 30, 93, 201, 86, 212, 51, 128], timestamp_tag: [100, 144, 177, 151, 67, 196, 90, 120, 246, 1, 175, 230, 168, 215, 139, 119] } })
+ INFO  device            > 1621.263 power: mains=false bat=true  vbat=4355 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 1622.456 ============ RECEIVED
+ DEBUG device            > 1622.456      Header { kind: Data, send_path: [], return_path: [1], qos: Standard }
+ DEBUG device            > 1622.456      Response(ResponsePacket { message: ResponseMessage { eph_pub: PublicKey { bytes: [236, 161, 172, 163, 127, 102, 213, 19, 238, 126, 140, 255, 120, 19, 96, 73, 136, 42, 175, 116, 188, 214, 78, 141, 170, 79, 103, 34, 133, 254, 115, 61] }, empty_tag: [1, 34, 31, 132, 157, 168, 175, 21, 188, 123, 174, 178, 175, 133, 254, 30] } })
+ DEBUG device            > 1622.478 ============ SEND
+ DEBUG device            > 1622.478      Header { kind: Data, send_path: [1], return_path: [], qos: Standard }
+ DEBUG device            > 1622.478      PlaintextData(timestamp=2)
+ DEBUG device            > 1622.478      Tcp(Packet(port: 0, control: Fin, seq: 0, ack: 0, win: 1341, len: 39))
+ DEBUG device            > 1622.478 rtte: sampling at seq=40
+ DEBUG device            > 1625.178 rtte: abort sampling due to retransmit
+ DEBUG device            > 1625.178 rtte: too many retransmissions, increasing: rtt=3000 dev=300, rto=4200
+ DEBUG device            > 1625.178 ============ SEND
+ DEBUG device            > 1625.178      Header { kind: Data, send_path: [1], return_path: [], qos: Standard }
+ DEBUG device            > 1625.178      PlaintextData(timestamp=5)
+ DEBUG device            > 1625.178      Tcp(Packet(port: 0, control: Fin, seq: 0, ack: 0, win: 1341, len: 39))
+ DEBUG device            > 1625.656 ============ RECEIVED
+ DEBUG device            > 1625.656      Header { kind: Data, send_path: [], return_path: [1], qos: Standard }
+ DEBUG device            > 1625.656      EncryptedData(DataHeader { nonce_part: 0 })
+ DEBUG device            > 1625.657      Tcp(Packet(port: 0, control: Fin, seq: 0, ack: 40, win: 1341, len: 2))
+ DEBUG device            > 1625.657 ============ SEND
+ DEBUG device            > 1625.657      Header { kind: Data, send_path: [1], return_path: [], qos: Standard }
+ DEBUG device            > 1625.657      PlaintextData(timestamp=6)
+ DEBUG device            > 1625.657      Tcp(Packet(port: 0, control: None, seq: 40, ack: 3, win: 1339, len: 0))
+ INFO  device            > 1625.657 response code: Success
+ INFO  device            > 1625.657 status CommStatus=Idle
+ INFO  device            > 1627.016 nfc sleep
+ INFO  device            > 1627.018 capacitance calibrated: 2
+ INFO  device            > 1627.020 Measured: 105
+ DEBUG device            > 1627.256 ============ RECEIVED
+ DEBUG device            > 1627.256      Header { kind: Data, send_path: [], return_path: [1], qos: Standard }
+ DEBUG device            > 1627.256      EncryptedData(DataHeader { nonce_part: 1 })
+ DEBUG device            > 1627.256      Tcp(Packet(port: 0, control: None, seq: 3, ack: 40, win: 1341, len: 0))
+ INFO  device            > 1627.257 No socket matched! sending RST
+ DEBUG device            > 1627.257 ============ SEND
+ DEBUG device            > 1627.257      Header { kind: Data, send_path: [1], return_path: [], qos: Standard }
+ DEBUG device            > 1627.257      PlaintextData(timestamp=7)
+ DEBUG device            > 1627.257      Tcp(Packet(port: 0, control: Rst, seq: 40, ack: 3, win: 0, len: 0))
+ DEBUG device            > 1628.056 ============ RECEIVED
+ DEBUG device            > 1628.056      Header { kind: Data, send_path: [], return_path: [1], qos: Standard }
+ DEBUG device            > 1628.056      EncryptedData(DataHeader { nonce_part: 2 })
+ DEBUG device            > 1628.057      Tcp(Packet(port: 0, control: Fin, seq: 0, ack: 40, win: 1341, len: 2))
+ INFO  device            > 1628.057 No socket matched! sending RST
+ DEBUG device            > 1628.057 ============ SEND
+ DEBUG device            > 1628.057      Header { kind: Data, send_path: [1], return_path: [], qos: Standard }
+ DEBUG device            > 1628.057      PlaintextData(timestamp=8)
+ DEBUG device            > 1628.057      Tcp(Packet(port: 0, control: Rst, seq: 40, ack: 0, win: 0, len: 0))
+ INFO  device            > 1636.056 [ble] connection parameters for ConnHandle(16) updated: interval = 40 ms, latency = 0, timeout = 8000 ms
+ INFO  device            > 1642.016 [ble] connection parameters for ConnHandle(16) updated: interval = 400 ms, latency = 3, timeout = 16000 ms
+ INFO  device            > 1651.269 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1681.274 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 1711.279 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1801.295 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1891.312 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 1981.328 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2041.338 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 2071.344 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2101.349 power: mains=false bat=true  vbat=4355 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 2161.360 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2191.365 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 2221.370 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2281.381 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2311.387 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2371.397 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 2401.403 power: mains=false bat=true  vbat=4355 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2431.408 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 2491.419 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2521.424 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2611.440 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2671.451 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2701.456 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2761.467 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2791.472 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2821.478 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2851.483 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2911.494 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2820 vsys_low=None
+ INFO  device            > 2941.499 power: mains=false bat=true  vbat=4367 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 2971.504 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3001.510 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3031.515 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3181.542 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2820 vsys_low=None
+ INFO  device            > 3211.547 power: mains=false bat=true  vbat=4367 vbat_low=None vsys=2820 vsys_low=None
+ INFO  device            > 3241.553 power: mains=false bat=true  vbat=4367 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3271.558 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3331.569 power: mains=false bat=true  vbat=4367 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3361.574 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3391.580 power: mains=false bat=true  vbat=4367 vbat_low=None vsys=2820 vsys_low=None
+ INFO  device            > 3421.585 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3451.590 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3481.596 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3511.601 power: mains=false bat=true  vbat=4367 vbat_low=None vsys=2820 vsys_low=None
+ INFO  device            > 3541.606 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3571.612 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 3600.974 [host] connect events: 1
+ DEBUG device            > 3600.974 [host] disconnect events: 0
+ DEBUG device            > 3600.974 [host] rx errors: 0
+ DEBUG device            > 3600.974 [link][idx = 0] state = state = Connected, conn = Some(ConnHandle(16)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 2, sar = PacketReassembly { state: None }, sent = 18, since_sent = 1972916 ms, recvd = 40, since_recvd = 1972917 ms, blocked sends = 0
+ DEBUG device            > 3600.974 [l2cap][idx = 0] state = Connected, c = Some(ConnHandle(16)), cid = 64, peer = 64, mps = 247, mtu = 492, cred out 9, cred in = 8, ref = 3, sent = 16, recvd = 17, blocked send = 0, blocked receive = 0
+ DEBUG device            > 3611.759 ============ SEND
+ DEBUG device            > 3611.759      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 3611.759      PlaintextData(timestamp=3609)
+ DEBUG device            > 3611.759      Tcp(Packet(port: 129, control: Fin, seq: 0, ack: 0, win: 64, len: 2))
+ DEBUG device            > 3611.760 rtte: sampling at seq=3
+ DEBUG device            > 3612.460 ============ RECEIVED
+ DEBUG device            > 3612.460      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 3612.461      EncryptedData(DataHeader { nonce_part: 12 })
+ DEBUG device            > 3612.461      Tcp(Packet(port: 129, control: Fin, seq: 0, ack: 3, win: 1341, len: 10))
+ DEBUG device            > 3612.461 rtte: sample=701 rtt=1401 dev=400 cwin=768 rto=3001
+ DEBUG device            > 3612.461 ============ SEND
+ DEBUG device            > 3612.461      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 3612.461      PlaintextData(timestamp=3610)
+ DEBUG device            > 3612.461      Tcp(Packet(port: 129, control: None, seq: 3, ack: 11, win: 54, len: 0))
+ INFO  device            > 3612.462 response code: Success
+ INFO  device            > 3751.644 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2820 vsys_low=None
+ INFO  device            > 3781.649 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3811.655 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3841.660 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2812 vsys_low=None
+ INFO  device            > 3871.665 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3901.671 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 3931.676 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4051.697 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4111.708 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4201.724 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4231.730 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4381.756 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4411.762 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4441.767 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4471.772 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4531.783 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4591.794 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4651.805 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4681.810 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4831.837 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4861.842 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4891.847 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4921.853 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4948.455 [host] disconnection event on handle 16, reason: Connection Timeout
+ INFO  device            > 4948.455 conn failed: l2cap chan ChannelIndex(0), state = Disconnected, c = None, cid = 0, peer = 0, mps = 0, mtu = 0, cred out 0, cred in = 0, ref = 3, sent = 0, recvd = 0, blocked send = 0, blocked receive = 0 rx err BleHost(ChannelClosed)
+ INFO  device            > 4948.455 link: disconnected 1
+ DEBUG device            > 4948.455 [host] connect events: 1
+ DEBUG device            > 4948.456 [host] disconnect events: 1
+ DEBUG device            > 4948.456 [host] rx errors: 0
+ INFO  device            > 4948.456 status BleStatus=MissingPeripheral
+ WARN  device            > 4948.456 [ble] high duty advertising
+ TRACE device            > 4948.456 [host] disabling advertising
+ TRACE device            > 4948.456 [host] enabling extended advertising
+ TRACE device            > 4949.714 [host] connection with handle ConnHandle(36) established to BdAddr([49, be, 0a, 7e, d5, e0])
+ TRACE device            > 4949.715 [link][poll_accept] connection accepted: state: state = Connected, conn = Some(ConnHandle(36)), flow = 3, role = Some(Peripheral), peer = Some(BdAddr(BdAddr([49, BE, A, 7E, D5, E0])) ), ref = 0, sar = PacketReassembly { state: None }, sent = 0, since_sent = 4949714 ms, recvd = 0, since_recvd = 4949714 ms, blocked sends = 0
+ INFO  device            > 4949.715 status BleStatus=Ok
+ WARN  device            > 4949.715 [ble] standard advertising
+ WARN  device            > 4949.715 advertising failed: BleHost(Hci(Command Disallowed))
+ TRACE device            > 4949.715 [host] disabling advertising
+ INFO  device            > 4949.934 link: connected 1
+ INFO  device            > 4949.934 [ble] l2cap channel ChannelIndex(0), state = Connected, c = Some(ConnHandle(36)), cid = 64, peer = 65, mps = 247, mtu = 492, cred out 16, cred in = 16, ref = 2, sent = 0, recvd = 0, blocked send = 0, blocked receive = 0 created, starting
+ WARN  device            > 4954.715 [ble] standard advertising
+ TRACE device            > 4954.715 [host] enabling extended advertising
+ DEBUG device            > 4970.337 ============ RECEIVED
+ DEBUG device            > 4970.337      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 4970.337      Initiation(InitiationPacket { message: InitiationMessage { eph_pub: PublicKey { bytes: [254, 217, 30, 141, 197, 164, 6, 215, 150, 22, 215, 73, 155, 224, 98, 209, 171, 142, 209, 146, 54, 53, 146, 233, 26, 93, 61, 137, 171, 87, 168, 108] }, static_pub_ciphertext: [55, 247, 229, 1, 97, 2, 8, 228, 123, 66, 246, 74, 100, 153, 215, 165, 197, 224, 233, 230, 76, 169, 74, 178, 80, 139, 79, 116, 72, 158, 161, 55], static_pub_tag: [253, 66, 151, 165, 195, 209, 184, 203, 245, 55, 244, 225, 194, 253, 95, 207], timestamp_ciphertext: [39, 231, 156, 101, 12, 189, 85, 30, 254, 29, 37, 224], timestamp_tag: [61, 88, 242, 113, 49, 82, 249, 124, 169, 211, 221, 27, 62, 202, 29, 110] } })
+ DEBUG device            > 4970.388 ============ SEND
+ DEBUG device            > 4970.388      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 4970.388      Response(ResponsePacket { message: ResponseMessage { eph_pub: PublicKey { bytes: [146, 16, 120, 11, 168, 193, 85, 42, 152, 163, 55, 31, 118, 115, 222, 242, 72, 158, 84, 86, 59, 228, 157, 247, 78, 130, 233, 97, 189, 219, 6, 106] }, empty_tag: [205, 77, 194, 81, 12, 242, 123, 166, 15, 72, 223, 87, 48, 130, 64, 125] } })
+ DEBUG device            > 4971.537 ============ RECEIVED
+ DEBUG device            > 4971.537      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 4971.537      EncryptedData(DataHeader { nonce_part: 0 })
+ DEBUG device            > 4971.537      Tcp(Packet(port: 1, control: Fin, seq: 0, ack: 0, win: 894, len: 2))
+ INFO  device            > 4971.538 request code: 18
+ WARN  device            > 4971.538 root pubkey found in config
+ DEBUG device            > 4971.538 ============ SEND
+ DEBUG device            > 4971.538      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 4971.539      PlaintextData(timestamp=1)
+ DEBUG device            > 4971.539      Tcp(Packet(port: 1, control: None, seq: 0, ack: 3, win: 1341, len: 3))
+ DEBUG device            > 4971.539 rtte: sampling at seq=3
+ INFO  device            > 4971.540 persist write data=Data { crash_count: 0, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 0, major_generation: 1, minor_generation: 3160 }
+ DEBUG device            > 4972.337 ============ RECEIVED
+ DEBUG device            > 4972.337      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 4972.337      EncryptedData(DataHeader { nonce_part: 1 })
+ DEBUG device            > 4972.337      Tcp(Packet(port: 1, control: None, seq: 3, ack: 3, win: 894, len: 0))
+ DEBUG device            > 4972.337 rtte: sample=798 rtt=1413 dev=379 cwin=768 rto=2929
+ DEBUG device            > 4972.337 ============ SEND
+ DEBUG device            > 4972.337      Header { kind: Data, send_path: [0, 1], return_path: [], qos: Standard }
+ DEBUG device            > 4972.337      PlaintextData(timestamp=2)
+ DEBUG device            > 4972.337      Tcp(Packet(port: 1, control: Fin, seq: 3, ack: 3, win: 1341, len: 142))
+ DEBUG device            > 4972.338 rtte: sampling at seq=146
+ DEBUG device            > 4973.137 ============ RECEIVED
+ DEBUG device            > 4973.137      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 4973.137      EncryptedData(DataHeader { nonce_part: 2 })
+ DEBUG device            > 4973.137      Tcp(Packet(port: 1, control: None, seq: 3, ack: 146, win: 894, len: 0))
+ DEBUG device            > 4973.137 rtte: sample=799 rtt=1337 dev=419 cwin=1024 rto=3013
+ INFO  device            > 4979.534 [ble] connection parameters for ConnHandle(36) updated: interval = 40 ms, latency = 0, timeout = 8000 ms
+ INFO  device            > 4981.864 power: mains=false bat=true  vbat=4359 vbat_low=None vsys=2816 vsys_low=None
+ INFO  device            > 4986.014 [ble] connection parameters for ConnHandle(36) updated: interval = 400 ms, latency = 3, timeout = 16000 ms
+ INFO  device            > 5011.869 power: mains=false bat=true  vbat=4363 vbat_low=None vsys=2816 vsys_low=None
+ DEBUG device            > 5019.659 ============ RECEIVED
+ DEBUG device            > 5019.659      Header { kind: Data, send_path: [], return_path: [0, 1], qos: Standard }
+ DEBUG device            > 5019.659      EncryptedData(DataHeader { nonce_part: 3 })
+ DEBUG device            > 5019.659      Tcp(Packet(port: 2, control: Fin, seq: 0, ack: 0, win: 894, len: 2))
+ INFO  device            > 5019.660 request code: 6
+ WARN  device            > 5019.660 root pubkey found in config
+ WARN  device            > 5019.660 rpc: debug assert
+ ERROR device            > 5019.660 panicked at 'debug assert'
+ INFO  device            > 5019.660 persist write data=Data { crash_count: 0, systemdb_format_req: 0, userdb_format_req: 0, events_format_req: 0, reserved04: 0, utc_time: 57350146741744, major_generation: 1, minor_generation: 3160 }
+ R0: 00000000  R1: 00000200  R2: 00d300c9  R3: e000e100
+ R4: 2000f71c  R5: 2001e9f0  R6: 2001ead0  R7: 20034b10
+ R8: 2001d338  R9: 2001e9d0 R10: 20035bd8 R11: 2001e9b8
+R12: 00000001  SP: 20034b10  LR: 00035f7f  PC: 00043e82
+Length: 488 (0x1e8) bytes
+0000:   1c f7 00 20  f0 e9 01 20  d0 ea 01 20  10 4b 03 20   ... ... ... .K. 
+0010:   38 d3 01 20  d0 e9 01 20  d8 5b 03 20  b8 e9 01 20   8.. ... .[. ... 
+0020:   00 00 00 00  00 02 00 00  c9 00 d3 00  00 e1 00 e0   ................
+0030:   01 00 00 00  7f 5f 03 00  82 3e 04 00  27 00 00 41   ....._...>..'..A
+0040:   b8 5b 03 20  7f 5f 03 00  00 00 00 00  00 00 00 00   .[. ._..........
+0050:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0060:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0070:   01 1a 81 0d  93 c5 32 d4  f8 ca 6a 7c  f3 d9 df a9   ......2...j|....
+0080:   14 65 f8 fd  81 ce 14 ca  1a 07 00 61  6e fc 5f b5   .e.........an._.
+0090:   7b 00 00 00  00 00 00 00  00 00 00 00  17 00 02 00   {...............
+00a0:   00 00 00 00  00 00 00 02  00 00 00 00  00 00 00 00   ................
+00b0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+00c0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+00d0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+00e0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+00f0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0100:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0110:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0120:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0130:   00 00 00 00  17 00 02 00  00 00 00 00  00 00 00 02   ................
+0140:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0150:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0160:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0170:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0180:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+0190:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+01a0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+01b0:   00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00   ................
+01c0:   00 00 00 00  00 00 00 00  00 00 00 00  17 00 02 00   ................
+01d0:   00 00 00 00  00 00 00 02  00 00 00 00  00 00 00 00   ................
+01e0:   00 00 00 00  00 00 00 00                             ........
+ INFO  ak_flasher::crash::backtrace > Frame 0: panic_fmt @ 0x00043e82 inline
+       /builds/firmware/firmware/cache/rustup/toolchains/nightly-2025-05-12-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panicking.rs:57:9
+ INFO  ak_flasher::crash::backtrace > Frame 1: panic @ 0x0000000000043e82 inline
+       /builds/firmware/firmware/cache/rustup/toolchains/nightly-2025-05-12-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panicking.rs:145:5
+ INFO  ak_flasher::crash::backtrace > Frame 2: default_panic @ 0x0000000000043e82
+       /builds/firmware/firmware/cache/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/defmt-1.0.1/src/lib.rs:385:5
+ INFO  ak_flasher::crash::backtrace > Frame 3: {async_fn#0} @ 0x00035f7e inline
+       /builds/firmware/firmware/ak-application/src/application/rpc/server.rs
+ INFO  ak_flasher::crash::backtrace > Frame 4: {async_block#0} : ERROR: UNWIND: Failed to read value for register R4 from address 0x0000000020035bac (4 bytes): The coredump does not include the memory for address 0x20035bac of size 0x4 @ 0x0000000000032b82
+       /builds/firmware/firmware/ak-application/src/application/rpc/server.rs:1968:117
+ INFO  ak_flasher::crash            > unexpected EOF
+hwc_425ymqj2jtuqa3sj7kr1 hw_419751sj9c3h7ux4rm1h 2025-06-17T19:13:40 app   pinpad:02

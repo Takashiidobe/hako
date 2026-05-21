@@ -69,7 +69,11 @@ pub struct FakeEnv(pub Vec<(String, String)>);
 
 impl FakeEnv {
     pub fn new(vars: &[(&str, &str)]) -> Self {
-        Self(vars.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect())
+        Self(
+            vars.iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect(),
+        )
     }
 }
 
@@ -78,7 +82,10 @@ impl Env for FakeEnv {
         self.0.clone()
     }
     fn var(&self, key: &str) -> Option<String> {
-        self.0.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
+        self.0
+            .iter()
+            .find(|(k, _)| k == key)
+            .map(|(_, v)| v.clone())
     }
 }
 

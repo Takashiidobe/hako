@@ -451,13 +451,6 @@ pub struct SystemNet;
 compile_error!("fetch-sync cannot be combined with async fetch backends");
 
 #[cfg(all(
-    feature = "embedded-tls",
-    feature = "fetch-smol",
-    not(any(feature = "native-tls", feature = "rustls"))
-))]
-compile_error!("embedded-tls provider is only implemented for fetch-sync");
-
-#[cfg(all(
     feature = "fetch",
     not(any(feature = "fetch-sync", feature = "fetch-smol"))
 ))]
@@ -532,7 +525,7 @@ fn redirect_location(
     }
 }
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(any(feature = "fetch-sync", feature = "fetch-smol"))]
 struct HttpResponse {
     status: u16,
     headers: Vec<(String, String)>,
@@ -601,7 +594,11 @@ fn sync_http_exchange(
 }
 
 #[cfg(feature = "fetch-smol")]
-async fn async_http_exchange<RW>(stream: RW, host: &str, path: &str) -> std::io::Result<Vec<u8>>
+async fn async_http_response<RW>(
+    stream: RW,
+    host: &str,
+    path: &str,
+) -> std::io::Result<HttpResponse>
 where
     RW: futures_lite::io::AsyncRead + futures_lite::io::AsyncWrite + Unpin,
 {
@@ -620,56 +617,215 @@ where
     reader.read_line(&mut status_line).await?;
     let status = parse_http_status(&status_line)?;
 
+    let mut headers = Vec::new();
     loop {
         let mut line = String::new();
         reader.read_line(&mut line).await?;
         if line == "\r\n" || line.is_empty() {
             break;
         }
-    }
-
-    if !(200..300).contains(&status) {
-        return Err(std::io::Error::other(format!("HTTP {status}")));
+        if let Some((name, value)) = line.trim_end_matches(['\r', '\n']).split_once(':') {
+            headers.push((name.trim().to_string(), value.trim().to_string()));
+        }
     }
 
     let mut body = Vec::new();
     reader.read_to_end(&mut body).await?;
-    Ok(body)
+    Ok(HttpResponse {
+        status,
+        headers,
+        body,
+    })
 }
+
+#[cfg(all(feature = "fetch-smol", test))]
+async fn async_http_exchange<RW>(stream: RW, host: &str, path: &str) -> std::io::Result<Vec<u8>>
+where
+    RW: futures_lite::io::AsyncRead + futures_lite::io::AsyncWrite + Unpin,
+{
+    let response = async_http_response(stream, host, path).await?;
+    if !(200..300).contains(&response.status) {
+        return Err(std::io::Error::other(format!("HTTP {}", response.status)));
+    }
+    Ok(response.body)
+}
+
+// ── shared embedded-tls helpers (used by both sync and async paths) ──────────
+
+#[cfg(feature = "embedded-tls")]
+fn load_system_ca_ders() -> Vec<Vec<u8>> {
+    rustls_native_certs::load_native_certs()
+        .certs
+        .into_iter()
+        .map(|c| c.to_vec())
+        .collect()
+}
+
+// Uses rustls-webpki 0.101 (aliased as `webpki` by embedded-tls) to verify the
+// server cert against the full system CA bundle. embedded-tls's built-in CertVerifier
+// only accepts a single CA, so we implement TlsVerifier directly.
+#[cfg(feature = "embedded-tls")]
+struct SystemCertsVerifier<CS: embedded_tls::blocking::TlsCipherSuite> {
+    ca_ders: Vec<Vec<u8>>,
+    host: Option<String>,
+    cert_transcript: Option<CS::Hash>,
+    cert_der: Option<Vec<u8>>,
+}
+
+#[cfg(feature = "embedded-tls")]
+impl<CS: embedded_tls::blocking::TlsCipherSuite> SystemCertsVerifier<CS> {
+    fn new(ca_ders: Vec<Vec<u8>>) -> Self {
+        Self {
+            ca_ders,
+            host: None,
+            cert_transcript: None,
+            cert_der: None,
+        }
+    }
+}
+
+#[cfg(feature = "embedded-tls")]
+static CHAIN_SIGALGS: &[&webpki::SignatureAlgorithm] = &[
+    &webpki::ECDSA_P256_SHA256,
+    &webpki::ECDSA_P256_SHA384,
+    &webpki::ECDSA_P384_SHA256,
+    &webpki::ECDSA_P384_SHA384,
+    &webpki::ED25519,
+    &webpki::RSA_PKCS1_2048_8192_SHA256,
+    &webpki::RSA_PKCS1_2048_8192_SHA384,
+    &webpki::RSA_PKCS1_2048_8192_SHA512,
+    &webpki::RSA_PSS_2048_8192_SHA256_LEGACY_KEY,
+    &webpki::RSA_PSS_2048_8192_SHA384_LEGACY_KEY,
+    &webpki::RSA_PSS_2048_8192_SHA512_LEGACY_KEY,
+];
+
+#[cfg(feature = "embedded-tls")]
+impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVerifier<CS>
+    for SystemCertsVerifier<CS>
+{
+    fn set_hostname_verification(&mut self, hostname: &str) -> Result<(), embedded_tls::TlsError> {
+        self.host = Some(hostname.to_string());
+        Ok(())
+    }
+
+    fn verify_certificate(
+        &mut self,
+        transcript: &CS::Hash,
+        _ca: &Option<embedded_tls::blocking::Certificate>,
+        cert: embedded_tls::CertificateRef,
+    ) -> Result<(), embedded_tls::TlsError> {
+        use embedded_tls::CertificateEntryRef;
+
+        let anchors: Vec<webpki::TrustAnchor> = self
+            .ca_ders
+            .iter()
+            .filter_map(|der| webpki::TrustAnchor::try_from_cert_der(der).ok())
+            .collect();
+        if anchors.is_empty() {
+            return Err(embedded_tls::TlsError::InvalidCertificate);
+        }
+
+        let mut entries = cert.entries.iter();
+        let ee_der = match entries.next() {
+            Some(CertificateEntryRef::X509(der)) => *der,
+            _ => return Err(embedded_tls::TlsError::InvalidCertificate),
+        };
+        let intermediates: Vec<&[u8]> = entries
+            .filter_map(|e| {
+                if let CertificateEntryRef::X509(d) = e {
+                    Some(*d)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let ee_cert = webpki::EndEntityCert::try_from(ee_der)
+            .map_err(|_| embedded_tls::TlsError::InvalidCertificate)?;
+        let now = webpki::Time::from_seconds_since_unix_epoch(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0),
+        );
+        ee_cert
+            .verify_for_usage(
+                CHAIN_SIGALGS,
+                &anchors,
+                &intermediates,
+                now,
+                webpki::KeyUsage::server_auth(),
+                &[],
+            )
+            .map_err(|_| embedded_tls::TlsError::InvalidCertificate)?;
+
+        if let Some(ref host) = self.host {
+            let subject = webpki::SubjectNameRef::try_from_ascii(host.as_bytes())
+                .map_err(|_| embedded_tls::TlsError::InvalidCertificate)?;
+            ee_cert
+                .verify_is_valid_for_subject_name(subject)
+                .map_err(|_| embedded_tls::TlsError::InvalidCertificate)?;
+        }
+
+        self.cert_der = Some(ee_der.to_vec());
+        self.cert_transcript = Some(transcript.clone());
+        Ok(())
+    }
+
+    fn verify_signature(
+        &mut self,
+        verify: embedded_tls::blocking::CertificateVerifyRef,
+    ) -> Result<(), embedded_tls::TlsError> {
+        use digest::Digest;
+        use embedded_tls::SignatureScheme;
+
+        let transcript = self
+            .cert_transcript
+            .take()
+            .ok_or(embedded_tls::TlsError::InvalidCertificate)?;
+        let ee_der = self
+            .cert_der
+            .take()
+            .ok_or(embedded_tls::TlsError::InvalidCertificate)?;
+
+        let ctx_str = b"TLS 1.3, server CertificateVerify\x00";
+        let mut msg = Vec::<u8>::with_capacity(64 + ctx_str.len() + 64);
+        msg.extend(std::iter::repeat_n(0x20u8, 64));
+        msg.extend_from_slice(ctx_str);
+        msg.extend_from_slice(&transcript.finalize());
+
+        let ee_cert = webpki::EndEntityCert::try_from(ee_der.as_slice())
+            .map_err(|_| embedded_tls::TlsError::InvalidSignature)?;
+        let alg: &webpki::SignatureAlgorithm = match verify.signature_scheme {
+            SignatureScheme::EcdsaSecp256r1Sha256 => &webpki::ECDSA_P256_SHA256,
+            SignatureScheme::EcdsaSecp384r1Sha384 => &webpki::ECDSA_P384_SHA384,
+            SignatureScheme::RsaPssRsaeSha256 => &webpki::RSA_PSS_2048_8192_SHA256_LEGACY_KEY,
+            SignatureScheme::RsaPssRsaeSha384 => &webpki::RSA_PSS_2048_8192_SHA384_LEGACY_KEY,
+            SignatureScheme::RsaPssRsaeSha512 => &webpki::RSA_PSS_2048_8192_SHA512_LEGACY_KEY,
+            SignatureScheme::Ed25519 => &webpki::ED25519,
+            _ => return Err(embedded_tls::TlsError::InvalidSignature),
+        };
+        ee_cert
+            .verify_signature(alg, &msg, verify.signature)
+            .map_err(|_| embedded_tls::TlsError::InvalidSignature)
+    }
+}
+
+// ── sync path ─────────────────────────────────────────────────────────────────
 
 #[cfg(all(feature = "fetch-sync", feature = "embedded-tls"))]
 fn embedded_tls_http_response(
     stream: std::net::TcpStream,
     host: &str,
+    port: u16,
     path: &str,
 ) -> std::io::Result<HttpResponse> {
     use embedded_io::Error as _;
     use embedded_io_adapters::std::FromStd;
-    #[cfg(not(feature = "embedded-tls-webpki"))]
-    use embedded_tls::blocking::UnsecureProvider;
-    use embedded_tls::blocking::{Aes128GcmSha256, TlsConfig, TlsConnection, TlsContext, TlsError};
-    #[cfg(feature = "embedded-tls-webpki")]
-    use embedded_tls::blocking::{CryptoProvider, TlsVerifier};
-
-    #[cfg(feature = "embedded-tls-webpki")]
-    struct WebPkiProvider {
-        rng: rand_core::OsRng,
-        verifier: embedded_tls::webpki::CertVerifier<Aes128GcmSha256, std::time::SystemTime, 8192>,
-    }
-
-    #[cfg(feature = "embedded-tls-webpki")]
-    impl CryptoProvider for WebPkiProvider {
-        type CipherSuite = Aes128GcmSha256;
-        type Signature = &'static [u8];
-
-        fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-            &mut self.rng
-        }
-
-        fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes128GcmSha256>, TlsError> {
-            Ok(&mut self.verifier)
-        }
-    }
+    use embedded_tls::blocking::{
+        Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256, CryptoProvider, TlsConfig,
+        TlsConnection, TlsContext, TlsError, TlsVerifier,
+    };
 
     struct TlsStd<T>(T);
 
@@ -707,34 +863,339 @@ fn embedded_tls_http_response(
         }
     }
 
-    let mut read_record_buffer = [0u8; 16640];
-    let mut write_record_buffer = [0u8; 16640];
+    let system_ca_ders = load_system_ca_ders();
+
+    // Buffers live for the full function so TlsConnection borrows are always valid.
+    // Two sets because each attempt has a different cipher-suite type.
+    let mut read_buf1 = [0u8; 16640];
+    let mut write_buf1 = [0u8; 16640];
+
+    // Attempt 1: Aes128GcmSha256 (preferred — lighter key schedule, still TLS 1.3).
+    // Google accepts all three TLS 1.3 cipher suites; so does most of the modern web.
+    // If the server rejects our ClientHello we reconnect and try Aes256GcmSha384.
+    let open1 = {
+        let config = TlsConfig::new()
+            .with_server_name(host)
+            .enable_rsa_signatures();
+
+        let mut tls = TlsConnection::<_, Aes128GcmSha256>::new(
+            FromStd::new(stream),
+            &mut read_buf1,
+            &mut write_buf1,
+        );
+
+        #[cfg(feature = "embedded-tls")]
+        {
+            struct P128 {
+                rng: rand_core::OsRng,
+                verifier: SystemCertsVerifier<Aes128GcmSha256>,
+            }
+            impl CryptoProvider for P128 {
+                type CipherSuite = Aes128GcmSha256;
+                type Signature = &'static [u8];
+                fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+                    &mut self.rng
+                }
+                fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes128GcmSha256>, TlsError> {
+                    Ok(&mut self.verifier)
+                }
+            }
+            tls.open(TlsContext::new(
+                &config,
+                P128 {
+                    rng: rand_core::OsRng,
+                    verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
+                },
+            ))
+            .map(|_| sync_http_response(TlsStd(tls), host, path))
+        }
+    };
+
+    if let Ok(r) = open1 {
+        return r;
+    }
+
+    // Attempt 2: Aes256GcmSha384. Reconnect — the failed handshake poisoned the old stream.
+    let stream2 = {
+        use std::time::Duration;
+        let s = std::net::TcpStream::connect((host, port))?;
+        s.set_read_timeout(Some(Duration::from_secs(10)))?;
+        s
+    };
+
+    let mut read_buf2 = [0u8; 16640];
+    let mut write_buf2 = [0u8; 16640];
+
     let config = TlsConfig::new()
         .with_server_name(host)
         .enable_rsa_signatures();
-    #[cfg(feature = "embedded-tls-webpki")]
-    let ca_der = std::env::var("HAKO_EMBEDDED_TLS_CA_DER")
-        .map_err(|_| std::io::Error::other("HAKO_EMBEDDED_TLS_CA_DER is required"))?;
-    #[cfg(feature = "embedded-tls-webpki")]
-    let ca_der = std::fs::read(ca_der)?;
-    #[cfg(feature = "embedded-tls-webpki")]
-    let config = config.with_ca(embedded_tls::blocking::Certificate::X509(&ca_der));
-    let mut tls = TlsConnection::new(
-        FromStd::new(stream),
-        &mut read_record_buffer,
-        &mut write_record_buffer,
-    );
-    #[cfg(feature = "embedded-tls-webpki")]
-    let provider = WebPkiProvider {
-        rng: rand_core::OsRng,
-        verifier: embedded_tls::webpki::CertVerifier::new(),
-    };
-    #[cfg(not(feature = "embedded-tls-webpki"))]
-    let provider = UnsecureProvider::new::<Aes128GcmSha256>(rand_core::OsRng);
-    tls.open(TlsContext::new(&config, provider))
-        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
 
-    sync_http_response(TlsStd(tls), host, path)
+    let mut tls2 = TlsConnection::<_, Aes256GcmSha384>::new(
+        FromStd::new(stream2),
+        &mut read_buf2,
+        &mut write_buf2,
+    );
+
+    #[cfg(feature = "embedded-tls")]
+    {
+        struct P256 {
+            rng: rand_core::OsRng,
+            verifier: SystemCertsVerifier<Aes256GcmSha384>,
+        }
+        impl CryptoProvider for P256 {
+            type CipherSuite = Aes256GcmSha384;
+            type Signature = &'static [u8];
+            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+                &mut self.rng
+            }
+            fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes256GcmSha384>, TlsError> {
+                Ok(&mut self.verifier)
+            }
+        }
+        tls2.open(TlsContext::new(
+            &config,
+            P256 {
+                rng: rand_core::OsRng,
+                verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
+            },
+        ))
+        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
+    }
+
+    if let Ok(r) = sync_http_response(TlsStd(tls2), host, path) {
+        return Ok(r);
+    }
+
+    // Attempt 3: Chacha20Poly1305Sha256 — last resort for servers that don't support AES.
+    let stream3 = {
+        use std::time::Duration;
+        let s = std::net::TcpStream::connect((host, port))?;
+        s.set_read_timeout(Some(Duration::from_secs(10)))?;
+        s
+    };
+
+    let mut read_buf3 = [0u8; 16640];
+    let mut write_buf3 = [0u8; 16640];
+
+    let config = TlsConfig::new()
+        .with_server_name(host)
+        .enable_rsa_signatures();
+
+    let mut tls3 = TlsConnection::<_, Chacha20Poly1305Sha256>::new(
+        FromStd::new(stream3),
+        &mut read_buf3,
+        &mut write_buf3,
+    );
+
+    #[cfg(feature = "embedded-tls")]
+    {
+        struct P3 {
+            rng: rand_core::OsRng,
+            verifier: SystemCertsVerifier<Chacha20Poly1305Sha256>,
+        }
+        impl CryptoProvider for P3 {
+            type CipherSuite = Chacha20Poly1305Sha256;
+            type Signature = &'static [u8];
+            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+                &mut self.rng
+            }
+            fn verifier(
+                &mut self,
+            ) -> Result<&mut impl TlsVerifier<Chacha20Poly1305Sha256>, TlsError> {
+                Ok(&mut self.verifier)
+            }
+        }
+        tls3.open(TlsContext::new(
+            &config,
+            P3 {
+                rng: rand_core::OsRng,
+                verifier: SystemCertsVerifier::new(system_ca_ders),
+            },
+        ))
+        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
+    }
+
+    sync_http_response(TlsStd(tls3), host, path)
+}
+
+// ── async path ────────────────────────────────────────────────────────────────
+
+// HTTP exchange over any embedded_io_async Read+Write (i.e. an async TlsConnection).
+#[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
+async fn embedded_tls_async_exchange<S>(
+    tls: &mut S,
+    host: &str,
+    path: &str,
+) -> std::io::Result<HttpResponse>
+where
+    S: embedded_io_async::Read + embedded_io_async::Write,
+{
+    let req = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n");
+    tls.write_all(req.as_bytes())
+        .await
+        .map_err(|_| std::io::Error::other("embedded-tls write failed"))?;
+    tls.flush()
+        .await
+        .map_err(|_| std::io::Error::other("embedded-tls flush failed"))?;
+
+    let mut raw = Vec::new();
+    let mut buf = [0u8; 4096];
+    loop {
+        match tls.read(&mut buf).await {
+            Ok(0) | Err(_) => break,
+            Ok(n) => raw.extend_from_slice(&buf[..n]),
+        }
+    }
+
+    let sep = raw
+        .windows(4)
+        .position(|w| w == b"\r\n\r\n")
+        .ok_or_else(|| std::io::Error::other("no header end in response"))?;
+    let header_text =
+        std::str::from_utf8(&raw[..sep]).map_err(|_| std::io::Error::other("non-utf8 headers"))?;
+    let mut lines = header_text.lines();
+    let status = parse_http_status(lines.next().unwrap_or(""))?;
+    let mut headers = Vec::new();
+    for line in lines {
+        if let Some((name, value)) = line.split_once(':') {
+            headers.push((name.trim().to_string(), value.trim().to_string()));
+        }
+    }
+    Ok(HttpResponse {
+        status,
+        headers,
+        body: raw[sep + 4..].to_vec(),
+    })
+}
+
+#[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
+async fn embedded_tls_async_http_response(
+    stream: smol::net::TcpStream,
+    host: &str,
+    port: u16,
+    path: &str,
+) -> std::io::Result<HttpResponse> {
+    use embedded_io_adapters::futures_03::FromFutures;
+    use embedded_tls::{
+        Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256, CryptoProvider, TlsConfig,
+        TlsConnection, TlsContext, TlsError, TlsVerifier,
+    };
+
+    let system_ca_ders = load_system_ca_ders();
+
+    // Attempt 1: Aes128GcmSha256
+    {
+        let config = TlsConfig::new()
+            .with_server_name(host)
+            .enable_rsa_signatures();
+        let mut rb = [0u8; 16640];
+        let mut wb = [0u8; 16640];
+        let mut tls =
+            TlsConnection::<_, Aes128GcmSha256>::new(FromFutures::new(stream), &mut rb, &mut wb);
+        struct P128 {
+            rng: rand_core::OsRng,
+            verifier: SystemCertsVerifier<Aes128GcmSha256>,
+        }
+        impl CryptoProvider for P128 {
+            type CipherSuite = Aes128GcmSha256;
+            type Signature = &'static [u8];
+            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+                &mut self.rng
+            }
+            fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes128GcmSha256>, TlsError> {
+                Ok(&mut self.verifier)
+            }
+        }
+        if tls
+            .open(TlsContext::new(
+                &config,
+                P128 {
+                    rng: rand_core::OsRng,
+                    verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
+                },
+            ))
+            .await
+            .is_ok()
+        {
+            return embedded_tls_async_exchange(&mut tls, host, path).await;
+        }
+    }
+
+    // Attempt 2: Aes256GcmSha384 — reconnect after failed handshake.
+    let stream2 = smol::net::TcpStream::connect((host, port)).await?;
+    {
+        let config = TlsConfig::new()
+            .with_server_name(host)
+            .enable_rsa_signatures();
+        let mut rb = [0u8; 16640];
+        let mut wb = [0u8; 16640];
+        let mut tls =
+            TlsConnection::<_, Aes256GcmSha384>::new(FromFutures::new(stream2), &mut rb, &mut wb);
+        struct P256 {
+            rng: rand_core::OsRng,
+            verifier: SystemCertsVerifier<Aes256GcmSha384>,
+        }
+        impl CryptoProvider for P256 {
+            type CipherSuite = Aes256GcmSha384;
+            type Signature = &'static [u8];
+            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+                &mut self.rng
+            }
+            fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes256GcmSha384>, TlsError> {
+                Ok(&mut self.verifier)
+            }
+        }
+        if tls
+            .open(TlsContext::new(
+                &config,
+                P256 {
+                    rng: rand_core::OsRng,
+                    verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
+                },
+            ))
+            .await
+            .is_ok()
+        {
+            return embedded_tls_async_exchange(&mut tls, host, path).await;
+        }
+    }
+
+    // Attempt 3: Chacha20Poly1305Sha256.
+    let stream3 = smol::net::TcpStream::connect((host, port)).await?;
+    let config = TlsConfig::new()
+        .with_server_name(host)
+        .enable_rsa_signatures();
+    let mut rb = [0u8; 16640];
+    let mut wb = [0u8; 16640];
+    let mut tls = TlsConnection::<_, Chacha20Poly1305Sha256>::new(
+        FromFutures::new(stream3),
+        &mut rb,
+        &mut wb,
+    );
+    struct P3 {
+        rng: rand_core::OsRng,
+        verifier: SystemCertsVerifier<Chacha20Poly1305Sha256>,
+    }
+    impl CryptoProvider for P3 {
+        type CipherSuite = Chacha20Poly1305Sha256;
+        type Signature = &'static [u8];
+        fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+            &mut self.rng
+        }
+        fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Chacha20Poly1305Sha256>, TlsError> {
+            Ok(&mut self.verifier)
+        }
+    }
+    tls.open(TlsContext::new(
+        &config,
+        P3 {
+            rng: rand_core::OsRng,
+            verifier: SystemCertsVerifier::new(system_ca_ders),
+        },
+    ))
+    .await
+    .map_err(|e| std::io::Error::other(format!("embedded-tls: {e}")))?;
+    embedded_tls_async_exchange(&mut tls, host, path).await
 }
 
 #[cfg(feature = "fetch-sync")]
@@ -756,7 +1217,7 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
     stream.set_read_timeout(Some(Duration::from_secs(10)))?;
 
     if tls {
-        #[cfg(feature = "native-tls")]
+        #[cfg(feature = "tls-dynamic")]
         {
             let connector = native_tls::TlsConnector::new()
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
@@ -770,7 +1231,7 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
             );
         }
 
-        #[cfg(all(feature = "rustls", not(feature = "native-tls")))]
+        #[cfg(all(feature = "rustls", not(feature = "tls-dynamic")))]
         {
             use rustls::pki_types::ServerName;
             use std::sync::Arc;
@@ -798,15 +1259,15 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
 
         #[cfg(all(
             feature = "embedded-tls",
-            not(any(feature = "native-tls", feature = "rustls"))
+            not(any(feature = "tls-dynamic", feature = "rustls"))
         ))]
         return handle_sync_response(
-            embedded_tls_http_response(stream, &host, &path)?,
+            embedded_tls_http_response(stream, &host, port, &path)?,
             url,
             redirects,
         );
 
-        #[cfg(not(any(feature = "native-tls", feature = "rustls", feature = "embedded-tls")))]
+        #[cfg(not(any(feature = "tls-dynamic", feature = "rustls", feature = "embedded-tls")))]
         return Err(std::io::Error::other(
             "https:// requires the native-tls, rustls, or embedded-tls feature",
         ));
@@ -841,55 +1302,85 @@ impl Net for SystemNet {
 }
 
 #[cfg(feature = "fetch-smol")]
-impl Net for SystemNet {
-    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
-        smol::block_on(async move {
-            let (tls, host, port, path) = parse_url(url)?;
-            let stream = smol::net::TcpStream::connect((host.as_str(), port)).await?;
-            if tls {
-                #[cfg(feature = "native-tls")]
-                {
-                    let tls_stream = async_native_tls::connect(host.as_str(), stream)
-                        .await
-                        .map_err(|e| std::io::Error::other(e.to_string()))?;
-                    return async_http_exchange(tls_stream, &host, &path).await;
-                }
+async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
+    let mut current = url.to_string();
+    let mut redirects = 0;
 
-                #[cfg(all(feature = "rustls", not(feature = "native-tls")))]
-                {
-                    use futures_rustls::TlsConnector;
-                    use rustls::pki_types::ServerName;
-                    use std::sync::Arc;
+    loop {
+        if redirects > 5 {
+            return Err(std::io::Error::other("too many redirects"));
+        }
 
-                    let mut root_store = rustls::RootCertStore::empty();
-                    for cert in rustls_native_certs::load_native_certs().certs {
-                        root_store.add(cert).ok();
-                    }
-                    let config = Arc::new(
-                        rustls::ClientConfig::builder()
-                            .with_root_certificates(root_store)
-                            .with_no_client_auth(),
-                    );
-                    let server_name = ServerName::try_from(host.as_str())
-                        .map_err(|e| std::io::Error::other(e.to_string()))?
-                        .to_owned();
-                    let connector = TlsConnector::from(config);
-                    let tls_stream = connector.connect(server_name, stream).await?;
-                    return async_http_exchange(tls_stream, &host, &path).await;
-                }
-
-                #[cfg(not(any(
-                    feature = "native-tls",
-                    feature = "rustls",
-                    feature = "embedded-tls"
-                )))]
-                return Err(std::io::Error::other(
-                    "https:// requires the native-tls, rustls, or embedded-tls feature",
-                ));
+        let response = async_get_once(&current).await?;
+        if (300..400).contains(&response.status)
+            && let Some(next) = redirect_location(&response.headers, &current)? {
+                current = next;
+                redirects += 1;
+                continue;
             }
 
-            async_http_exchange(stream, &host, &path).await
-        })
+        if !(200..300).contains(&response.status) {
+            return Err(std::io::Error::other(format!("HTTP {}", response.status)));
+        }
+        return Ok(response.body);
+    }
+}
+
+#[cfg(feature = "fetch-smol")]
+async fn async_get_once(url: &str) -> std::io::Result<HttpResponse> {
+    let (tls, host, port, path) = parse_url(url)?;
+    let stream = smol::net::TcpStream::connect((host.as_str(), port)).await?;
+    if tls {
+        #[cfg(feature = "tls-dynamic")]
+        {
+            let tls_stream = async_native_tls::connect(host.as_str(), stream)
+                .await
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            return async_http_response(tls_stream, &host, &path).await;
+        }
+
+        #[cfg(all(feature = "rustls", not(feature = "tls-dynamic")))]
+        {
+            use futures_rustls::TlsConnector;
+            use rustls::pki_types::ServerName;
+            use std::sync::Arc;
+
+            let mut root_store = rustls::RootCertStore::empty();
+            for cert in rustls_native_certs::load_native_certs().certs {
+                root_store.add(cert).ok();
+            }
+            let config = Arc::new(
+                rustls::ClientConfig::builder()
+                    .with_root_certificates(root_store)
+                    .with_no_client_auth(),
+            );
+            let server_name = ServerName::try_from(host.as_str())
+                .map_err(|e| std::io::Error::other(e.to_string()))?
+                .to_owned();
+            let connector = TlsConnector::from(config);
+            let tls_stream = connector.connect(server_name, stream).await?;
+            return async_http_response(tls_stream, &host, &path).await;
+        }
+
+        #[cfg(all(
+            feature = "embedded-tls",
+            not(any(feature = "tls-dynamic", feature = "rustls"))
+        ))]
+        return embedded_tls_async_http_response(stream, &host, port, &path).await;
+
+        #[cfg(not(any(feature = "tls-dynamic", feature = "rustls", feature = "embedded-tls")))]
+        return Err(std::io::Error::other(
+            "https:// requires tls-dynamic, rustls, or embedded-tls",
+        ));
+    }
+
+    async_http_response(stream, &host, &path).await
+}
+
+#[cfg(feature = "fetch-smol")]
+impl Net for SystemNet {
+    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
+        smol::block_on(async_get(url))
     }
 }
 
@@ -1144,5 +1635,54 @@ mod tests {
             smol::block_on(async_http_exchange(&mut stream, "example.com", "/broken")).unwrap_err();
 
         assert_eq!(err.to_string(), "HTTP 500");
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    #[test]
+    fn async_get_follows_redirect() {
+        smol::block_on(async {
+            use futures_lite::io::{AsyncReadExt, AsyncWriteExt};
+
+            let listener = smol::net::TcpListener::bind(("127.0.0.1", 0))
+                .await
+                .unwrap();
+            let port = listener.local_addr().unwrap().port();
+            let server = smol::spawn(async move {
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let mut buf = [0u8; 256];
+                let n = stream.read(&mut buf).await.unwrap();
+                assert!(
+                    std::str::from_utf8(&buf[..n])
+                        .unwrap()
+                        .starts_with("GET /old ")
+                );
+                stream
+                    .write_all(b"HTTP/1.0 302 Found\r\nLocation: /new\r\nContent-Length: 0\r\n\r\n")
+                    .await
+                    .unwrap();
+                stream.flush().await.unwrap();
+                drop(stream);
+
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let n = stream.read(&mut buf).await.unwrap();
+                assert!(
+                    std::str::from_utf8(&buf[..n])
+                        .unwrap()
+                        .starts_with("GET /new ")
+                );
+                stream
+                    .write_all(b"HTTP/1.0 200 OK\r\nContent-Length: 4\r\n\r\ndone")
+                    .await
+                    .unwrap();
+                stream.flush().await.unwrap();
+            });
+
+            let body = async_get(&format!("http://127.0.0.1:{port}/old"))
+                .await
+                .unwrap();
+
+            assert_eq!(body, b"done");
+            server.await;
+        });
     }
 }

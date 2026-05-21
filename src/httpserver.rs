@@ -238,11 +238,10 @@ fn local_addrs() -> Vec<Ipv4Addr> {
     for w in lines.windows(2) {
         if w[1].contains("host LOCAL") {
             let candidate = w[0].split_whitespace().last().unwrap_or("");
-            if let Ok(addr) = candidate.parse::<Ipv4Addr>() {
-                if !addr.is_loopback() && !addr.is_unspecified() {
+            if let Ok(addr) = candidate.parse::<Ipv4Addr>()
+                && !addr.is_loopback() && !addr.is_unspecified() {
                     addrs.push(addr);
                 }
-            }
         }
     }
     addrs.sort();

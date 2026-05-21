@@ -1,12 +1,12 @@
 mod deps;
 mod dig;
 mod env;
-mod hostname;
 #[cfg(feature = "fetch")]
 mod fetch;
 #[cfg(feature = "hash")]
 mod hash;
 mod hello;
+mod hostname;
 mod httpserver;
 #[cfg(test)]
 mod mock;

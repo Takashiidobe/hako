@@ -15,11 +15,21 @@ pub fn run(out: &mut impl Write, sys: &impl Uname, args: &[String]) -> io::Resul
     let show_m = all || args.iter().any(|a| a == "-m");
 
     let mut parts = Vec::new();
-    if show_s { parts.push(info.sysname.as_str()); }
-    if show_n { parts.push(info.nodename.as_str()); }
-    if show_r { parts.push(info.release.as_str()); }
-    if show_v { parts.push(info.version.as_str()); }
-    if show_m { parts.push(info.machine.as_str()); }
+    if show_s {
+        parts.push(info.sysname.as_str());
+    }
+    if show_n {
+        parts.push(info.nodename.as_str());
+    }
+    if show_r {
+        parts.push(info.release.as_str());
+    }
+    if show_v {
+        parts.push(info.version.as_str());
+    }
+    if show_m {
+        parts.push(info.machine.as_str());
+    }
 
     writeln!(out, "{}", parts.join(" "))
 }

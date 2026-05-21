@@ -5,36 +5,40 @@ edition = "2024"
 
 [features]
 default = ["full"]
-full = ["ping", "fetch-smol", "hash", "native-tls"]
+full = ["ping", "fetch-smol", "hash", "embedded-tls"]
+full-static = ["ping", "fetch-sync", "hash", "embedded-tls"]
 ping = ["dep:socket2"]
 smol-runtime = ["dep:smol", "dep:futures-lite"]
 fetch = []
 fetch-sync = ["fetch"]
 fetch-smol = ["fetch", "smol-runtime"]
 hash = ["dep:md-5", "dep:sha2"]
-native-tls = ["dep:native-tls", "dep:async-native-tls"]
+tls-dynamic = ["dep:native-tls", "dep:async-native-tls"]
 rustls = ["dep:rustls", "dep:rustls-native-certs", "dep:futures-rustls"]
 embedded-tls = [
   "dep:embedded-tls",
   "dep:embedded-io",
+  "dep:embedded-io-async",
   "dep:embedded-io-adapters",
   "dep:rand_core",
-]
-embedded-tls-webpki = [
-  "embedded-tls",
   "embedded-tls/webpki",
   "embedded-tls/alloc",
   "dep:rustls-webpki",
+  "dep:rustls-native-certs",
+  "dep:digest",
 ]
 
 [dependencies]
 async-native-tls = { version = "0.6", optional = true, default-features = false, features = [
   "runtime-smol",
 ] }
+digest = { version = "0.10", optional = true }
 embedded-io-adapters = { version = "0.7", optional = true, default-features = false, features = [
   "std",
+  "futures-03",
 ] }
 embedded-io = { version = "0.7", optional = true }
+embedded-io-async = { version = "0.7", optional = true }
 embedded-tls = { version = "0.18", optional = true, default-features = false, features = [
   "std",
 ] }
@@ -69,6 +73,9 @@ windows-sys = { version = "0.61", features = [
   "Win32_NetworkManagement_IpHelper",
   "Win32_Networking_WinSock",
 ] }
+
+[patch.crates-io]
+embedded-tls = { path = "vendor/embedded-tls" }
 
 [profile.release]
 strip = true    # Automatically strip symbols from the binary.

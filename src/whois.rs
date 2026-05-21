@@ -10,13 +10,12 @@ pub fn run(out: &mut impl Write, whois: &impl Whois, args: &[String]) -> io::Res
 
     let response = whois.query(&server, &query)?;
 
-    if follow_referral {
-        if let Some(referral) = find_referral(&response) {
+    if follow_referral
+        && let Some(referral) = find_referral(&response) {
             let referred = whois.query(&referral, &query)?;
             out.write_all(referred.as_bytes())?;
             return Ok(());
         }
-    }
 
     out.write_all(response.as_bytes())
 }
@@ -36,7 +35,11 @@ fn find_referral(response: &str) -> Option<String> {
             .strip_prefix("refer:")
             .or_else(|| lower.strip_prefix("whois:"))?;
         let server = rest.trim();
-        if server.is_empty() { None } else { Some(server.to_string()) }
+        if server.is_empty() {
+            None
+        } else {
+            Some(server.to_string())
+        }
     })
 }
 
@@ -85,10 +88,22 @@ mod tests {
     #[test]
     fn explicit_server_skips_referral() {
         let whois = FakeWhois {
-            responses: vec![("whois.verisign-grs.com", "refer: should.not.follow\nDomain Name: EXAMPLE.COM\n")],
+            responses: vec![(
+                "whois.verisign-grs.com",
+                "refer: should.not.follow\nDomain Name: EXAMPLE.COM\n",
+            )],
         };
         let mut out = Vec::new();
-        run(&mut out, &whois, &["-h".into(), "whois.verisign-grs.com".into(), "example.com".into()]).unwrap();
+        run(
+            &mut out,
+            &whois,
+            &[
+                "-h".into(),
+                "whois.verisign-grs.com".into(),
+                "example.com".into(),
+            ],
+        )
+        .unwrap();
         assert_eq!(out, b"refer: should.not.follow\nDomain Name: EXAMPLE.COM\n");
     }
 
@@ -109,8 +124,14 @@ mod tests {
 
     #[test]
     fn find_referral_matches_refer_and_whois_keys() {
-        assert_eq!(find_referral("refer: whois.example.com\n").as_deref(), Some("whois.example.com"));
-        assert_eq!(find_referral("whois: whois.example.com\n").as_deref(), Some("whois.example.com"));
+        assert_eq!(
+            find_referral("refer: whois.example.com\n").as_deref(),
+            Some("whois.example.com")
+        );
+        assert_eq!(
+            find_referral("whois: whois.example.com\n").as_deref(),
+            Some("whois.example.com")
+        );
         assert_eq!(find_referral("nothing here\n"), None);
     }
 }
