@@ -107,7 +107,7 @@ fn main() {
             let (dns, r) = dig_dns(&rest);
             dig::run(out, &dns, &r)
         }
-        "httpserver" => httpserver::run(out, &SystemFs, &rest),
+        "httpserver" => httpserver::run(out, SystemFs, &rest),
         "tar" => tar::run(out, &SystemFs, &rest),
         "env" => env::run(out, &SystemEnv, &rest),
         "which" => which::run(out, &SystemEnv, &SystemFs, &rest),

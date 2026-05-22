@@ -70,7 +70,10 @@ mod parse_buffer;
 pub mod read_buffer;
 mod record;
 mod record_reader;
+mod server;
 mod write_buffer;
+
+pub use server::{AsyncTlsServerConnection, TlsServerConnection};
 
 pub use config::{Chacha20Poly1305Sha256, UnsecureProvider};
 pub use extensions::extension_data::signature_algorithms::SignatureScheme;

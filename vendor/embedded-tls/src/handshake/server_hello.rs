@@ -1,13 +1,23 @@
 use heapless::Vec;
 
+use crate::buffer::CryptoBuffer;
 use crate::cipher_suites::CipherSuite;
+use crate::config::TlsCipherSuite;
 use crate::crypto_engine::CryptoEngine;
-use crate::extensions::extension_data::key_share::KeyShareEntry;
+use crate::extensions::extension_data::key_share::{
+    KeyShareEntry, KeyShareServerHello,
+};
+use crate::extensions::extension_data::supported_groups::NamedGroup;
+use crate::extensions::extension_data::supported_versions::{
+    SupportedVersionsServerHello, TLS13,
+};
 use crate::extensions::messages::ServerHelloExtension;
+use crate::handshake::LEGACY_VERSION;
 use crate::parse_buffer::ParseBuffer;
 use crate::{TlsError, unused};
 use p256::PublicKey;
 use p256::ecdh::{EphemeralSecret, SharedSecret};
+use rand_core::CryptoRngCore;
 
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -80,4 +90,49 @@ impl<'a> ServerHello<'a> {
 
         Some(CryptoEngine::new(group, shared))
     }
+}
+
+/// Encode a ServerHello body (after the handshake type+length header).
+#[allow(dead_code)]
+pub fn encode_server_hello<CS: TlsCipherSuite>(
+    buf: &mut CryptoBuffer<'_>,
+    rng: &mut impl CryptoRngCore,
+    session_id: &[u8],
+    server_public_key: &[u8],
+) -> Result<(), TlsError> {
+    buf.push_u16(LEGACY_VERSION)
+        .map_err(|_| TlsError::EncodeError)?;
+
+    let mut random = [0u8; 32];
+    rng.fill_bytes(&mut random);
+    buf.extend_from_slice(&random)
+        .map_err(|_| TlsError::EncodeError)?;
+
+    buf.push(session_id.len() as u8)
+        .map_err(|_| TlsError::EncodeError)?;
+    buf.extend_from_slice(session_id)
+        .map_err(|_| TlsError::EncodeError)?;
+
+    buf.push_u16(CS::CODE_POINT)
+        .map_err(|_| TlsError::EncodeError)?;
+
+    // null compression method
+    buf.push(0).map_err(|_| TlsError::EncodeError)?;
+
+    buf.with_u16_length(|buf| {
+        ServerHelloExtension::SupportedVersions(SupportedVersionsServerHello {
+            selected_version: TLS13,
+        })
+        .encode(buf)?;
+
+        ServerHelloExtension::KeyShare(KeyShareServerHello(KeyShareEntry {
+            group: NamedGroup::Secp256r1,
+            opaque: server_public_key,
+        }))
+        .encode(buf)?;
+
+        Ok(())
+    })?;
+
+    Ok(())
 }

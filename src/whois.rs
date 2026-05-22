@@ -10,12 +10,11 @@ pub fn run(out: &mut impl Write, whois: &impl Whois, args: &[String]) -> io::Res
 
     let response = whois.query(&server, &query)?;
 
-    if follow_referral
-        && let Some(referral) = find_referral(&response) {
-            let referred = whois.query(&referral, &query)?;
-            out.write_all(referred.as_bytes())?;
-            return Ok(());
-        }
+    if follow_referral && let Some(referral) = find_referral(&response) {
+        let referred = whois.query(&referral, &query)?;
+        out.write_all(referred.as_bytes())?;
+        return Ok(());
+    }
 
     out.write_all(response.as_bytes())
 }

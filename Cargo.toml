@@ -26,6 +26,7 @@ embedded-tls = [
   "dep:webpki",
   "dep:rustls-native-certs",
   "dep:digest",
+  "dep:rcgen",
 ]
 
 [dependencies]
@@ -49,6 +50,7 @@ futures-rustls = { version = "0.26", optional = true, default-features = false, 
 md-5 = { version = "0.11", optional = true }
 native-tls = { version = "0.2", optional = true }
 rand_core = { version = "0.6", features = ["getrandom"], optional = true }
+rcgen = { version = "0.13", optional = true }
 rustls = { version = "0.23", optional = true, default-features = false, features = [
   "std",
   "ring",

@@ -293,6 +293,54 @@ where
         Ok(Finished { verify, hash: None })
     }
 
+    /// Computes the server Finished verify_data = HMAC(s_hs_finished_key, current_transcript).
+    /// Must be called BEFORE the Finished message itself is folded into the transcript.
+    #[allow(dead_code)]
+    pub fn create_server_finished(
+        &self,
+    ) -> Result<Finished<HashOutputSize<CipherSuite>>, TlsError> {
+        let key = self
+            .server_state
+            .state
+            .traffic_secret
+            .make_expanded_hkdf_label::<HashOutputSize<CipherSuite>>(
+                b"finished",
+                ContextType::None,
+            )?;
+
+        let mut hmac = SimpleHmac::<CipherSuite::Hash>::new_from_slice(&key)
+            .map_err(|_| TlsError::CryptoError)?;
+        Mac::update(
+            &mut hmac,
+            &self.server_state.transcript_hash.clone().finalize(),
+        );
+        let verify = hmac.finalize().into_bytes();
+
+        Ok(Finished { verify, hash: None })
+    }
+
+    /// Verifies client Finished verify_data against the current transcript using the
+    /// client handshake traffic finished key.
+    #[allow(dead_code)]
+    pub fn verify_client_finished_data(&self, data: &[u8]) -> Result<bool, TlsError> {
+        let key = self
+            .client_state
+            .state
+            .traffic_secret
+            .make_expanded_hkdf_label::<HashOutputSize<CipherSuite>>(
+                b"finished",
+                ContextType::None,
+            )?;
+
+        let mut hmac = SimpleHmac::<CipherSuite::Hash>::new_from_slice(&key)
+            .map_err(|_| TlsError::CryptoError)?;
+        Mac::update(
+            &mut hmac,
+            &self.server_state.transcript_hash.clone().finalize(),
+        );
+        Ok(hmac.verify_slice(data).is_ok())
+    }
+
     fn get_nonce(counter: u64, iv: &IvArray<CipherSuite>) -> IvArray<CipherSuite> {
         //info!("counter = {} {:x?}", counter, &counter.to_be_bytes(),);
         let counter = Self::pad::<CipherSuite::IvLen>(&counter.to_be_bytes());

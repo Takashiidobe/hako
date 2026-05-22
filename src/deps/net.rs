@@ -860,7 +860,7 @@ impl Net for SystemNet {
 // ── async Net impl ────────────────────────────────────────────────────────────
 
 #[cfg(feature = "fetch-smol")]
-async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
+pub(crate) async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
     let mut current = url.to_string();
     let mut redirects = 0;
 
@@ -871,11 +871,12 @@ async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
 
         let response = async_get_once(&current).await?;
         if (300..400).contains(&response.status)
-            && let Some(next) = redirect_location(&response.headers, &current)? {
-                current = next;
-                redirects += 1;
-                continue;
-            }
+            && let Some(next) = redirect_location(&response.headers, &current)?
+        {
+            current = next;
+            redirects += 1;
+            continue;
+        }
 
         if !(200..300).contains(&response.status) {
             return Err(std::io::Error::other(format!("HTTP {}", response.status)));

@@ -3,38 +3,70 @@ use std::net::Ipv4Addr;
 
 use crate::deps::DirFs;
 
-pub fn run(out: &mut impl Write, fs: &impl DirFs, args: &[String]) -> io::Result<()> {
-    let (dir, port) = parse_args(args)?;
+const MAX_HTTP_HEADER_BYTES: usize = 16 * 1024;
+
+pub fn run(
+    out: &mut impl Write,
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    args: &[String],
+) -> io::Result<()> {
+    let (dir, port, tls) = parse_args(args)?;
+    let scheme = if tls { "https" } else { "http" };
     writeln!(out, "Serving {dir}")?;
-    writeln!(out, "  http://localhost:{port}")?;
+    writeln!(out, "  {scheme}://localhost:{port}")?;
     for ip in local_addrs() {
-        writeln!(out, "  http://{ip}:{port}")?;
+        writeln!(out, "  {scheme}://{ip}:{port}")?;
     }
     writeln!(out)?;
-    serve(fs, &dir, port)
+    serve(fs, dir, port, tls)
 }
 
-fn parse_args(args: &[String]) -> io::Result<(String, u16)> {
-    match args {
-        [dir] => Ok((dir.clone(), 8080)),
+fn parse_args(args: &[String]) -> io::Result<(String, u16, bool)> {
+    let tls = args.iter().any(|a| a == "--tls");
+    let rest: Vec<&String> = args.iter().filter(|a| *a != "--tls").collect();
+    match rest.as_slice() {
+        [dir] => Ok(((*dir).clone(), if tls { 8443 } else { 8080 }, tls)),
         [dir, port] => {
-            let port = port
+            let p = port
                 .parse::<u16>()
                 .map_err(|_| io::Error::other("invalid port"))?;
-            Ok((dir.clone(), port))
+            Ok(((*dir).clone(), p, tls))
         }
-        _ => Err(io::Error::other("usage: httpserver <dir> [port]")),
+        _ => Err(io::Error::other("usage: httpserver <dir> [port] [--tls]")),
     }
 }
 
+fn serve(
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    dir: String,
+    port: u16,
+    tls: bool,
+) -> io::Result<()> {
+    if tls {
+        return serve_tls(fs, dir, port);
+    }
+    serve_plain(fs, dir, port)
+}
+
+// ----- Plain HTTP -----------------------------------------------------------
+
 #[cfg(feature = "smol-runtime")]
-fn serve(fs: &impl DirFs, dir: &str, port: u16) -> io::Result<()> {
+fn serve_plain(
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    dir: String,
+    port: u16,
+) -> io::Result<()> {
     smol::block_on(async move {
         let listener = smol::net::TcpListener::bind(("0.0.0.0", port)).await?;
         loop {
             match listener.accept().await {
                 Ok((stream, _)) => {
-                    let _ = serve_connection_async(fs, dir, stream).await;
+                    let fs = fs.clone();
+                    let dir = dir.clone();
+                    smol::spawn(async move {
+                        let _ = serve_connection_async(&fs, &dir, stream).await;
+                    })
+                    .detach();
                 }
                 Err(e) => eprintln!("connection error: {e}"),
             }
@@ -43,14 +75,22 @@ fn serve(fs: &impl DirFs, dir: &str, port: u16) -> io::Result<()> {
 }
 
 #[cfg(not(feature = "smol-runtime"))]
-fn serve(fs: &impl DirFs, dir: &str, port: u16) -> io::Result<()> {
+fn serve_plain(
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    dir: String,
+    port: u16,
+) -> io::Result<()> {
     use std::net::TcpListener;
 
     let listener = TcpListener::bind(("0.0.0.0", port))?;
     for stream in listener.incoming() {
         match stream {
             Ok(s) => {
-                let _ = serve_connection_sync(fs, dir, s);
+                let fs = fs.clone();
+                let dir = dir.clone();
+                std::thread::spawn(move || {
+                    let _ = serve_connection_sync(&fs, &dir, s);
+                });
             }
             Err(e) => eprintln!("connection error: {e}"),
         }
@@ -58,25 +98,298 @@ fn serve(fs: &impl DirFs, dir: &str, port: u16) -> io::Result<()> {
     Ok(())
 }
 
+// ----- HTTPS / TLS ----------------------------------------------------------
+
+#[cfg(feature = "embedded-tls")]
+fn serve_tls(
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    dir: String,
+    port: u16,
+) -> io::Result<()> {
+    use embedded_tls::{Aes128GcmSha256, Certificate, TlsConfig};
+
+    let (cert_der, key_der) = generate_self_signed_cert()?;
+    // Leak cert, key, and config — the server runs for the process lifetime.
+    let cert_der: &'static [u8] = Box::leak(cert_der.into_boxed_slice());
+    let key_der: &'static [u8] = Box::leak(key_der.into_boxed_slice());
+    let config: &'static TlsConfig<'static> = Box::leak(Box::new(
+        TlsConfig::new()
+            .with_cert(Certificate::X509(cert_der))
+            .with_priv_key(key_der),
+    ));
+
+    serve_tls_inner::<Aes128GcmSha256>(fs, dir, port, config)
+}
+
+#[cfg(not(feature = "embedded-tls"))]
+fn serve_tls(
+    _fs: impl DirFs + Clone + Send + Sync + 'static,
+    _dir: String,
+    _port: u16,
+) -> io::Result<()> {
+    Err(io::Error::other(
+        "--tls requires the embedded-tls feature (recompile with it enabled)",
+    ))
+}
+
+#[cfg(feature = "embedded-tls")]
+fn generate_self_signed_cert() -> io::Result<(Vec<u8>, Vec<u8>)> {
+    use rcgen::{CertifiedKey, generate_simple_self_signed};
+    let CertifiedKey { cert, key_pair } =
+        generate_simple_self_signed(vec!["localhost".to_string()])
+            .map_err(|e| io::Error::other(format!("cert gen: {e}")))?;
+    Ok((cert.der().to_vec(), key_pair.serialize_der()))
+}
+
+#[cfg(all(feature = "embedded-tls", feature = "smol-runtime"))]
+fn serve_tls_inner<CS>(
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    dir: String,
+    port: u16,
+    config: &'static embedded_tls::TlsConfig<'static>,
+) -> io::Result<()>
+where
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    // embedded_tls types are !Send, so smol::spawn (which requires Send) can't be used.
+    // smol::block_on may also require Send in its thread-pool implementation, so we use
+    // futures_lite::future::block_on instead — it runs the future inline on the current
+    // thread. LocalExecutor gives cooperative I/O concurrency without requiring Send.
+    use std::rc::Rc;
+    futures_lite::future::block_on(async move {
+        let ex = Rc::new(smol::LocalExecutor::new());
+        let listener = smol::net::TcpListener::bind(("0.0.0.0", port)).await?;
+        let ex2 = Rc::clone(&ex);
+        ex.run(async move {
+            loop {
+                match listener.accept().await {
+                    Ok((stream, _)) => {
+                        let fs = fs.clone();
+                        let dir = dir.clone();
+                        ex2.spawn(async move {
+                            let _ =
+                                serve_tls_connection_async::<CS>(&fs, &dir, stream, config).await;
+                        })
+                        .detach();
+                    }
+                    Err(e) => eprintln!("TLS connection error: {e}"),
+                }
+            }
+        })
+        .await
+    })
+}
+
+#[cfg(all(feature = "embedded-tls", not(feature = "smol-runtime")))]
+fn serve_tls_inner<CS>(
+    fs: impl DirFs + Clone + Send + Sync + 'static,
+    dir: String,
+    port: u16,
+    config: &'static embedded_tls::TlsConfig<'static>,
+) -> io::Result<()>
+where
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    use std::net::TcpListener;
+    let listener = TcpListener::bind(("0.0.0.0", port))?;
+    for stream in listener.incoming() {
+        match stream {
+            Ok(s) => {
+                let fs = fs.clone();
+                let dir = dir.clone();
+                std::thread::spawn(move || {
+                    let _ = serve_tls_connection_sync::<CS>(&fs, &dir, s, config);
+                });
+            }
+            Err(e) => eprintln!("TLS connection error: {e}"),
+        }
+    }
+    Ok(())
+}
+
+#[cfg(all(feature = "embedded-tls", feature = "smol-runtime"))]
+async fn serve_tls_connection_async<CS>(
+    fs: &impl DirFs,
+    root: &str,
+    stream: smol::net::TcpStream,
+    config: &embedded_tls::TlsConfig<'_>,
+) -> io::Result<()>
+where
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    use embedded_io_adapters::futures_03::FromFutures;
+    use embedded_tls::{AsyncTlsServerConnection, UnsecureProvider};
+    use rand_core::OsRng;
+
+    let mut read_buf = vec![0u8; 16384];
+    let mut write_buf = vec![0u8; 16384];
+    let wrapped = FromFutures::new(stream);
+    let mut tls = AsyncTlsServerConnection::<_, CS>::new(wrapped, &mut read_buf, &mut write_buf);
+
+    tls.accept(config, UnsecureProvider::new::<CS>(OsRng))
+        .await
+        .map_err(|e| io::Error::other(format!("TLS handshake: {e:?}")))?;
+
+    let request_line = read_http_request_line_async(&mut tls).await?;
+    let response = response_for_request(fs, root, &request_line);
+    write_all_tls_async(&mut tls, &response.to_bytes()).await?;
+    tls.flush()
+        .await
+        .map_err(|e| io::Error::other(format!("TLS flush: {e:?}")))
+}
+
+#[cfg(all(feature = "embedded-tls", not(feature = "smol-runtime")))]
+fn serve_tls_connection_sync<CS>(
+    fs: &impl DirFs,
+    root: &str,
+    stream: std::net::TcpStream,
+    config: &embedded_tls::TlsConfig<'_>,
+) -> io::Result<()>
+where
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    use embedded_io_adapters::std::FromStd;
+    use embedded_tls::{TlsServerConnection, UnsecureProvider};
+    use rand_core::OsRng;
+
+    let mut read_buf = vec![0u8; 16384];
+    let mut write_buf = vec![0u8; 16384];
+    let wrapped = FromStd::new(stream);
+    let mut tls = TlsServerConnection::<_, CS>::new(wrapped, &mut read_buf, &mut write_buf);
+
+    tls.accept(config, UnsecureProvider::new::<CS>(OsRng))
+        .map_err(|e| io::Error::other(format!("TLS handshake: {e:?}")))?;
+
+    let request_line = read_http_request_line_sync(&mut tls)?;
+    let response = response_for_request(fs, root, &request_line);
+    write_all_tls_sync(&mut tls, &response.to_bytes())?;
+    tls.flush()
+        .map_err(|e| io::Error::other(format!("TLS flush: {e:?}")))
+}
+
+// Read bytes until the HTTP header block ends (\r\n\r\n), return the first line.
+#[cfg(all(feature = "embedded-tls", feature = "smol-runtime"))]
+async fn read_http_request_line_async<S, CS>(
+    tls: &mut embedded_tls::AsyncTlsServerConnection<'_, S, CS>,
+) -> io::Result<String>
+where
+    S: embedded_io_async::Read + embedded_io_async::Write,
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    let mut buf = Vec::new();
+    let mut chunk = [0u8; 512];
+    loop {
+        let n = tls
+            .read(&mut chunk)
+            .await
+            .map_err(|e| io::Error::other(format!("TLS read: {e:?}")))?;
+        if n == 0 {
+            break;
+        }
+        buf.extend_from_slice(&chunk[..n]);
+        if buf.len() > MAX_HTTP_HEADER_BYTES {
+            return Err(io::Error::other("HTTP request headers too large"));
+        }
+        if buf.windows(4).any(|w| w == b"\r\n\r\n") {
+            break;
+        }
+    }
+    Ok(first_line(&buf))
+}
+
+#[cfg(all(feature = "embedded-tls", not(feature = "smol-runtime")))]
+fn read_http_request_line_sync<S, CS>(
+    tls: &mut embedded_tls::TlsServerConnection<'_, S, CS>,
+) -> io::Result<String>
+where
+    S: embedded_io::Read + embedded_io::Write,
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    let mut buf = Vec::new();
+    let mut chunk = [0u8; 512];
+    loop {
+        let n = tls
+            .read(&mut chunk)
+            .map_err(|e| io::Error::other(format!("TLS read: {e:?}")))?;
+        if n == 0 {
+            break;
+        }
+        buf.extend_from_slice(&chunk[..n]);
+        if buf.len() > MAX_HTTP_HEADER_BYTES {
+            return Err(io::Error::other("HTTP request headers too large"));
+        }
+        if buf.windows(4).any(|w| w == b"\r\n\r\n") {
+            break;
+        }
+    }
+    Ok(first_line(&buf))
+}
+
+fn first_line(bytes: &[u8]) -> String {
+    String::from_utf8_lossy(bytes)
+        .lines()
+        .next()
+        .unwrap_or("")
+        .to_string()
+}
+
+#[cfg(all(feature = "embedded-tls", feature = "smol-runtime"))]
+async fn write_all_tls_async<S, CS>(
+    tls: &mut embedded_tls::AsyncTlsServerConnection<'_, S, CS>,
+    data: &[u8],
+) -> io::Result<()>
+where
+    S: embedded_io_async::Read + embedded_io_async::Write,
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    let mut pos = 0;
+    while pos < data.len() {
+        let n = tls
+            .write(&data[pos..])
+            .await
+            .map_err(|e| io::Error::other(format!("TLS write: {e:?}")))?;
+        if n == 0 {
+            return Err(io::Error::other("TLS write stalled"));
+        }
+        pos += n;
+    }
+    Ok(())
+}
+
+#[cfg(all(feature = "embedded-tls", not(feature = "smol-runtime")))]
+fn write_all_tls_sync<S, CS>(
+    tls: &mut embedded_tls::TlsServerConnection<'_, S, CS>,
+    data: &[u8],
+) -> io::Result<()>
+where
+    S: embedded_io::Read + embedded_io::Write,
+    CS: embedded_tls::TlsCipherSuite + 'static,
+{
+    let mut pos = 0;
+    while pos < data.len() {
+        let n = tls
+            .write(&data[pos..])
+            .map_err(|e| io::Error::other(format!("TLS write: {e:?}")))?;
+        if n == 0 {
+            return Err(io::Error::other("TLS write stalled"));
+        }
+        pos += n;
+    }
+    Ok(())
+}
+
+// ----- Plain connection handlers --------------------------------------------
+
 #[cfg(feature = "smol-runtime")]
 async fn serve_connection_async(
     fs: &impl DirFs,
     root: &str,
     mut stream: smol::net::TcpStream,
 ) -> io::Result<()> {
-    use futures_lite::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use futures_lite::io::{AsyncWriteExt, BufReader};
 
     let mut reader = BufReader::new(&mut stream);
-    let mut request_line = String::new();
-    reader.read_line(&mut request_line).await?;
-
-    loop {
-        let mut line = String::new();
-        reader.read_line(&mut line).await?;
-        if line == "\r\n" || line.is_empty() {
-            break;
-        }
-    }
+    let request_line = read_plain_request_line_async(&mut reader).await?;
 
     let response = response_for_request(fs, root, &request_line);
     stream.write_all(&response.to_bytes()).await
@@ -88,29 +401,75 @@ fn serve_connection_sync(
     root: &str,
     stream: std::net::TcpStream,
 ) -> io::Result<()> {
-    use std::io::{BufRead, BufReader};
+    use std::io::BufReader;
 
     let mut reader = BufReader::new(&stream);
-    let mut request_line = String::new();
-    reader.read_line(&mut request_line)?;
+    let request_line = read_plain_request_line_sync(&mut reader)?;
 
-    // consume headers
+    response_for_request(fs, root, &request_line).write_to(&stream)
+}
+
+// ----- Shared response logic ------------------------------------------------
+
+fn check_header_size(total: &mut usize, n: usize) -> io::Result<()> {
+    *total += n;
+    if *total > MAX_HTTP_HEADER_BYTES {
+        return Err(io::Error::other("HTTP request headers too large"));
+    }
+    Ok(())
+}
+
+fn read_plain_request_line_sync(reader: &mut impl std::io::BufRead) -> io::Result<String> {
+    let mut total = 0;
+    let mut request_line = String::new();
+    let n = reader.read_line(&mut request_line)?;
+    check_header_size(&mut total, n)?;
+
     loop {
         let mut line = String::new();
-        reader.read_line(&mut line)?;
+        let n = reader.read_line(&mut line)?;
+        check_header_size(&mut total, n)?;
         if line == "\r\n" || line.is_empty() {
             break;
         }
     }
 
-    response_for_request(fs, root, &request_line).write_to(&stream)
+    Ok(request_line)
+}
+
+#[cfg(feature = "smol-runtime")]
+async fn read_plain_request_line_async<R>(reader: &mut R) -> io::Result<String>
+where
+    R: futures_lite::io::AsyncBufRead + Unpin,
+{
+    use futures_lite::io::AsyncBufReadExt;
+
+    let mut total = 0;
+    let mut request_line = String::new();
+    let n = reader.read_line(&mut request_line).await?;
+    check_header_size(&mut total, n)?;
+
+    loop {
+        let mut line = String::new();
+        let n = reader.read_line(&mut line).await?;
+        check_header_size(&mut total, n)?;
+        if line == "\r\n" || line.is_empty() {
+            break;
+        }
+    }
+
+    Ok(request_line)
 }
 
 fn response_for_request(fs: &impl DirFs, root: &str, request_line: &str) -> Response {
     let mut parts = request_line.split_whitespace();
-    let _method = parts.next().unwrap_or("GET");
+    let method = parts.next().unwrap_or("GET");
     let path = parts.next().unwrap_or("/");
-    handle_request(fs, root, path)
+    match method {
+        "GET" => handle_request(fs, root, path),
+        "HEAD" => handle_request(fs, root, path).without_body(),
+        _ => Response::method_not_allowed(),
+    }
 }
 
 pub(crate) struct Response {
@@ -119,6 +478,7 @@ pub(crate) struct Response {
     content_type: &'static str,
     pub body: Vec<u8>,
     location: Option<String>,
+    send_body: bool,
 }
 
 impl Response {
@@ -129,6 +489,7 @@ impl Response {
             content_type,
             body,
             location: None,
+            send_body: true,
         }
     }
 
@@ -139,17 +500,36 @@ impl Response {
             content_type: "text/plain",
             body: b"404 Not Found".to_vec(),
             location: None,
+            send_body: true,
+        }
+    }
+
+    fn method_not_allowed() -> Self {
+        Self {
+            status: 405,
+            reason: "Method Not Allowed",
+            content_type: "text/plain",
+            body: b"405 Method Not Allowed".to_vec(),
+            location: None,
+            send_body: true,
         }
     }
 
     fn redirect(location: &str) -> Self {
+        let escaped = html_escape(location);
         Self {
             status: 301,
             reason: "Moved Permanently",
             content_type: "text/html",
-            body: format!("<a href=\"{location}\">{location}</a>").into_bytes(),
+            body: format!("<a href=\"{escaped}\">{escaped}</a>").into_bytes(),
             location: Some(location.to_string()),
+            send_body: true,
         }
+    }
+
+    fn without_body(mut self) -> Self {
+        self.send_body = false;
+        self
     }
 
     #[cfg(not(feature = "smol-runtime"))]
@@ -166,7 +546,9 @@ impl Response {
             write!(out, "Location: {loc}\r\n").unwrap();
         }
         write!(out, "Connection: close\r\n\r\n").unwrap();
-        out.extend_from_slice(&self.body);
+        if self.send_body {
+            out.extend_from_slice(&self.body);
+        }
         out
     }
 }
@@ -175,10 +557,15 @@ pub(crate) fn handle_request(fs: &impl DirFs, root: &str, request_path: &str) ->
     let Some(path) = resolve_path(root, request_path) else {
         return Response::not_found();
     };
+    let (url_path, query) = split_query(request_path);
 
     if fs.is_dir(&path) {
-        if !request_path.ends_with('/') {
-            return Response::redirect(&format!("{request_path}/"));
+        if !url_path.ends_with('/') {
+            let location = match query {
+                Some(q) => format!("{url_path}/?{q}"),
+                None => format!("{url_path}/"),
+            };
+            return Response::redirect(&location);
         }
         let index = format!("{path}/index.html");
         if let Ok(body) = fs.read_bytes(&index) {
@@ -199,9 +586,8 @@ pub(crate) fn handle_request(fs: &impl DirFs, root: &str, request_path: &str) ->
     }
 }
 
-// Strips `..` components to prevent directory traversal.
 fn resolve_path(root: &str, request_path: &str) -> Option<String> {
-    let path = request_path.split('?').next().unwrap_or("/");
+    let (path, _) = split_query(request_path);
     let segments: Vec<&str> = path
         .split('/')
         .filter(|s| !s.is_empty() && *s != "..")
@@ -211,6 +597,13 @@ fn resolve_path(root: &str, request_path: &str) -> Option<String> {
         Some(root.to_string())
     } else {
         Some(format!("{}/{}", root, segments.join("/")))
+    }
+}
+
+fn split_query(path: &str) -> (&str, Option<&str>) {
+    match path.split_once('?') {
+        Some((path, query)) => (path, Some(query)),
+        None => (path, None),
     }
 }
 
@@ -230,6 +623,21 @@ fn mime_type(path: &str) -> &'static str {
     }
 }
 
+fn html_escape(s: &str) -> String {
+    let mut out = String::new();
+    for c in s.chars() {
+        match c {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '"' => out.push_str("&quot;"),
+            '\'' => out.push_str("&#39;"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
 #[cfg(target_os = "linux")]
 fn local_addrs() -> Vec<Ipv4Addr> {
     let content = std::fs::read_to_string("/proc/net/fib_trie").unwrap_or_default();
@@ -239,9 +647,11 @@ fn local_addrs() -> Vec<Ipv4Addr> {
         if w[1].contains("host LOCAL") {
             let candidate = w[0].split_whitespace().last().unwrap_or("");
             if let Ok(addr) = candidate.parse::<Ipv4Addr>()
-                && !addr.is_loopback() && !addr.is_unspecified() {
-                    addrs.push(addr);
-                }
+                && !addr.is_loopback()
+                && !addr.is_unspecified()
+            {
+                addrs.push(addr);
+            }
         }
     }
     addrs.sort();
@@ -280,7 +690,6 @@ fn local_addrs() -> Vec<Ipv4Addr> {
 
     let flags = GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
 
-    // first call with null buffer to get required size
     let mut size: u32 = 0;
     let ret = unsafe {
         GetAdaptersAddresses(
@@ -337,15 +746,19 @@ fn local_addrs() -> Vec<Ipv4Addr> {
 }
 
 fn dir_listing(request_path: &str, entries: &[String]) -> String {
+    let escaped_path = html_escape(request_path);
     let mut html = format!(
-        "<html><head><title>Index of {request_path}</title></head>\
-         <body><h1>Index of {request_path}</h1><ul>"
+        "<html><head><title>Index of {escaped_path}</title></head>\
+         <body><h1>Index of {escaped_path}</h1><ul>"
     );
     if request_path != "/" {
         html.push_str("<li><a href=\"..\">..</a></li>");
     }
     for entry in entries {
-        html.push_str(&format!("<li><a href=\"{entry}\">{entry}</a></li>"));
+        let escaped_entry = html_escape(entry);
+        html.push_str(&format!(
+            "<li><a href=\"{escaped_entry}\">{escaped_entry}</a></li>"
+        ));
     }
     html.push_str("</ul></body></html>");
     html
@@ -362,6 +775,22 @@ mod tests {
         let r = handle_request(&fs, "/root", "/hello.txt");
         assert_eq!(r.status, 200);
         assert_eq!(r.body, b"hi");
+    }
+
+    #[test]
+    fn post_returns_method_not_allowed() {
+        let fs = FakeFs::new(&[("/root/hello.txt", b"hi")], &["/root"]);
+        let r = response_for_request(&fs, "/root", "POST /hello.txt HTTP/1.1");
+        assert_eq!(r.status, 405);
+    }
+
+    #[test]
+    fn head_response_omits_body_bytes() {
+        let fs = FakeFs::new(&[("/root/hello.txt", b"hi")], &["/root"]);
+        let r = response_for_request(&fs, "/root", "HEAD /hello.txt HTTP/1.1");
+        let bytes = r.to_bytes();
+        assert!(String::from_utf8_lossy(&bytes).contains("Content-Length: 2\r\n"));
+        assert!(!bytes.ends_with(b"hi"));
     }
 
     #[test]
@@ -382,6 +811,23 @@ mod tests {
     }
 
     #[test]
+    fn directory_listing_escapes_html() {
+        let fs = FakeFs::new(&[("/root/<script>.txt", b"")], &["/root"]);
+        let r = handle_request(&fs, "/root", "/");
+        let body = String::from_utf8(r.body).unwrap();
+        assert!(!body.contains("<script>"));
+        assert!(body.contains("&lt;script&gt;.txt"));
+    }
+
+    #[test]
+    fn redirect_body_escapes_html() {
+        let r = Response::redirect("/a\"&<b>/");
+        let body = String::from_utf8(r.body).unwrap();
+        assert!(!body.contains("/a\"&<b>/"));
+        assert!(body.contains("/a&quot;&amp;&lt;b&gt;/"));
+    }
+
+    #[test]
     fn serves_index_html_for_dir() {
         let fs = FakeFs::new(&[("/root/index.html", b"<h1>home</h1>")], &["/root"]);
         let r = handle_request(&fs, "/root", "/");
@@ -398,10 +844,60 @@ mod tests {
     }
 
     #[test]
+    fn redirects_dir_query_after_trailing_slash() {
+        let fs = FakeFs::new(&[], &["/root/src"]);
+        let r = handle_request(&fs, "/root", "/src?x=1");
+        assert_eq!(r.status, 301);
+        assert_eq!(r.location.as_deref(), Some("/src/?x=1"));
+    }
+
+    #[test]
+    fn directory_query_with_trailing_slash_does_not_redirect() {
+        let fs = FakeFs::new(&[], &["/root/src"]);
+        let r = handle_request(&fs, "/root", "/src/?x=1");
+        assert_eq!(r.status, 200);
+    }
+
+    #[test]
+    fn reads_plain_request_line() {
+        let request = b"GET /hello.txt HTTP/1.1\r\nHost: example.com\r\n\r\n";
+        let mut reader = std::io::BufReader::new(&request[..]);
+        let line = read_plain_request_line_sync(&mut reader).unwrap();
+        assert_eq!(line, "GET /hello.txt HTTP/1.1\r\n");
+    }
+
+    #[test]
+    fn rejects_oversized_plain_headers() {
+        let request = format!(
+            "GET / HTTP/1.1\r\nX-Fill: {}\r\n\r\n",
+            "a".repeat(MAX_HTTP_HEADER_BYTES)
+        );
+        let mut reader = std::io::BufReader::new(request.as_bytes());
+        let err = read_plain_request_line_sync(&mut reader).unwrap_err();
+        assert_eq!(err.to_string(), "HTTP request headers too large");
+    }
+
+    #[cfg(feature = "smol-runtime")]
+    #[test]
+    fn async_plain_reader_rejects_oversized_headers() {
+        smol::block_on(async {
+            let request = format!(
+                "GET / HTTP/1.1\r\nX-Fill: {}\r\n\r\n",
+                "a".repeat(MAX_HTTP_HEADER_BYTES)
+            );
+            let cursor = futures_lite::io::Cursor::new(request.into_bytes());
+            let mut reader = futures_lite::io::BufReader::new(cursor);
+            let err = read_plain_request_line_async(&mut reader)
+                .await
+                .unwrap_err();
+            assert_eq!(err.to_string(), "HTTP request headers too large");
+        });
+    }
+
+    #[test]
     fn blocks_traversal() {
         let fs = FakeFs::new(&[("/etc/passwd", b"secret")], &[]);
         let r = handle_request(&fs, "/root", "/../../../etc/passwd");
-        // traversal segments are stripped; resolves to /root/etc/passwd which doesn't exist
         assert_eq!(r.status, 404);
     }
 
@@ -416,15 +912,33 @@ mod tests {
     #[test]
     fn parse_args_defaults_port() {
         let args = vec!["./public".into()];
-        let (dir, port) = parse_args(&args).unwrap();
+        let (dir, port, tls) = parse_args(&args).unwrap();
         assert_eq!(dir, "./public");
         assert_eq!(port, 8080);
+        assert!(!tls);
     }
 
     #[test]
     fn parse_args_custom_port() {
         let args = vec!["./public".into(), "3000".into()];
-        let (_, port) = parse_args(&args).unwrap();
+        let (_, port, _) = parse_args(&args).unwrap();
         assert_eq!(port, 3000);
+    }
+
+    #[test]
+    fn parse_args_tls_flag() {
+        let args = vec!["./public".into(), "--tls".into()];
+        let (dir, port, tls) = parse_args(&args).unwrap();
+        assert_eq!(dir, "./public");
+        assert_eq!(port, 8443);
+        assert!(tls);
+    }
+
+    #[test]
+    fn parse_args_tls_with_port() {
+        let args = vec!["./public".into(), "9443".into(), "--tls".into()];
+        let (_, port, tls) = parse_args(&args).unwrap();
+        assert_eq!(port, 9443);
+        assert!(tls);
     }
 }

@@ -8,6 +8,7 @@ use p256::elliptic_curve::rand_core::RngCore;
 use typenum::Unsigned;
 
 use crate::TlsError;
+use crate::cipher_suites::CipherSuite as CipherSuiteCode;
 use crate::config::{TlsCipherSuite, TlsConfig};
 use crate::extensions::extension_data::key_share::{KeyShareClientHello, KeyShareEntry};
 use crate::extensions::extension_data::pre_shared_key::PreSharedKeyClientHello;
@@ -21,6 +22,7 @@ use crate::extensions::extension_data::supported_versions::{SupportedVersionsCli
 use crate::extensions::messages::ClientHelloExtension;
 use crate::handshake::{LEGACY_VERSION, Random};
 use crate::key_schedule::{HashOutputSize, WriteKeySchedule};
+use crate::parse_buffer::ParseBuffer;
 use crate::{CryptoProvider, buffer::CryptoBuffer};
 
 pub struct ClientHello<'config, CipherSuite>
@@ -176,5 +178,80 @@ where
         }
 
         Ok(())
+    }
+}
+
+/// Parsed view into a ClientHello received by a TLS server.
+#[allow(dead_code)]
+pub struct ParsedClientHello<'a> {
+    pub random: [u8; 32],
+    pub session_id: &'a [u8],
+    pub cipher_suite: u16,
+    pub client_key_share: &'a [u8],
+}
+
+#[allow(dead_code)]
+impl<'a> ParsedClientHello<'a> {
+    /// Parse a ClientHello body (after the handshake type+length header has been consumed).
+    pub fn parse(buf: &mut ParseBuffer<'a>) -> Result<Self, TlsError> {
+        let _legacy_version = buf.read_u16().map_err(|_| TlsError::InvalidHandshake)?;
+
+        let mut random = [0u8; 32];
+        buf.fill(&mut random).map_err(|_| TlsError::InvalidHandshake)?;
+
+        let session_id_len = buf.read_u8().map_err(|_| TlsError::InvalidSessionIdLength)?;
+        let session_id_slice = buf
+            .slice(session_id_len as usize)
+            .map_err(|_| TlsError::InvalidSessionIdLength)?;
+        let session_id = session_id_slice.as_slice();
+
+        let cipher_suites_len = buf.read_u16().map_err(|_| TlsError::InvalidHandshake)? as usize;
+        if cipher_suites_len == 0 || cipher_suites_len % 2 != 0 {
+            return Err(TlsError::InvalidCipherSuite);
+        }
+        let mut cipher_suites_buf = buf
+            .slice(cipher_suites_len)
+            .map_err(|_| TlsError::InvalidHandshake)?;
+        let mut selected_suite: Option<u16> = None;
+        while !cipher_suites_buf.is_empty() {
+            let code = cipher_suites_buf
+                .read_u16()
+                .map_err(|_| TlsError::InvalidCipherSuite)?;
+            if selected_suite.is_none()
+                && (code == CipherSuiteCode::TlsAes128GcmSha256 as u16
+                    || code == CipherSuiteCode::TlsAes256GcmSha384 as u16
+                    || code == CipherSuiteCode::TlsChacha20Poly1305Sha256 as u16)
+            {
+                selected_suite = Some(code);
+            }
+        }
+        let cipher_suite = selected_suite.ok_or(TlsError::InvalidCipherSuite)?;
+
+        let compression_len = buf.read_u8().map_err(|_| TlsError::InvalidHandshake)?;
+        let _compression = buf
+            .slice(compression_len as usize)
+            .map_err(|_| TlsError::InvalidHandshake)?;
+
+        let extensions = ClientHelloExtension::parse_vector::<16>(buf)?;
+
+        let mut client_key_share: Option<&'a [u8]> = None;
+        for ext in &extensions {
+            if let ClientHelloExtension::KeyShare(ks) = ext {
+                for entry in &ks.client_shares {
+                    if entry.group == NamedGroup::Secp256r1 {
+                        client_key_share = Some(entry.opaque);
+                        break;
+                    }
+                }
+            }
+        }
+        let client_key_share = client_key_share.ok_or(TlsError::InvalidKeyShare)?;
+
+        Ok(Self {
+            random,
+            session_id,
+            cipher_suite,
+            client_key_share,
+        })
     }
 }

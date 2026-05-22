@@ -4,6 +4,7 @@ pub trait Fs {
     fn is_file(&self, path: &str) -> bool;
 }
 
+#[derive(Clone, Copy)]
 pub struct SystemFs;
 
 impl Fs for SystemFs {

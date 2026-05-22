@@ -233,8 +233,11 @@ impl<CipherSuite: TlsCipherSuite, RNG: CryptoRngCore> CryptoProvider
         key_der: &[u8],
     ) -> Result<(impl signature::SignerMut<Self::Signature>, SignatureScheme), crate::TlsError>
     {
-        let secret_key =
-            SecretKey::from_sec1_der(key_der).map_err(|_| TlsError::InvalidPrivateKey)?;
+        // Accept both SEC1 DER (traditional) and PKCS#8 DER (from tools like rcgen).
+        let secret_key = SecretKey::from_sec1_der(key_der).or_else(|_| {
+            use p256::pkcs8::DecodePrivateKey;
+            SecretKey::from_pkcs8_der(key_der)
+        }).map_err(|_| TlsError::InvalidPrivateKey)?;
 
         Ok((
             SigningKey::from(&secret_key),

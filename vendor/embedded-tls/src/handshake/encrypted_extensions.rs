@@ -1,5 +1,6 @@
 use core::marker::PhantomData;
 
+use crate::buffer::CryptoBuffer;
 use crate::extensions::messages::EncryptedExtensionsExtension;
 
 use crate::TlsError;
@@ -16,4 +17,11 @@ impl<'a> EncryptedExtensions<'a> {
         EncryptedExtensionsExtension::parse_vector::<16>(buf)?;
         Ok(EncryptedExtensions { _todo: PhantomData })
     }
+}
+
+/// Encode an empty EncryptedExtensions body (after the handshake header).
+#[allow(dead_code)]
+pub fn encode_empty(buf: &mut CryptoBuffer<'_>) -> Result<(), TlsError> {
+    // empty extension list
+    buf.push_u16(0).map_err(|_| TlsError::EncodeError)
 }

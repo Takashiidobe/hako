@@ -107,6 +107,13 @@ impl<'a> WriteBuffer<'a> {
             read_key_schedule,
         )
     }
+
+    /// Raw access to the underlying byte slice. Used by the server connection
+    /// to drive handshake/record encoding manually.
+    #[allow(dead_code)]
+    pub(crate) fn as_raw_slice(&mut self) -> &mut [u8] {
+        self.buffer
+    }
 }
 
 impl WriteBufferBorrow<'_> {
