@@ -1,4 +1,5 @@
 use crate::key_schedule::ReadKeySchedule;
+use sha2::Digest;
 use embedded_io::{Error, Read as BlockingRead};
 use embedded_io_async::Read as AsyncRead;
 
@@ -48,7 +49,7 @@ impl<'a> RecordReader<'a> {
         &'m mut self,
         transport: &mut impl AsyncRead,
         key_schedule: &mut ReadKeySchedule<CipherSuite>,
-    ) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+    ) -> Result<ServerRecord<'m>, TlsError> {
         read(
             self.buf,
             &mut self.decoded,
@@ -63,7 +64,7 @@ impl<'a> RecordReader<'a> {
         &'m mut self,
         transport: &mut impl BlockingRead,
         key_schedule: &mut ReadKeySchedule<CipherSuite>,
-    ) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+    ) -> Result<ServerRecord<'m>, TlsError> {
         read_blocking(
             self.buf,
             &mut self.decoded,
@@ -79,7 +80,7 @@ impl RecordReaderBorrowMut<'_> {
         &'m mut self,
         transport: &mut impl AsyncRead,
         key_schedule: &mut ReadKeySchedule<CipherSuite>,
-    ) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+    ) -> Result<ServerRecord<'m>, TlsError> {
         read(
             self.buf,
             self.decoded,
@@ -94,7 +95,7 @@ impl RecordReaderBorrowMut<'_> {
         &'m mut self,
         transport: &mut impl BlockingRead,
         key_schedule: &mut ReadKeySchedule<CipherSuite>,
-    ) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+    ) -> Result<ServerRecord<'m>, TlsError> {
         read_blocking(
             self.buf,
             self.decoded,
@@ -111,7 +112,7 @@ pub async fn read<'m, CipherSuite: TlsCipherSuite>(
     pending: &mut usize,
     transport: &mut impl AsyncRead,
     key_schedule: &mut ReadKeySchedule<CipherSuite>,
-) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+) -> Result<ServerRecord<'m>, TlsError> {
     let header: RecordHeader = next_record_header(transport).await?;
 
     advance(buf, decoded, pending, transport, header.content_length()).await?;
@@ -130,7 +131,7 @@ pub fn read_blocking<'m, CipherSuite: TlsCipherSuite>(
     pending: &mut usize,
     transport: &mut impl BlockingRead,
     key_schedule: &mut ReadKeySchedule<CipherSuite>,
-) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+) -> Result<ServerRecord<'m>, TlsError> {
     let header: RecordHeader = next_record_header_blocking(transport)?;
 
     advance_blocking(buf, decoded, pending, transport, header.content_length())?;
@@ -225,13 +226,13 @@ fn advance_blocking(
     Ok(())
 }
 
-fn consume<'m, CipherSuite: TlsCipherSuite>(
+fn consume<'m, D: Digest + Clone>(
     buf: &'m mut [u8],
     decoded: &mut usize,
     pending: &mut usize,
     header: RecordHeader,
-    digest: &mut CipherSuite::Hash,
-) -> Result<ServerRecord<'m, CipherSuite>, TlsError> {
+    digest: &mut D,
+) -> Result<ServerRecord<'m>, TlsError> {
     let content_len = header.content_length();
 
     let slice = &mut buf[*decoded..][..content_len];

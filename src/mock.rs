@@ -30,7 +30,7 @@ pub struct FakeNet(pub Vec<u8>);
 
 #[cfg(feature = "fetch")]
 impl Net for FakeNet {
-    fn get(&self, _url: &str) -> std::io::Result<Vec<u8>> {
+    fn request(&self, _method: &str, _url: &str, _body: &[u8]) -> std::io::Result<Vec<u8>> {
         Ok(self.0.clone())
     }
 }
@@ -40,7 +40,7 @@ pub struct FailNet;
 
 #[cfg(feature = "fetch")]
 impl Net for FailNet {
-    fn get(&self, _url: &str) -> std::io::Result<Vec<u8>> {
+    fn request(&self, _method: &str, _url: &str, _body: &[u8]) -> std::io::Result<Vec<u8>> {
         Err(std::io::Error::other("connection refused"))
     }
 }

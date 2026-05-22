@@ -27,10 +27,10 @@ use aes_gcm::aead::{AeadCore, AeadInPlace, KeyInit};
 
 pub(crate) fn decrypt_record<CipherSuite>(
     key_schedule: &mut ReadKeySchedule<CipherSuite>,
-    record: ServerRecord<'_, CipherSuite>,
+    record: ServerRecord<'_>,
     mut cb: impl FnMut(
         &mut ReadKeySchedule<CipherSuite>,
-        ServerRecord<'_, CipherSuite>,
+        ServerRecord<'_>,
     ) -> Result<(), TlsError>,
 ) -> Result<(), TlsError>
 where
@@ -412,7 +412,7 @@ where
 fn process_server_hello<CipherSuite>(
     handshake: &mut Handshake<CipherSuite>,
     key_schedule: &mut KeySchedule<CipherSuite>,
-    record: ServerRecord<'_, CipherSuite>,
+    record: ServerRecord<'_>,
 ) -> Result<State, TlsError>
 where
     CipherSuite: TlsCipherSuite,
@@ -442,7 +442,7 @@ fn process_server_verify<Provider>(
     key_schedule: &mut KeySchedule<Provider::CipherSuite>,
     config: &TlsConfig<'_>,
     crypto_provider: &mut Provider,
-    record: ServerRecord<'_, Provider::CipherSuite>,
+    record: ServerRecord<'_>,
 ) -> Result<State, TlsError>
 where
     Provider: CryptoProvider,
@@ -454,9 +454,9 @@ where
                 match server_handshake {
                     ServerHandshake::EncryptedExtensions(_) => {}
                     ServerHandshake::Certificate(certificate) => {
-                        let transcript = key_schedule.transcript_hash();
                         if let Ok(verifier) = crypto_provider.verifier() {
-                            verifier.verify_certificate(transcript, &config.ca, certificate)?;
+                            let transcript_hash = key_schedule.transcript_hash().clone().finalize();
+                            verifier.verify_certificate(&transcript_hash, &config.ca, certificate)?;
                             debug!("Certificate verified!");
                         } else {
                             debug!("Certificate verification skipped due to no verifier!");

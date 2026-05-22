@@ -21,8 +21,6 @@ embedded-tls = [
   "dep:embedded-io-async",
   "dep:embedded-io-adapters",
   "dep:rand_core",
-  "embedded-tls/webpki",
-  "embedded-tls/alloc",
   "dep:webpki",
   "dep:rustls-native-certs",
   "dep:digest",
@@ -50,7 +48,9 @@ futures-rustls = { version = "0.26", optional = true, default-features = false, 
 md-5 = { version = "0.11", optional = true }
 native-tls = { version = "0.2", optional = true }
 rand_core = { version = "0.6", features = ["getrandom"], optional = true }
-rcgen = { version = "0.13", optional = true }
+rcgen = { version = "0.13", optional = true, default-features = false, features = [
+  "ring",
+] }
 rustls = { version = "0.23", optional = true, default-features = false, features = [
   "std",
   "ring",
@@ -83,3 +83,4 @@ embedded-tls = { path = "vendor/embedded-tls" }
 strip = true    # Automatically strip symbols from the binary.
 opt-level = "z" # optimize for size
 lto = true      # lto
+panic = "abort"

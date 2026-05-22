@@ -1,5 +1,5 @@
 use crate::handshake::binder::PskBinder;
-use crate::handshake::finished::Finished;
+use crate::handshake::finished::{Finished, ServerFinished};
 use crate::{TlsError, config::TlsCipherSuite};
 use digest::OutputSizeUser;
 use digest::generic_array::ArrayLength;
@@ -515,10 +515,7 @@ where
         self.state.get_nonce()
     }
 
-    pub fn verify_server_finished(
-        &self,
-        finished: &Finished<HashOutputSize<CipherSuite>>,
-    ) -> Result<bool, TlsError> {
+    pub fn verify_server_finished(&self, finished: &ServerFinished) -> Result<bool, TlsError> {
         //info!("verify server finished: {:x?}", finished.verify);
         //self.client_traffic_secret.as_ref().unwrap().expand()
         //info!("size ===> {}", D::OutputSize::to_u16());
@@ -539,8 +536,7 @@ where
                 TlsError::InternalError
             })?,
         );
-        //let code = hmac.clone().finalize().into_bytes();
-        Ok(hmac.verify(&finished.verify).is_ok())
+        Ok(hmac.verify_slice(&finished.verify).is_ok())
         //info!("verified {:?}", verified);
         //unimplemented!()
     }

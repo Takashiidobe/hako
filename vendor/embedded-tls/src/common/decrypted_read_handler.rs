@@ -2,7 +2,7 @@ use core::ops::Range;
 
 use crate::{
     TlsError, alert::AlertDescription, common::decrypted_buffer_info::DecryptedBufferInfo,
-    config::TlsCipherSuite, handshake::ServerHandshake, record::ServerRecord,
+    handshake::ServerHandshake, record::ServerRecord,
 };
 
 pub struct DecryptedReadHandler<'a> {
@@ -12,10 +12,7 @@ pub struct DecryptedReadHandler<'a> {
 }
 
 impl DecryptedReadHandler<'_> {
-    pub fn handle<CipherSuite: TlsCipherSuite>(
-        &mut self,
-        record: ServerRecord<'_, CipherSuite>,
-    ) -> Result<(), TlsError> {
+    pub fn handle(&mut self, record: ServerRecord<'_>) -> Result<(), TlsError> {
         match record {
             ServerRecord::ApplicationData(data) => {
                 let slice = data.data.as_slice();

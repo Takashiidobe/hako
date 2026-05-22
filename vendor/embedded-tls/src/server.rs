@@ -902,12 +902,12 @@ where
                 match inner_type {
                     ContentType::ApplicationData => {
                         let app = ApplicationData::new(payload, header);
-                        handler.handle::<CipherSuite>(ServerRecord::ApplicationData(app))?;
+                        handler.handle(ServerRecord::ApplicationData(app))?;
                     }
                     ContentType::Alert => {
                         let mut pb = ParseBuffer::new(payload.as_slice());
                         let alert = Alert::parse(&mut pb)?;
-                        handler.handle::<CipherSuite>(ServerRecord::Alert(alert))?;
+                        handler.handle(ServerRecord::Alert(alert))?;
                     }
                     ContentType::Handshake => {
                         // post-handshake messages ignored
@@ -918,7 +918,7 @@ where
             ContentType::Alert => {
                 let mut pb = ParseBuffer::new(buf);
                 let alert = Alert::parse(&mut pb)?;
-                handler.handle::<CipherSuite>(ServerRecord::Alert(alert))?;
+                handler.handle(ServerRecord::Alert(alert))?;
             }
             ContentType::ChangeCipherSpec => {
                 // middlebox-compat CCS ignored
@@ -1169,12 +1169,12 @@ where
                 match inner_type {
                     ContentType::ApplicationData => {
                         let app = ApplicationData::new(payload, header);
-                        handler.handle::<CipherSuite>(ServerRecord::ApplicationData(app))?;
+                        handler.handle(ServerRecord::ApplicationData(app))?;
                     }
                     ContentType::Alert => {
                         let mut pb = ParseBuffer::new(payload.as_slice());
                         let alert = Alert::parse(&mut pb)?;
-                        handler.handle::<CipherSuite>(ServerRecord::Alert(alert))?;
+                        handler.handle(ServerRecord::Alert(alert))?;
                     }
                     ContentType::Handshake => {}
                     _ => return Err(TlsError::InvalidRecord),
@@ -1183,7 +1183,7 @@ where
             ContentType::Alert => {
                 let mut pb = ParseBuffer::new(buf);
                 let alert = Alert::parse(&mut pb)?;
-                handler.handle::<CipherSuite>(ServerRecord::Alert(alert))?;
+                handler.handle(ServerRecord::Alert(alert))?;
             }
             ContentType::ChangeCipherSpec => {}
             _ => return Err(TlsError::InvalidRecord),

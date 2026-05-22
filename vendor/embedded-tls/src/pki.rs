@@ -14,7 +14,6 @@ use crate::parse_buffer::ParseError;
 use const_oid::ObjectIdentifier;
 use core::marker::PhantomData;
 use der::Decode;
-use digest::Digest;
 use heapless::{String, Vec};
 
 const HOSTNAME_MAXLEN: usize = 64;
@@ -60,7 +59,7 @@ where
     CipherSuite: TlsCipherSuite,
 {
     host: Option<heapless::String<64>>,
-    certificate_transcript: Option<CipherSuite::Hash>,
+    certificate_transcript_hash: Option<Vec<u8, 48>>,
     certificate: Option<OwnedCertificate<CERT_SIZE>>,
     _clock: PhantomData<Clock>,
 }
@@ -84,14 +83,14 @@ where
     pub fn new() -> Self {
         Self {
             host: None,
-            certificate_transcript: None,
+            certificate_transcript_hash: None,
             certificate: None,
             _clock: PhantomData,
         }
     }
 }
 
-impl<CipherSuite, Clock, const CERT_SIZE: usize> TlsVerifier<CipherSuite>
+impl<CipherSuite, Clock, const CERT_SIZE: usize> TlsVerifier
     for CertVerifier<CipherSuite, Clock, CERT_SIZE>
 where
     CipherSuite: TlsCipherSuite,
@@ -106,7 +105,7 @@ where
 
     fn verify_certificate(
         &mut self,
-        transcript: &CipherSuite::Hash,
+        transcript_hash: &[u8],
         ca: &Option<Certificate>,
         cert: ServerCertificate,
     ) -> Result<(), TlsError> {
@@ -130,18 +129,19 @@ where
         }
 
         self.certificate.replace(cert.try_into()?);
-        self.certificate_transcript.replace(transcript.clone());
+        self.certificate_transcript_hash
+            .replace(Vec::from_slice(transcript_hash).map_err(|_| TlsError::InsufficientSpace)?);
         Ok(())
     }
 
     fn verify_signature(&mut self, verify: CertificateVerifyRef) -> Result<(), TlsError> {
-        let handshake_hash = unwrap!(self.certificate_transcript.take());
+        let handshake_hash = unwrap!(self.certificate_transcript_hash.take());
         let ctx_str = b"TLS 1.3, server CertificateVerify\x00";
         let mut msg: Vec<u8, 146> = Vec::new();
         msg.resize(64, 0x20).map_err(|_| TlsError::EncodeError)?;
         msg.extend_from_slice(ctx_str)
             .map_err(|_| TlsError::EncodeError)?;
-        msg.extend_from_slice(&handshake_hash.finalize())
+        msg.extend_from_slice(&handshake_hash)
             .map_err(|_| TlsError::EncodeError)?;
 
         let certificate = unwrap!(self.certificate.as_ref()).try_into()?;

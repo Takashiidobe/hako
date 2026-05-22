@@ -12,6 +12,7 @@ use crate::{
     parse_buffer::ParseBuffer,
 };
 use core::fmt::Debug;
+use sha2::Digest;
 
 pub type Encrypted = bool;
 
@@ -143,8 +144,8 @@ where
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[allow(clippy::large_enum_variant)]
-pub enum ServerRecord<'a, CipherSuite: TlsCipherSuite> {
-    Handshake(ServerHandshake<'a, CipherSuite>),
+pub enum ServerRecord<'a> {
+    Handshake(ServerHandshake<'a>),
     ChangeCipherSpec(ChangeCipherSpec),
     Alert(Alert),
     ApplicationData(ApplicationData<'a>),
@@ -179,7 +180,7 @@ impl RecordHeader {
     }
 }
 
-impl<'a, CipherSuite: TlsCipherSuite> ServerRecord<'a, CipherSuite> {
+impl<'a> ServerRecord<'a> {
     pub fn content_type(&self) -> ContentType {
         match self {
             ServerRecord::Handshake(_) => ContentType::Handshake,
@@ -189,11 +190,11 @@ impl<'a, CipherSuite: TlsCipherSuite> ServerRecord<'a, CipherSuite> {
         }
     }
 
-    pub fn decode(
+    pub fn decode<D: Digest + Clone>(
         header: RecordHeader,
         data: &'a mut [u8],
-        digest: &mut CipherSuite::Hash,
-    ) -> Result<ServerRecord<'a, CipherSuite>, TlsError> {
+        digest: &mut D,
+    ) -> Result<ServerRecord<'a>, TlsError> {
         assert_eq!(header.content_length(), data.len());
         match header.content_type() {
             ContentType::Invalid => Err(TlsError::Unimplemented),

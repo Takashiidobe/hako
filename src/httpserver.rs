@@ -419,6 +419,7 @@ fn check_header_size(total: &mut usize, n: usize) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(any(not(feature = "smol-runtime"), test))]
 fn read_plain_request_line_sync(reader: &mut impl std::io::BufRead) -> io::Result<String> {
     let mut total = 0;
     let mut request_line = String::new();
@@ -468,9 +469,12 @@ fn response_for_request(fs: &impl DirFs, root: &str, request_line: &str) -> Resp
     match method {
         "GET" => handle_request(fs, root, path),
         "HEAD" => handle_request(fs, root, path).without_body(),
+        "OPTIONS" => Response::options(),
         _ => Response::method_not_allowed(),
     }
 }
+
+const ALLOWED_METHODS: &str = "GET, HEAD, OPTIONS";
 
 pub(crate) struct Response {
     pub status: u16,
@@ -478,6 +482,7 @@ pub(crate) struct Response {
     content_type: &'static str,
     pub body: Vec<u8>,
     location: Option<String>,
+    allow: Option<&'static str>,
     send_body: bool,
 }
 
@@ -489,6 +494,7 @@ impl Response {
             content_type,
             body,
             location: None,
+            allow: None,
             send_body: true,
         }
     }
@@ -500,6 +506,7 @@ impl Response {
             content_type: "text/plain",
             body: b"404 Not Found".to_vec(),
             location: None,
+            allow: None,
             send_body: true,
         }
     }
@@ -511,6 +518,19 @@ impl Response {
             content_type: "text/plain",
             body: b"405 Method Not Allowed".to_vec(),
             location: None,
+            allow: Some(ALLOWED_METHODS),
+            send_body: true,
+        }
+    }
+
+    fn options() -> Self {
+        Self {
+            status: 204,
+            reason: "No Content",
+            content_type: "text/plain",
+            body: Vec::new(),
+            location: None,
+            allow: Some(ALLOWED_METHODS),
             send_body: true,
         }
     }
@@ -523,6 +543,7 @@ impl Response {
             content_type: "text/html",
             body: format!("<a href=\"{escaped}\">{escaped}</a>").into_bytes(),
             location: Some(location.to_string()),
+            allow: None,
             send_body: true,
         }
     }
@@ -544,6 +565,9 @@ impl Response {
         write!(out, "Content-Length: {}\r\n", self.body.len()).unwrap();
         if let Some(loc) = &self.location {
             write!(out, "Location: {loc}\r\n").unwrap();
+        }
+        if let Some(allow) = self.allow {
+            write!(out, "Allow: {allow}\r\n").unwrap();
         }
         write!(out, "Connection: close\r\n\r\n").unwrap();
         if self.send_body {
@@ -782,6 +806,33 @@ mod tests {
         let fs = FakeFs::new(&[("/root/hello.txt", b"hi")], &["/root"]);
         let r = response_for_request(&fs, "/root", "POST /hello.txt HTTP/1.1");
         assert_eq!(r.status, 405);
+        assert!(String::from_utf8_lossy(&r.to_bytes()).contains("Allow: GET, HEAD, OPTIONS\r\n"));
+    }
+
+    #[test]
+    fn mutating_methods_return_method_not_allowed() {
+        let fs = FakeFs::new(&[("/root/hello.txt", b"hi")], &["/root"]);
+        for method in ["PUT", "PATCH", "DELETE"] {
+            let request = format!("{method} /hello.txt HTTP/1.1");
+            let r = response_for_request(&fs, "/root", &request);
+            assert_eq!(r.status, 405);
+            assert!(
+                String::from_utf8_lossy(&r.to_bytes()).contains("Allow: GET, HEAD, OPTIONS\r\n")
+            );
+        }
+    }
+
+    #[test]
+    fn options_returns_allowed_methods_without_body() {
+        let fs = FakeFs::new(&[("/root/hello.txt", b"hi")], &["/root"]);
+        let r = response_for_request(&fs, "/root", "OPTIONS /hello.txt HTTP/1.1");
+        let bytes = r.to_bytes();
+        let text = String::from_utf8_lossy(&bytes);
+
+        assert_eq!(r.status, 204);
+        assert!(text.contains("Allow: GET, HEAD, OPTIONS\r\n"));
+        assert!(text.contains("Content-Length: 0\r\n"));
+        assert!(bytes.ends_with(b"\r\n\r\n"));
     }
 
     #[test]

@@ -6,7 +6,7 @@ use crate::handshake::certificate_request::CertificateRequestRef;
 use crate::handshake::certificate_verify::{CertificateVerify, CertificateVerifyRef};
 use crate::handshake::client_hello::ClientHello;
 use crate::handshake::encrypted_extensions::EncryptedExtensions;
-use crate::handshake::finished::Finished;
+use crate::handshake::finished::{Finished, ServerFinished};
 use crate::handshake::new_session_ticket::NewSessionTicket;
 use crate::handshake::server_hello::ServerHello;
 use crate::key_schedule::HashOutputSize;
@@ -127,17 +127,17 @@ where
 }
 
 #[allow(clippy::large_enum_variant)]
-pub enum ServerHandshake<'a, CipherSuite: TlsCipherSuite> {
+pub enum ServerHandshake<'a> {
     ServerHello(ServerHello<'a>),
     EncryptedExtensions(EncryptedExtensions<'a>),
     NewSessionTicket(NewSessionTicket<'a>),
     Certificate(CertificateRef<'a>),
     CertificateRequest(CertificateRequestRef<'a>),
     CertificateVerify(CertificateVerifyRef<'a>),
-    Finished(Finished<HashOutputSize<CipherSuite>>),
+    Finished(ServerFinished),
 }
 
-impl<CipherSuite: TlsCipherSuite> ServerHandshake<'_, CipherSuite> {
+impl ServerHandshake<'_> {
     #[allow(dead_code)]
     pub fn handshake_type(&self) -> HandshakeType {
         match self {
@@ -152,7 +152,7 @@ impl<CipherSuite: TlsCipherSuite> ServerHandshake<'_, CipherSuite> {
     }
 }
 
-impl<CipherSuite: TlsCipherSuite> Debug for ServerHandshake<'_, CipherSuite> {
+impl Debug for ServerHandshake<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             ServerHandshake::ServerHello(inner) => Debug::fmt(inner, f),
@@ -167,7 +167,7 @@ impl<CipherSuite: TlsCipherSuite> Debug for ServerHandshake<'_, CipherSuite> {
 }
 
 #[cfg(feature = "defmt")]
-impl<'a, CipherSuite: TlsCipherSuite> defmt::Format for ServerHandshake<'a, CipherSuite> {
+impl<'a> defmt::Format for ServerHandshake<'a> {
     fn format(&self, f: defmt::Formatter<'_>) {
         match self {
             ServerHandshake::ServerHello(inner) => defmt::write!(f, "{}", inner),
@@ -181,17 +181,20 @@ impl<'a, CipherSuite: TlsCipherSuite> defmt::Format for ServerHandshake<'a, Ciph
     }
 }
 
-impl<'a, CipherSuite: TlsCipherSuite> ServerHandshake<'a, CipherSuite> {
-    pub fn read(
+impl<'a> ServerHandshake<'a> {
+    pub fn read<D: Digest + Clone>(
         buf: &mut ParseBuffer<'a>,
-        digest: &mut CipherSuite::Hash,
+        digest: &mut D,
     ) -> Result<Self, TlsError> {
         let handshake_start = buf.offset();
         let mut handshake = Self::parse(buf)?;
         let handshake_end = buf.offset();
 
         if let ServerHandshake::Finished(finished) = &mut handshake {
-            finished.hash.replace(digest.clone().finalize());
+            let hash = digest.clone().finalize();
+            finished
+                .hash
+                .replace(heapless::Vec::from_slice(&hash).map_err(|_| TlsError::InternalError)?);
         }
 
         digest.update(&buf.as_slice()[handshake_start..handshake_end]);
@@ -226,7 +229,7 @@ impl<'a, CipherSuite: TlsCipherSuite> ServerHandshake<'a, CipherSuite> {
                 ServerHandshake::CertificateVerify(CertificateVerifyRef::parse(buf)?)
             }
             HandshakeType::Finished => {
-                ServerHandshake::Finished(Finished::parse(buf, content_len)?)
+                ServerHandshake::Finished(ServerFinished::parse(buf, content_len)?)
             }
             //HandshakeType::KeyUpdate => {}
             //HandshakeType::MessageHash => {}

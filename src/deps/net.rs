@@ -1,6 +1,6 @@
 #[cfg(feature = "fetch")]
 pub trait Net {
-    fn get(&self, url: &str) -> std::io::Result<Vec<u8>>;
+    fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>>;
 }
 
 #[cfg(feature = "fetch")]
@@ -94,25 +94,34 @@ struct HttpResponse {
 #[cfg(feature = "fetch-sync")]
 fn write_http_request(
     mut stream: impl std::io::Write,
+    method: &str,
     host: &str,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<()> {
     write!(
         stream,
-        "GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n"
+        "{method} {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n"
     )?;
+    if !body.is_empty() {
+        write!(stream, "Content-Length: {}\r\n", body.len())?;
+    }
+    stream.write_all(b"\r\n")?;
+    stream.write_all(body)?;
     stream.flush()
 }
 
 #[cfg(feature = "fetch-sync")]
 fn sync_http_response(
     mut stream: impl std::io::Read + std::io::Write,
+    method: &str,
     host: &str,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<HttpResponse> {
     use std::io::{BufRead, BufReader, Read};
 
-    write_http_request(&mut stream, host, path)?;
+    write_http_request(&mut stream, method, host, path, body)?;
     let mut reader = BufReader::new(stream);
     let mut status_line = String::new();
     reader.read_line(&mut status_line)?;
@@ -142,10 +151,12 @@ fn sync_http_response(
 #[cfg(all(feature = "fetch-sync", test))]
 fn sync_http_exchange(
     stream: impl std::io::Read + std::io::Write,
+    method: &str,
     host: &str,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<Vec<u8>> {
-    let response = sync_http_response(stream, host, path)?;
+    let response = sync_http_response(stream, method, host, path, body)?;
     if !(200..300).contains(&response.status) {
         return Err(std::io::Error::other(format!("HTTP {}", response.status)));
     }
@@ -155,8 +166,10 @@ fn sync_http_exchange(
 #[cfg(feature = "fetch-smol")]
 async fn async_http_response<RW>(
     stream: RW,
+    method: &str,
     host: &str,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<HttpResponse>
 where
     RW: futures_lite::io::AsyncRead + futures_lite::io::AsyncWrite + Unpin,
@@ -164,11 +177,13 @@ where
     use futures_lite::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 
     let mut stream = stream;
-    stream
-        .write_all(
-            format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n").as_bytes(),
-        )
-        .await?;
+    let mut request = format!("{method} {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n");
+    if !body.is_empty() {
+        request.push_str(&format!("Content-Length: {}\r\n", body.len()));
+    }
+    request.push_str("\r\n");
+    stream.write_all(request.as_bytes()).await?;
+    stream.write_all(body).await?;
     stream.flush().await?;
 
     let mut reader = BufReader::new(stream);
@@ -202,7 +217,7 @@ async fn async_http_exchange<RW>(stream: RW, host: &str, path: &str) -> std::io:
 where
     RW: futures_lite::io::AsyncRead + futures_lite::io::AsyncWrite + Unpin,
 {
-    let response = async_http_response(stream, host, path).await?;
+    let response = async_http_response(stream, "GET", host, path, &[]).await?;
     if !(200..300).contains(&response.status) {
         return Err(std::io::Error::other(format!("HTTP {}", response.status)));
     }
@@ -224,22 +239,58 @@ fn load_system_ca_ders() -> Vec<Vec<u8>> {
 // bundle. embedded-tls's built-in CertVerifier only accepts a single CA, so we
 // implement TlsVerifier directly.
 #[cfg(feature = "embedded-tls")]
-struct SystemCertsVerifier<CS: embedded_tls::blocking::TlsCipherSuite> {
+struct SystemCertsVerifier {
     ca_ders: Vec<Vec<u8>>,
     host: Option<String>,
-    cert_transcript: Option<CS::Hash>,
+    cert_transcript_hash: Option<Vec<u8>>,
     cert_der: Option<Vec<u8>>,
 }
 
 #[cfg(feature = "embedded-tls")]
-impl<CS: embedded_tls::blocking::TlsCipherSuite> SystemCertsVerifier<CS> {
+impl SystemCertsVerifier {
     fn new(ca_ders: Vec<Vec<u8>>) -> Self {
         Self {
             ca_ders,
             host: None,
-            cert_transcript: None,
+            cert_transcript_hash: None,
             cert_der: None,
         }
+    }
+}
+
+#[cfg(feature = "embedded-tls")]
+struct SystemTlsProvider<CS: embedded_tls::blocking::TlsCipherSuite> {
+    rng: rand_core::OsRng,
+    verifier: SystemCertsVerifier,
+    _suite: std::marker::PhantomData<CS>,
+}
+
+#[cfg(feature = "embedded-tls")]
+impl<CS: embedded_tls::blocking::TlsCipherSuite> SystemTlsProvider<CS> {
+    fn new(ca_ders: Vec<Vec<u8>>) -> Self {
+        Self {
+            rng: rand_core::OsRng,
+            verifier: SystemCertsVerifier::new(ca_ders),
+            _suite: std::marker::PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "embedded-tls")]
+impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::CryptoProvider
+    for SystemTlsProvider<CS>
+{
+    type CipherSuite = CS;
+    type Signature = &'static [u8];
+
+    fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
+        &mut self.rng
+    }
+
+    fn verifier(
+        &mut self,
+    ) -> Result<&mut impl embedded_tls::blocking::TlsVerifier, embedded_tls::TlsError> {
+        Ok(&mut self.verifier)
     }
 }
 
@@ -259,9 +310,7 @@ static CHAIN_SIGALGS: &[&webpki::SignatureAlgorithm] = &[
 ];
 
 #[cfg(feature = "embedded-tls")]
-impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVerifier<CS>
-    for SystemCertsVerifier<CS>
-{
+impl embedded_tls::blocking::TlsVerifier for SystemCertsVerifier {
     fn set_hostname_verification(&mut self, hostname: &str) -> Result<(), embedded_tls::TlsError> {
         self.host = Some(hostname.to_string());
         Ok(())
@@ -269,7 +318,7 @@ impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVeri
 
     fn verify_certificate(
         &mut self,
-        transcript: &CS::Hash,
+        transcript_hash: &[u8],
         _ca: &Option<embedded_tls::blocking::Certificate>,
         cert: embedded_tls::CertificateRef,
     ) -> Result<(), embedded_tls::TlsError> {
@@ -327,7 +376,7 @@ impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVeri
         }
 
         self.cert_der = Some(ee_der.to_vec());
-        self.cert_transcript = Some(transcript.clone());
+        self.cert_transcript_hash = Some(transcript_hash.to_vec());
         Ok(())
     }
 
@@ -335,11 +384,10 @@ impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVeri
         &mut self,
         verify: embedded_tls::blocking::CertificateVerifyRef,
     ) -> Result<(), embedded_tls::TlsError> {
-        use digest::Digest;
         use embedded_tls::SignatureScheme;
 
-        let transcript = self
-            .cert_transcript
+        let transcript_hash = self
+            .cert_transcript_hash
             .take()
             .ok_or(embedded_tls::TlsError::InvalidCertificate)?;
         let ee_der = self
@@ -351,7 +399,7 @@ impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVeri
         let mut msg = Vec::<u8>::with_capacity(64 + ctx_str.len() + 64);
         msg.extend(std::iter::repeat_n(0x20u8, 64));
         msg.extend_from_slice(ctx_str);
-        msg.extend_from_slice(&transcript.finalize());
+        msg.extend_from_slice(&transcript_hash);
 
         let ee_cert = webpki::EndEntityCert::try_from(ee_der.as_slice())
             .map_err(|_| embedded_tls::TlsError::InvalidSignature)?;
@@ -375,15 +423,17 @@ impl<CS: embedded_tls::blocking::TlsCipherSuite> embedded_tls::blocking::TlsVeri
 #[cfg(all(feature = "fetch-sync", feature = "embedded-tls"))]
 fn embedded_tls_http_response(
     stream: std::net::TcpStream,
+    method: &str,
     host: &str,
     port: u16,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<HttpResponse> {
     use embedded_io::Error as _;
     use embedded_io_adapters::std::FromStd;
     use embedded_tls::blocking::{
-        Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256, CryptoProvider, TlsConfig,
-        TlsConnection, TlsContext, TlsError, TlsVerifier,
+        Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256, TlsConfig, TlsConnection,
+        TlsContext, TlsError,
     };
 
     struct TlsStd<T>(T);
@@ -439,31 +489,11 @@ fn embedded_tls_http_response(
             &mut write_buf1,
         );
 
-        #[cfg(feature = "embedded-tls")]
-        {
-            struct P128 {
-                rng: rand_core::OsRng,
-                verifier: SystemCertsVerifier<Aes128GcmSha256>,
-            }
-            impl CryptoProvider for P128 {
-                type CipherSuite = Aes128GcmSha256;
-                type Signature = &'static [u8];
-                fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-                    &mut self.rng
-                }
-                fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes128GcmSha256>, TlsError> {
-                    Ok(&mut self.verifier)
-                }
-            }
-            tls.open(TlsContext::new(
-                &config,
-                P128 {
-                    rng: rand_core::OsRng,
-                    verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
-                },
-            ))
-            .map(|_| sync_http_response(TlsStd(tls), host, path))
-        }
+        tls.open(TlsContext::new(
+            &config,
+            SystemTlsProvider::<Aes128GcmSha256>::new(system_ca_ders.clone()),
+        ))
+        .map(|_| sync_http_response(TlsStd(tls), method, host, path, body))
     };
 
     if let Ok(r) = open1 {
@@ -491,33 +521,13 @@ fn embedded_tls_http_response(
         &mut write_buf2,
     );
 
-    #[cfg(feature = "embedded-tls")]
-    {
-        struct P256 {
-            rng: rand_core::OsRng,
-            verifier: SystemCertsVerifier<Aes256GcmSha384>,
-        }
-        impl CryptoProvider for P256 {
-            type CipherSuite = Aes256GcmSha384;
-            type Signature = &'static [u8];
-            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-                &mut self.rng
-            }
-            fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes256GcmSha384>, TlsError> {
-                Ok(&mut self.verifier)
-            }
-        }
-        tls2.open(TlsContext::new(
-            &config,
-            P256 {
-                rng: rand_core::OsRng,
-                verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
-            },
-        ))
-        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
-    }
+    tls2.open(TlsContext::new(
+        &config,
+        SystemTlsProvider::<Aes256GcmSha384>::new(system_ca_ders.clone()),
+    ))
+    .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
 
-    if let Ok(r) = sync_http_response(TlsStd(tls2), host, path) {
+    if let Ok(r) = sync_http_response(TlsStd(tls2), method, host, path, body) {
         return Ok(r);
     }
 
@@ -542,35 +552,13 @@ fn embedded_tls_http_response(
         &mut write_buf3,
     );
 
-    #[cfg(feature = "embedded-tls")]
-    {
-        struct P3 {
-            rng: rand_core::OsRng,
-            verifier: SystemCertsVerifier<Chacha20Poly1305Sha256>,
-        }
-        impl CryptoProvider for P3 {
-            type CipherSuite = Chacha20Poly1305Sha256;
-            type Signature = &'static [u8];
-            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-                &mut self.rng
-            }
-            fn verifier(
-                &mut self,
-            ) -> Result<&mut impl TlsVerifier<Chacha20Poly1305Sha256>, TlsError> {
-                Ok(&mut self.verifier)
-            }
-        }
-        tls3.open(TlsContext::new(
-            &config,
-            P3 {
-                rng: rand_core::OsRng,
-                verifier: SystemCertsVerifier::new(system_ca_ders),
-            },
-        ))
-        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
-    }
+    tls3.open(TlsContext::new(
+        &config,
+        SystemTlsProvider::<Chacha20Poly1305Sha256>::new(system_ca_ders),
+    ))
+    .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
 
-    sync_http_response(TlsStd(tls3), host, path)
+    sync_http_response(TlsStd(tls3), method, host, path, body)
 }
 
 // ── async TLS path ────────────────────────────────────────────────────────────
@@ -578,14 +566,23 @@ fn embedded_tls_http_response(
 #[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
 async fn embedded_tls_async_exchange<S>(
     tls: &mut S,
+    method: &str,
     host: &str,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<HttpResponse>
 where
     S: embedded_io_async::Read + embedded_io_async::Write,
 {
-    let req = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n");
+    let mut req = format!("{method} {path} HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n");
+    if !body.is_empty() {
+        req.push_str(&format!("Content-Length: {}\r\n", body.len()));
+    }
+    req.push_str("\r\n");
     tls.write_all(req.as_bytes())
+        .await
+        .map_err(|_| std::io::Error::other("embedded-tls write failed"))?;
+    tls.write_all(body)
         .await
         .map_err(|_| std::io::Error::other("embedded-tls write failed"))?;
     tls.flush()
@@ -623,21 +620,82 @@ where
 }
 
 #[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
+enum AnyAsyncTls<'a> {
+    Aes128(
+        embedded_tls::TlsConnection<
+            'a,
+            embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
+            embedded_tls::Aes128GcmSha256,
+        >,
+    ),
+    Aes256(
+        embedded_tls::TlsConnection<
+            'a,
+            embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
+            embedded_tls::Aes256GcmSha384,
+        >,
+    ),
+    Chacha(
+        embedded_tls::TlsConnection<
+            'a,
+            embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
+            embedded_tls::Chacha20Poly1305Sha256,
+        >,
+    ),
+}
+
+#[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
+impl embedded_io_async::ErrorType for AnyAsyncTls<'_> {
+    type Error = embedded_tls::TlsError;
+}
+
+#[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
+impl embedded_io_async::Read for AnyAsyncTls<'_> {
+    async fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
+        match self {
+            AnyAsyncTls::Aes128(tls) => tls.read(buf).await,
+            AnyAsyncTls::Aes256(tls) => tls.read(buf).await,
+            AnyAsyncTls::Chacha(tls) => tls.read(buf).await,
+        }
+    }
+}
+
+#[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
+impl embedded_io_async::Write for AnyAsyncTls<'_> {
+    async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+        match self {
+            AnyAsyncTls::Aes128(tls) => tls.write(buf).await,
+            AnyAsyncTls::Aes256(tls) => tls.write(buf).await,
+            AnyAsyncTls::Chacha(tls) => tls.write(buf).await,
+        }
+    }
+
+    async fn flush(&mut self) -> Result<(), Self::Error> {
+        match self {
+            AnyAsyncTls::Aes128(tls) => tls.flush().await,
+            AnyAsyncTls::Aes256(tls) => tls.flush().await,
+            AnyAsyncTls::Chacha(tls) => tls.flush().await,
+        }
+    }
+}
+
+#[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
 async fn embedded_tls_async_http_response(
     stream: smol::net::TcpStream,
+    method: &str,
     host: &str,
     port: u16,
     path: &str,
+    body: &[u8],
 ) -> std::io::Result<HttpResponse> {
     use embedded_io_adapters::futures_03::FromFutures;
     use embedded_tls::{
-        Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256, CryptoProvider, TlsConfig,
-        TlsConnection, TlsContext, TlsError, TlsVerifier,
+        Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256, TlsConfig, TlsConnection,
+        TlsContext,
     };
 
     let system_ca_ders = load_system_ca_ders();
 
-    // Attempt 1: Aes128GcmSha256
     {
         let config = TlsConfig::new()
             .with_server_name(host)
@@ -646,36 +704,25 @@ async fn embedded_tls_async_http_response(
         let mut wb = [0u8; 16640];
         let mut tls =
             TlsConnection::<_, Aes128GcmSha256>::new(FromFutures::new(stream), &mut rb, &mut wb);
-        struct P128 {
-            rng: rand_core::OsRng,
-            verifier: SystemCertsVerifier<Aes128GcmSha256>,
-        }
-        impl CryptoProvider for P128 {
-            type CipherSuite = Aes128GcmSha256;
-            type Signature = &'static [u8];
-            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-                &mut self.rng
-            }
-            fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes128GcmSha256>, TlsError> {
-                Ok(&mut self.verifier)
-            }
-        }
         if tls
             .open(TlsContext::new(
                 &config,
-                P128 {
-                    rng: rand_core::OsRng,
-                    verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
-                },
+                SystemTlsProvider::<Aes128GcmSha256>::new(system_ca_ders.clone()),
             ))
             .await
             .is_ok()
         {
-            return embedded_tls_async_exchange(&mut tls, host, path).await;
+            return embedded_tls_async_exchange(
+                &mut AnyAsyncTls::Aes128(tls),
+                method,
+                host,
+                path,
+                body,
+            )
+            .await;
         }
     }
 
-    // Attempt 2: Aes256GcmSha384
     let stream2 = smol::net::TcpStream::connect((host, port)).await?;
     {
         let config = TlsConfig::new()
@@ -685,36 +732,25 @@ async fn embedded_tls_async_http_response(
         let mut wb = [0u8; 16640];
         let mut tls =
             TlsConnection::<_, Aes256GcmSha384>::new(FromFutures::new(stream2), &mut rb, &mut wb);
-        struct P256 {
-            rng: rand_core::OsRng,
-            verifier: SystemCertsVerifier<Aes256GcmSha384>,
-        }
-        impl CryptoProvider for P256 {
-            type CipherSuite = Aes256GcmSha384;
-            type Signature = &'static [u8];
-            fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-                &mut self.rng
-            }
-            fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Aes256GcmSha384>, TlsError> {
-                Ok(&mut self.verifier)
-            }
-        }
         if tls
             .open(TlsContext::new(
                 &config,
-                P256 {
-                    rng: rand_core::OsRng,
-                    verifier: SystemCertsVerifier::new(system_ca_ders.clone()),
-                },
+                SystemTlsProvider::<Aes256GcmSha384>::new(system_ca_ders.clone()),
             ))
             .await
             .is_ok()
         {
-            return embedded_tls_async_exchange(&mut tls, host, path).await;
+            return embedded_tls_async_exchange(
+                &mut AnyAsyncTls::Aes256(tls),
+                method,
+                host,
+                path,
+                body,
+            )
+            .await;
         }
     }
 
-    // Attempt 3: Chacha20Poly1305Sha256
     let stream3 = smol::net::TcpStream::connect((host, port)).await?;
     let config = TlsConfig::new()
         .with_server_name(host)
@@ -726,41 +762,29 @@ async fn embedded_tls_async_http_response(
         &mut rb,
         &mut wb,
     );
-    struct P3 {
-        rng: rand_core::OsRng,
-        verifier: SystemCertsVerifier<Chacha20Poly1305Sha256>,
-    }
-    impl CryptoProvider for P3 {
-        type CipherSuite = Chacha20Poly1305Sha256;
-        type Signature = &'static [u8];
-        fn rng(&mut self) -> impl embedded_tls::CryptoRngCore {
-            &mut self.rng
-        }
-        fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Chacha20Poly1305Sha256>, TlsError> {
-            Ok(&mut self.verifier)
-        }
-    }
     tls.open(TlsContext::new(
         &config,
-        P3 {
-            rng: rand_core::OsRng,
-            verifier: SystemCertsVerifier::new(system_ca_ders),
-        },
+        SystemTlsProvider::<Chacha20Poly1305Sha256>::new(system_ca_ders),
     ))
     .await
     .map_err(|e| std::io::Error::other(format!("embedded-tls: {e}")))?;
-    embedded_tls_async_exchange(&mut tls, host, path).await
+    embedded_tls_async_exchange(&mut AnyAsyncTls::Chacha(tls), method, host, path, body).await
 }
 
 // ── sync Net impl ─────────────────────────────────────────────────────────────
 
 #[cfg(feature = "fetch-sync")]
-fn sync_get(url: &str) -> std::io::Result<Vec<u8>> {
-    sync_get_inner(url, 0)
+fn sync_request(url: &str, method: &str, body: &[u8]) -> std::io::Result<Vec<u8>> {
+    sync_request_inner(url, method, body, 0)
 }
 
 #[cfg(feature = "fetch-sync")]
-fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
+fn sync_request_inner(
+    url: &str,
+    method: &str,
+    body: &[u8],
+    redirects: usize,
+) -> std::io::Result<Vec<u8>> {
     use std::net::TcpStream;
     use std::time::Duration;
 
@@ -781,8 +805,10 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
                 .connect(&host, stream)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
             return handle_sync_response(
-                sync_http_response(tls_stream, &host, &path)?,
+                sync_http_response(tls_stream, method, &host, &path, body)?,
                 url,
+                method,
+                body,
                 redirects,
             );
         }
@@ -807,8 +833,16 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
             let conn = rustls::ClientConnection::new(config, server_name)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
             return handle_sync_response(
-                sync_http_response(rustls::StreamOwned::new(conn, stream), &host, &path)?,
+                sync_http_response(
+                    rustls::StreamOwned::new(conn, stream),
+                    method,
+                    &host,
+                    &path,
+                    body,
+                )?,
                 url,
+                method,
+                body,
                 redirects,
             );
         }
@@ -818,8 +852,10 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
             not(any(feature = "tls-dynamic", feature = "rustls"))
         ))]
         return handle_sync_response(
-            embedded_tls_http_response(stream, &host, port, &path)?,
+            embedded_tls_http_response(stream, method, &host, port, &path, body)?,
             url,
+            method,
+            body,
             redirects,
         );
 
@@ -829,18 +865,26 @@ fn sync_get_inner(url: &str, redirects: usize) -> std::io::Result<Vec<u8>> {
         ));
     }
 
-    handle_sync_response(sync_http_response(stream, &host, &path)?, url, redirects)
+    handle_sync_response(
+        sync_http_response(stream, method, &host, &path, body)?,
+        url,
+        method,
+        body,
+        redirects,
+    )
 }
 
 #[cfg(feature = "fetch-sync")]
 fn handle_sync_response(
     response: HttpResponse,
     url: &str,
+    method: &str,
+    body: &[u8],
     redirects: usize,
 ) -> std::io::Result<Vec<u8>> {
     if (300..400).contains(&response.status) {
         if let Some(next) = redirect_location(&response.headers, url)? {
-            return sync_get_inner(&next, redirects + 1);
+            return sync_request_inner(&next, method, body, redirects + 1);
         }
     }
 
@@ -852,15 +896,24 @@ fn handle_sync_response(
 
 #[cfg(feature = "fetch-sync")]
 impl Net for SystemNet {
-    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
-        sync_get(url)
+    fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>> {
+        sync_request(url, method, body)
     }
 }
 
 // ── async Net impl ────────────────────────────────────────────────────────────
 
-#[cfg(feature = "fetch-smol")]
+#[cfg(all(feature = "fetch-smol", test))]
 pub(crate) async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
+    async_request(url, "GET", &[]).await
+}
+
+#[cfg(feature = "fetch-smol")]
+pub(crate) async fn async_request(
+    url: &str,
+    method: &str,
+    body: &[u8],
+) -> std::io::Result<Vec<u8>> {
     let mut current = url.to_string();
     let mut redirects = 0;
 
@@ -869,7 +922,7 @@ pub(crate) async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
             return Err(std::io::Error::other("too many redirects"));
         }
 
-        let response = async_get_once(&current).await?;
+        let response = async_request_once(&current, method, body).await?;
         if (300..400).contains(&response.status)
             && let Some(next) = redirect_location(&response.headers, &current)?
         {
@@ -886,7 +939,7 @@ pub(crate) async fn async_get(url: &str) -> std::io::Result<Vec<u8>> {
 }
 
 #[cfg(feature = "fetch-smol")]
-async fn async_get_once(url: &str) -> std::io::Result<HttpResponse> {
+async fn async_request_once(url: &str, method: &str, body: &[u8]) -> std::io::Result<HttpResponse> {
     let (tls, host, port, path) = parse_url(url)?;
     let stream = smol::net::TcpStream::connect((host.as_str(), port)).await?;
     if tls {
@@ -895,7 +948,7 @@ async fn async_get_once(url: &str) -> std::io::Result<HttpResponse> {
             let tls_stream = async_native_tls::connect(host.as_str(), stream)
                 .await
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
-            return async_http_response(tls_stream, &host, &path).await;
+            return async_http_response(tls_stream, method, &host, &path, body).await;
         }
 
         #[cfg(all(feature = "rustls", not(feature = "tls-dynamic")))]
@@ -918,14 +971,14 @@ async fn async_get_once(url: &str) -> std::io::Result<HttpResponse> {
                 .to_owned();
             let connector = TlsConnector::from(config);
             let tls_stream = connector.connect(server_name, stream).await?;
-            return async_http_response(tls_stream, &host, &path).await;
+            return async_http_response(tls_stream, method, &host, &path, body).await;
         }
 
         #[cfg(all(
             feature = "embedded-tls",
             not(any(feature = "tls-dynamic", feature = "rustls"))
         ))]
-        return embedded_tls_async_http_response(stream, &host, port, &path).await;
+        return embedded_tls_async_http_response(stream, method, &host, port, &path, body).await;
 
         #[cfg(not(any(feature = "tls-dynamic", feature = "rustls", feature = "embedded-tls")))]
         return Err(std::io::Error::other(
@@ -933,13 +986,13 @@ async fn async_get_once(url: &str) -> std::io::Result<HttpResponse> {
         ));
     }
 
-    async_http_response(stream, &host, &path).await
+    async_http_response(stream, method, &host, &path, body).await
 }
 
 #[cfg(feature = "fetch-smol")]
 impl Net for SystemNet {
-    fn get(&self, url: &str) -> std::io::Result<Vec<u8>> {
-        smol::block_on(async_get(url))
+    fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>> {
+        smol::block_on(async_request(url, method, body))
     }
 }
 
@@ -1091,7 +1144,7 @@ mod tests {
         let response = b"HTTP/1.0 200 OK\r\nContent-Length: 5\r\n\r\nhello";
         let mut stream = SyncTestStream::new(response);
 
-        let body = sync_http_exchange(&mut stream, "example.com", "/hello").unwrap();
+        let body = sync_http_exchange(&mut stream, "GET", "example.com", "/hello", &[]).unwrap();
 
         assert_eq!(
             stream.written,
@@ -1102,11 +1155,28 @@ mod tests {
 
     #[cfg(feature = "fetch-sync")]
     #[test]
+    fn sync_http_exchange_writes_method_and_body() {
+        let response = b"HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok";
+        let mut stream = SyncTestStream::new(response);
+
+        let body =
+            sync_http_exchange(&mut stream, "PUT", "example.com", "/item", b"name=hako").unwrap();
+
+        assert_eq!(
+            stream.written,
+            b"PUT /item HTTP/1.0\r\nHost: example.com\r\nConnection: close\r\nContent-Length: 9\r\n\r\nname=hako"
+        );
+        assert_eq!(body, b"ok");
+    }
+
+    #[cfg(feature = "fetch-sync")]
+    #[test]
     fn sync_http_exchange_rejects_non_success_status() {
         let response = b"HTTP/1.0 404 Not Found\r\nContent-Length: 0\r\n\r\n";
         let mut stream = SyncTestStream::new(response);
 
-        let err = sync_http_exchange(&mut stream, "example.com", "/missing").unwrap_err();
+        let err =
+            sync_http_exchange(&mut stream, "GET", "example.com", "/missing", &[]).unwrap_err();
 
         assert_eq!(err.to_string(), "HTTP 404");
     }
@@ -1125,6 +1195,29 @@ mod tests {
             b"GET /hello HTTP/1.0\r\nHost: example.com\r\nConnection: close\r\n\r\n"
         );
         assert_eq!(body, b"hello");
+    }
+
+    #[cfg(feature = "fetch-smol")]
+    #[test]
+    fn async_http_response_writes_method_and_body() {
+        let response = b"HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok";
+        let mut stream = AsyncTestStream::new(response);
+
+        let body = smol::block_on(async_http_response(
+            &mut stream,
+            "PATCH",
+            "example.com",
+            "/item",
+            b"name=hako",
+        ))
+        .unwrap()
+        .body;
+
+        assert_eq!(
+            stream.written,
+            b"PATCH /item HTTP/1.0\r\nHost: example.com\r\nConnection: close\r\nContent-Length: 9\r\n\r\nname=hako"
+        );
+        assert_eq!(body, b"ok");
     }
 
     #[cfg(feature = "fetch-smol")]

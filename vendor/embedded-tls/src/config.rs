@@ -79,10 +79,7 @@ impl TlsCipherSuite for Chacha20Poly1305Sha256 {
 /// The verifier is responsible for verifying certificates and signatures. Since certificate verification is
 /// an expensive process, this trait allows clients to choose how much verification should take place,
 /// and also to skip the verification if the server is verified through other means (I.e. a pre-shared key).
-pub trait TlsVerifier<CipherSuite>
-where
-    CipherSuite: TlsCipherSuite,
-{
+pub trait TlsVerifier {
     /// Host verification is enabled by passing a server hostname.
     fn set_hostname_verification(&mut self, hostname: &str) -> Result<(), crate::TlsError>;
 
@@ -93,7 +90,7 @@ where
     /// to use.
     fn verify_certificate(
         &mut self,
-        transcript: &CipherSuite::Hash,
+        transcript_hash: &[u8],
         ca: &Option<Certificate>,
         cert: CertificateRef,
     ) -> Result<(), TlsError>;
@@ -106,17 +103,14 @@ where
 
 pub struct NoVerify;
 
-impl<CipherSuite> TlsVerifier<CipherSuite> for NoVerify
-where
-    CipherSuite: TlsCipherSuite,
-{
+impl TlsVerifier for NoVerify {
     fn set_hostname_verification(&mut self, _hostname: &str) -> Result<(), crate::TlsError> {
         Ok(())
     }
 
     fn verify_certificate(
         &mut self,
-        _transcript: &CipherSuite::Hash,
+        _transcript_hash: &[u8],
         _ca: &Option<Certificate>,
         _cert: CertificateRef,
     ) -> Result<(), TlsError> {
@@ -160,7 +154,7 @@ pub trait CryptoProvider {
 
     fn rng(&mut self) -> impl CryptoRngCore;
 
-    fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Self::CipherSuite>, crate::TlsError> {
+    fn verifier(&mut self) -> Result<&mut impl TlsVerifier, crate::TlsError> {
         Err::<&mut NoVerify, _>(crate::TlsError::Unimplemented)
     }
 
@@ -183,7 +177,7 @@ impl<T: CryptoProvider> CryptoProvider for &mut T {
         T::rng(self)
     }
 
-    fn verifier(&mut self) -> Result<&mut impl TlsVerifier<Self::CipherSuite>, crate::TlsError> {
+    fn verifier(&mut self) -> Result<&mut impl TlsVerifier, crate::TlsError> {
         T::verifier(self)
     }
 
