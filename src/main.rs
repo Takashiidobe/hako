@@ -1,9 +1,7 @@
 mod deps;
 mod dig;
 mod env;
-#[cfg(feature = "fetch")]
 mod fetch;
-#[cfg(feature = "hash")]
 mod hash;
 mod hello;
 mod hostname;
@@ -11,7 +9,6 @@ mod httpserver;
 #[cfg(test)]
 mod mock;
 mod overwrite;
-#[cfg(feature = "ping")]
 mod ping;
 mod rand;
 mod sleep;
@@ -24,11 +21,10 @@ mod whois;
 use std::io;
 use std::net::Ipv4Addr;
 
-#[cfg(feature = "ping")]
-use deps::SystemIcmp;
-#[cfg(feature = "fetch")]
-use deps::SystemNet;
-use deps::{SystemClock, SystemEnv, SystemFs, SystemInfo, SystemRng, TcpWhois, UdpDns};
+use deps::{
+    SystemClock, SystemEnv, SystemFs, SystemIcmp, SystemInfo, SystemNet, SystemRng, TcpWhois,
+    UdpDns,
+};
 
 fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
     let ns = args
@@ -60,15 +56,10 @@ fn list_commands() -> Vec<&'static str> {
         "hostname",
         "uname",
     ];
-    #[cfg(feature = "fetch")]
     cmds.push("fetch");
-    #[cfg(feature = "ping")]
     cmds.push("ping");
-    #[cfg(feature = "hash")]
-    {
-        cmds.push("md5sum");
-        cmds.push("sha256sum");
-    }
+    cmds.push("md5sum");
+    cmds.push("sha256sum");
     cmds
 }
 
@@ -114,16 +105,12 @@ fn main() {
         "whois" => whois::run(out, &TcpWhois, &rest),
         "hostname" => hostname::run(out, &SystemInfo),
         "uname" => uname::run(out, &SystemInfo, &rest),
-        #[cfg(feature = "fetch")]
         "fetch" => fetch::run(out, &SystemNet, &rest),
-        #[cfg(feature = "ping")]
         "ping" => {
             let (dns, r) = dig_dns(&rest);
             ping::run(out, &SystemIcmp, &dns, &r)
         }
-        #[cfg(feature = "hash")]
         "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
-        #[cfg(feature = "hash")]
         "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
         _ => {
             eprintln!("usage: {} <{}> [args...]", cmd, list_commands().join("|"));

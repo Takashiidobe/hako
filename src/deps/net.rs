@@ -1,21 +1,9 @@
-#[cfg(feature = "fetch")]
 pub trait Net {
     fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>>;
 }
 
-#[cfg(feature = "fetch")]
 pub struct SystemNet;
 
-#[cfg(all(feature = "fetch-sync", feature = "fetch-smol"))]
-compile_error!("fetch-sync cannot be combined with async fetch backends");
-
-#[cfg(all(
-    feature = "fetch",
-    not(any(feature = "fetch-sync", feature = "fetch-smol"))
-))]
-compile_error!("enable one of fetch-sync or fetch-smol");
-
-#[cfg(feature = "fetch")]
 fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
     let (tls, rest) = if let Some(r) = url.strip_prefix("https://") {
         (true, r)
@@ -42,7 +30,6 @@ fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
     Ok((tls, host, port, path))
 }
 
-#[cfg(feature = "fetch")]
 fn parse_http_status(status_line: &str) -> std::io::Result<u16> {
     status_line
         .split_whitespace()
@@ -51,7 +38,6 @@ fn parse_http_status(status_line: &str) -> std::io::Result<u16> {
         .ok_or_else(|| std::io::Error::other("invalid HTTP status line"))
 }
 
-#[cfg(feature = "fetch")]
 fn redirect_location(
     headers: &[(String, String)],
     current_url: &str,
@@ -84,14 +70,13 @@ fn redirect_location(
     }
 }
 
-#[cfg(any(feature = "fetch-sync", feature = "fetch-smol"))]
 struct HttpResponse {
     status: u16,
     headers: Vec<(String, String)>,
     body: Vec<u8>,
 }
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(not(feature = "fetch-smol"))]
 fn write_http_request(
     mut stream: impl std::io::Write,
     method: &str,
@@ -111,7 +96,7 @@ fn write_http_request(
     stream.flush()
 }
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(not(feature = "fetch-smol"))]
 fn sync_http_response(
     mut stream: impl std::io::Read + std::io::Write,
     method: &str,
@@ -148,7 +133,7 @@ fn sync_http_response(
     })
 }
 
-#[cfg(all(feature = "fetch-sync", test))]
+#[cfg(all(not(feature = "fetch-smol"), test))]
 fn sync_http_exchange(
     stream: impl std::io::Read + std::io::Write,
     method: &str,
@@ -420,7 +405,7 @@ impl embedded_tls::blocking::TlsVerifier for SystemCertsVerifier {
 
 // ── sync TLS path ─────────────────────────────────────────────────────────────
 
-#[cfg(all(feature = "fetch-sync", feature = "embedded-tls"))]
+#[cfg(all(not(feature = "fetch-smol"), feature = "embedded-tls"))]
 fn embedded_tls_http_response(
     stream: std::net::TcpStream,
     method: &str,
@@ -773,12 +758,12 @@ async fn embedded_tls_async_http_response(
 
 // ── sync Net impl ─────────────────────────────────────────────────────────────
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(not(feature = "fetch-smol"))]
 fn sync_request(url: &str, method: &str, body: &[u8]) -> std::io::Result<Vec<u8>> {
     sync_request_inner(url, method, body, 0)
 }
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(not(feature = "fetch-smol"))]
 fn sync_request_inner(
     url: &str,
     method: &str,
@@ -874,7 +859,7 @@ fn sync_request_inner(
     )
 }
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(not(feature = "fetch-smol"))]
 fn handle_sync_response(
     response: HttpResponse,
     url: &str,
@@ -894,7 +879,7 @@ fn handle_sync_response(
     Ok(response.body)
 }
 
-#[cfg(feature = "fetch-sync")]
+#[cfg(not(feature = "fetch-smol"))]
 impl Net for SystemNet {
     fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>> {
         sync_request(url, method, body)
@@ -999,24 +984,21 @@ impl Net for SystemNet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[cfg(any(feature = "fetch-sync", feature = "fetch-smol"))]
-    use std::io::Cursor;
-    #[cfg(feature = "fetch-smol")]
-    use std::io::Read;
-    #[cfg(feature = "fetch-sync")]
-    use std::io::{Read, Write};
+    #[cfg(not(feature = "fetch-smol"))]
+    use std::io::Write;
+    use std::io::{Cursor, Read};
     #[cfg(feature = "fetch-smol")]
     use std::pin::Pin;
     #[cfg(feature = "fetch-smol")]
     use std::task::{Context, Poll};
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     struct SyncTestStream {
         read: Cursor<Vec<u8>>,
         written: Vec<u8>,
     }
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     impl SyncTestStream {
         fn new(read: &[u8]) -> Self {
             Self {
@@ -1026,14 +1008,14 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     impl Read for SyncTestStream {
         fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
             self.read.read(buf)
         }
     }
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     impl Write for SyncTestStream {
         fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
             self.written.extend_from_slice(buf);
@@ -1092,7 +1074,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "fetch")]
     #[test]
     fn parse_url_defaults_path_and_port() {
         let (tls, host, port, path) = parse_url("http://example.com").unwrap();
@@ -1102,7 +1083,6 @@ mod tests {
         assert_eq!(path, "/");
     }
 
-    #[cfg(feature = "fetch")]
     #[test]
     fn parse_url_preserves_https_path_and_port() {
         let (tls, host, port, path) = parse_url("https://example.com:8443/a/b").unwrap();
@@ -1112,14 +1092,12 @@ mod tests {
         assert_eq!(path, "/a/b");
     }
 
-    #[cfg(feature = "fetch")]
     #[test]
     fn parse_http_status_rejects_malformed_line() {
         let err = parse_http_status("nonsense").unwrap_err();
         assert_eq!(err.to_string(), "invalid HTTP status line");
     }
 
-    #[cfg(feature = "fetch")]
     #[test]
     fn redirect_location_accepts_absolute_url() {
         let headers = vec![(
@@ -1130,7 +1108,6 @@ mod tests {
         assert_eq!(next.as_deref(), Some("https://example.org/new"));
     }
 
-    #[cfg(feature = "fetch")]
     #[test]
     fn redirect_location_resolves_absolute_path() {
         let headers = vec![("location".to_string(), "/new".to_string())];
@@ -1138,7 +1115,7 @@ mod tests {
         assert_eq!(next.as_deref(), Some("https://example.com/new"));
     }
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     #[test]
     fn sync_http_exchange_writes_request_and_reads_body() {
         let response = b"HTTP/1.0 200 OK\r\nContent-Length: 5\r\n\r\nhello";
@@ -1153,7 +1130,7 @@ mod tests {
         assert_eq!(body, b"hello");
     }
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     #[test]
     fn sync_http_exchange_writes_method_and_body() {
         let response = b"HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok";
@@ -1169,7 +1146,7 @@ mod tests {
         assert_eq!(body, b"ok");
     }
 
-    #[cfg(feature = "fetch-sync")]
+    #[cfg(not(feature = "fetch-smol"))]
     #[test]
     fn sync_http_exchange_rejects_non_success_status() {
         let response = b"HTTP/1.0 404 Not Found\r\nContent-Length: 0\r\n\r\n";

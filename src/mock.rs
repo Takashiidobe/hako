@@ -3,11 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
-#[cfg(feature = "ping")]
-use crate::deps::Icmp;
-#[cfg(feature = "fetch")]
-use crate::deps::Net;
-use crate::deps::{DirFs, Dns, Env, Fs, Sleeper};
+use crate::deps::{DirFs, Dns, Env, Fs, Icmp, Net, Sleeper};
 
 pub struct FakeDns(pub Vec<Ipv4Addr>);
 
@@ -25,40 +21,32 @@ impl Dns for FailDns {
     }
 }
 
-#[cfg(feature = "fetch")]
 pub struct FakeNet(pub Vec<u8>);
 
-#[cfg(feature = "fetch")]
 impl Net for FakeNet {
     fn request(&self, _method: &str, _url: &str, _body: &[u8]) -> std::io::Result<Vec<u8>> {
         Ok(self.0.clone())
     }
 }
 
-#[cfg(feature = "fetch")]
 pub struct FailNet;
 
-#[cfg(feature = "fetch")]
 impl Net for FailNet {
     fn request(&self, _method: &str, _url: &str, _body: &[u8]) -> std::io::Result<Vec<u8>> {
         Err(std::io::Error::other("connection refused"))
     }
 }
 
-#[cfg(feature = "ping")]
 pub struct FakeIcmp(pub Duration);
 
-#[cfg(feature = "ping")]
 impl Icmp for FakeIcmp {
     fn send_ping(&self, _: Ipv4Addr, _: u16, _: &[u8]) -> std::io::Result<Duration> {
         Ok(self.0)
     }
 }
 
-#[cfg(feature = "ping")]
 pub struct FailIcmp;
 
-#[cfg(feature = "ping")]
 impl Icmp for FailIcmp {
     fn send_ping(&self, _: Ipv4Addr, _: u16, _: &[u8]) -> std::io::Result<Duration> {
         Err(std::io::Error::other("timeout"))

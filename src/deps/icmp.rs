@@ -1,4 +1,3 @@
-#[cfg(feature = "ping")]
 pub trait Icmp {
     fn send_ping(
         &self,
@@ -8,10 +7,8 @@ pub trait Icmp {
     ) -> std::io::Result<std::time::Duration>;
 }
 
-#[cfg(feature = "ping")]
 pub struct SystemIcmp;
 
-#[cfg(feature = "ping")]
 fn icmp_checksum(data: &[u8]) -> u16 {
     let mut sum: u32 = 0;
     let mut i = 0;
@@ -28,7 +25,6 @@ fn icmp_checksum(data: &[u8]) -> u16 {
     !(sum as u16)
 }
 
-#[cfg(feature = "ping")]
 fn build_icmp_echo(seq: u16, payload: &[u8]) -> Vec<u8> {
     let mut pkt = vec![0u8; 8 + payload.len()];
     pkt[0] = 8; // echo request
@@ -42,7 +38,7 @@ fn build_icmp_echo(seq: u16, payload: &[u8]) -> Vec<u8> {
     pkt
 }
 
-#[cfg(all(feature = "ping", unix))]
+#[cfg(unix)]
 impl Icmp for SystemIcmp {
     fn send_ping(
         &self,
@@ -84,7 +80,7 @@ impl Icmp for SystemIcmp {
     }
 }
 
-#[cfg(all(feature = "ping", target_os = "windows"))]
+#[cfg(target_os = "windows")]
 impl Icmp for SystemIcmp {
     fn send_ping(
         &self,
@@ -132,7 +128,7 @@ impl Icmp for SystemIcmp {
     }
 }
 
-#[cfg(all(feature = "ping", not(any(unix, target_os = "windows"))))]
+#[cfg(not(any(unix, target_os = "windows")))]
 impl Icmp for SystemIcmp {
     fn send_ping(
         &self,

@@ -12,9 +12,7 @@ pub use clock::{Clock, Sleeper, SystemClock};
 pub use dns::{Dns, UdpDns};
 pub use env::{Env, SystemEnv};
 pub use fs::{DirFs, Fs, SystemFs};
-#[cfg(feature = "ping")]
 pub use icmp::{Icmp, SystemIcmp};
-#[cfg(feature = "fetch")]
 pub use net::{Net, SystemNet};
 pub use rng::{Rng, SystemRng};
 #[allow(unused_imports)]
