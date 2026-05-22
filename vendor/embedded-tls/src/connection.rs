@@ -17,13 +17,82 @@ use embedded_io_async::{Read as AsyncRead, Write as AsyncWrite};
 
 use crate::application_data::ApplicationData;
 use crate::buffer::CryptoBuffer;
-use digest::generic_array::typenum::Unsigned;
 use p256::ecdh::EphemeralSecret;
 use signature::SignerMut;
 
+use crate::cipher_suites::CipherSuite as CipherSuiteCode;
 use crate::content_types::ContentType;
 use crate::parse_buffer::ParseBuffer;
-use aes_gcm::aead::{AeadCore, AeadInPlace, KeyInit};
+use aes_gcm::aead::{AeadInPlace, KeyInit};
+use aes_gcm::{Aes128Gcm, Aes256Gcm};
+use chacha20poly1305::ChaCha20Poly1305;
+
+const TLS13_AEAD_TAG_SIZE: usize = 16;
+
+#[inline(never)]
+pub(crate) fn encrypt_application_data(
+    suite: u16,
+    key: &[u8],
+    nonce: &[u8],
+    buf: &mut CryptoBuffer<'_>,
+) -> Result<(), TlsError> {
+    let len = buf.len() + TLS13_AEAD_TAG_SIZE;
+
+    if len > buf.capacity() {
+        return Err(TlsError::InsufficientSpace);
+    }
+
+    trace!("output size {}", len);
+    let len_bytes = (len as u16).to_be_bytes();
+    let additional_data = [
+        ContentType::ApplicationData as u8,
+        0x03,
+        0x03,
+        len_bytes[0],
+        len_bytes[1],
+    ];
+
+    match suite {
+        v if v == CipherSuiteCode::TlsAes128GcmSha256 as u16 => Aes128Gcm::new_from_slice(key)
+            .map_err(|_| TlsError::CryptoError)?
+            .encrypt_in_place(nonce.into(), &additional_data, buf),
+        v if v == CipherSuiteCode::TlsAes256GcmSha384 as u16 => Aes256Gcm::new_from_slice(key)
+            .map_err(|_| TlsError::CryptoError)?
+            .encrypt_in_place(nonce.into(), &additional_data, buf),
+        v if v == CipherSuiteCode::TlsChacha20Poly1305Sha256 as u16 => {
+            ChaCha20Poly1305::new_from_slice(key)
+                .map_err(|_| TlsError::CryptoError)?
+                .encrypt_in_place(nonce.into(), &additional_data, buf)
+        }
+        _ => return Err(TlsError::InvalidCipherSuite),
+    }
+    .map_err(|_| TlsError::InvalidApplicationData)
+}
+
+#[inline(never)]
+pub(crate) fn decrypt_application_data(
+    suite: u16,
+    key: &[u8],
+    nonce: &[u8],
+    aad: &[u8],
+    buf: &mut CryptoBuffer<'_>,
+) -> Result<(), TlsError> {
+    match suite {
+        v if v == CipherSuiteCode::TlsAes128GcmSha256 as u16 => Aes128Gcm::new_from_slice(key)
+            .map_err(|_| TlsError::CryptoError)?
+            .decrypt_in_place(nonce.into(), aad, buf),
+        v if v == CipherSuiteCode::TlsAes256GcmSha384 as u16 => Aes256Gcm::new_from_slice(key)
+            .map_err(|_| TlsError::CryptoError)?
+            .decrypt_in_place(nonce.into(), aad, buf),
+        v if v == CipherSuiteCode::TlsChacha20Poly1305Sha256 as u16 => {
+            ChaCha20Poly1305::new_from_slice(key)
+                .map_err(|_| TlsError::CryptoError)?
+                .decrypt_in_place(nonce.into(), aad, buf)
+        }
+        _ => return Err(TlsError::InvalidCipherSuite),
+    }
+    .map_err(|_| TlsError::CryptoError)
+}
 
 pub(crate) fn decrypt_record<CipherSuite>(
     key_schedule: &mut ReadKeySchedule<CipherSuite>,
@@ -44,10 +113,13 @@ where
         let server_key = key_schedule.get_key()?;
         let nonce = key_schedule.get_nonce()?;
 
-        let crypto = <CipherSuite::Cipher as KeyInit>::new(server_key);
-        crypto
-            .decrypt_in_place(&nonce, header.data(), &mut app_data)
-            .map_err(|_| TlsError::CryptoError)?;
+        decrypt_application_data(
+            CipherSuite::CODE_POINT,
+            server_key,
+            &nonce,
+            header.data(),
+            &mut app_data,
+        )?;
 
         let padding = app_data
             .as_slice()
@@ -102,30 +174,7 @@ where
 {
     let client_key = key_schedule.get_key()?;
     let nonce = key_schedule.get_nonce()?;
-    // trace!("encrypt key {:02x?}", client_key);
-    // trace!("encrypt nonce {:02x?}", nonce);
-    // trace!("plaintext {} {:02x?}", buf.len(), buf.as_slice(),);
-    //let crypto = Aes128Gcm::new_varkey(&self.key_schedule.get_client_key()).unwrap();
-    let crypto = <CipherSuite::Cipher as KeyInit>::new(client_key);
-    let len = buf.len() + <CipherSuite::Cipher as AeadCore>::TagSize::to_usize();
-
-    if len > buf.capacity() {
-        return Err(TlsError::InsufficientSpace);
-    }
-
-    trace!("output size {}", len);
-    let len_bytes = (len as u16).to_be_bytes();
-    let additional_data = [
-        ContentType::ApplicationData as u8,
-        0x03,
-        0x03,
-        len_bytes[0],
-        len_bytes[1],
-    ];
-
-    crypto
-        .encrypt_in_place(&nonce, &additional_data, buf)
-        .map_err(|_| TlsError::InvalidApplicationData)
+    encrypt_application_data(CipherSuite::CODE_POINT, client_key, &nonce, buf)
 }
 
 pub struct Handshake<CipherSuite>

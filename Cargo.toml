@@ -24,7 +24,6 @@ embedded-tls = [
   "dep:webpki",
   "dep:rustls-native-certs",
   "dep:digest",
-  "dep:rcgen",
 ]
 
 [dependencies]
@@ -48,9 +47,6 @@ futures-rustls = { version = "0.26", optional = true, default-features = false, 
 md-5 = { version = "0.11", optional = true }
 native-tls = { version = "0.2", optional = true }
 rand_core = { version = "0.6", features = ["getrandom"], optional = true }
-rcgen = { version = "0.13", optional = true, default-features = false, features = [
-  "ring",
-] }
 rustls = { version = "0.23", optional = true, default-features = false, features = [
   "std",
   "ring",
@@ -76,6 +72,9 @@ windows-sys = { version = "0.61", features = [
   "Win32_Networking_WinSock",
 ] }
 
+[build-dependencies]
+rcgen = { version = "0.13", default-features = false, features = ["ring"] }
+
 [patch.crates-io]
 embedded-tls = { path = "vendor/embedded-tls" }
 
@@ -83,4 +82,4 @@ embedded-tls = { path = "vendor/embedded-tls" }
 strip = true    # Automatically strip symbols from the binary.
 opt-level = "z" # optimize for size
 lto = true      # lto
-panic = "abort"
+panic = "immediate-abort"

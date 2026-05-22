@@ -3,7 +3,7 @@ use embedded_io::{ErrorType, Read as BlockingRead, Write as BlockingWrite};
 use embedded_io_async::{Read as AsyncRead, Write as AsyncWrite};
 use portable_atomic::AtomicBool;
 
-use aes_gcm::aead::{AeadCore, AeadInPlace, KeyInit};
+use aes_gcm::aead::AeadCore;
 use digest::Digest;
 use digest::generic_array::typenum::Unsigned;
 use p256::EncodedPoint;
@@ -18,6 +18,7 @@ use crate::buffer::CryptoBuffer;
 use crate::common::decrypted_buffer_info::DecryptedBufferInfo;
 use crate::common::decrypted_read_handler::DecryptedReadHandler;
 use crate::config::{TLS_RECORD_OVERHEAD, TlsCipherSuite, TlsConfig};
+use crate::connection::{decrypt_application_data, encrypt_application_data};
 use crate::content_types::ContentType;
 use crate::flush_policy::FlushPolicy;
 use crate::handshake::HandshakeType;
@@ -46,25 +47,7 @@ where
 {
     let server_key = key_schedule.get_key()?;
     let nonce = key_schedule.get_nonce()?;
-    let crypto = <CipherSuite::Cipher as KeyInit>::new(server_key);
-    let len = buf.len() + <CipherSuite::Cipher as AeadCore>::TagSize::to_usize();
-
-    if len > buf.capacity() {
-        return Err(TlsError::InsufficientSpace);
-    }
-
-    let len_bytes = (len as u16).to_be_bytes();
-    let additional_data = [
-        ContentType::ApplicationData as u8,
-        0x03,
-        0x03,
-        len_bytes[0],
-        len_bytes[1],
-    ];
-
-    crypto
-        .encrypt_in_place(&nonce, &additional_data, buf)
-        .map_err(|_| TlsError::InvalidApplicationData)
+    encrypt_application_data(CipherSuite::CODE_POINT, server_key, &nonce, buf)
 }
 
 /// Decrypt an in-place application data record using the **client** traffic keys.
@@ -79,10 +62,13 @@ where
 {
     let client_key = key_schedule.get_key()?;
     let nonce = key_schedule.get_nonce()?;
-    let crypto = <CipherSuite::Cipher as KeyInit>::new(client_key);
-    crypto
-        .decrypt_in_place(&nonce, header.data(), app_data)
-        .map_err(|_| TlsError::CryptoError)?;
+    decrypt_application_data(
+        CipherSuite::CODE_POINT,
+        client_key,
+        &nonce,
+        header.data(),
+        app_data,
+    )?;
 
     // strip zero padding
     let padding = app_data

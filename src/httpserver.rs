@@ -134,11 +134,10 @@ fn serve_tls(
 
 #[cfg(feature = "embedded-tls")]
 fn generate_self_signed_cert() -> io::Result<(Vec<u8>, Vec<u8>)> {
-    use rcgen::{CertifiedKey, generate_simple_self_signed};
-    let CertifiedKey { cert, key_pair } =
-        generate_simple_self_signed(vec!["localhost".to_string()])
-            .map_err(|e| io::Error::other(format!("cert gen: {e}")))?;
-    Ok((cert.der().to_vec(), key_pair.serialize_der()))
+    Ok((
+        include_bytes!(concat!(env!("OUT_DIR"), "/httpserver-cert.der")).to_vec(),
+        include_bytes!(concat!(env!("OUT_DIR"), "/httpserver-key.der")).to_vec(),
+    ))
 }
 
 #[cfg(all(feature = "embedded-tls", feature = "smol-runtime"))]
