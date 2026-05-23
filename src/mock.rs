@@ -11,6 +11,10 @@ impl Dns for FakeDns {
     fn lookup_a(&self, _domain: &str) -> std::io::Result<Vec<Ipv4Addr>> {
         Ok(self.0.clone())
     }
+
+    fn lookup_ptr(&self, _addr: &Ipv4Addr) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
 }
 
 pub struct FailDns;
@@ -18,6 +22,22 @@ pub struct FailDns;
 impl Dns for FailDns {
     fn lookup_a(&self, _domain: &str) -> std::io::Result<Vec<Ipv4Addr>> {
         Err(std::io::Error::other("timeout"))
+    }
+
+    fn lookup_ptr(&self, _addr: &Ipv4Addr) -> std::io::Result<Vec<String>> {
+        Err(std::io::Error::other("timeout"))
+    }
+}
+
+pub struct FakePtrDns(pub Vec<String>);
+
+impl Dns for FakePtrDns {
+    fn lookup_a(&self, _domain: &str) -> std::io::Result<Vec<Ipv4Addr>> {
+        Ok(vec![])
+    }
+
+    fn lookup_ptr(&self, _addr: &Ipv4Addr) -> std::io::Result<Vec<String>> {
+        Ok(self.0.clone())
     }
 }
 

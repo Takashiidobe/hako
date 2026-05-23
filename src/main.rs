@@ -1,5 +1,6 @@
 mod deps;
 mod dig;
+mod dnsname;
 mod env;
 mod fetch;
 mod hash;
@@ -51,6 +52,7 @@ fn list_commands() -> Vec<&'static str> {
         "sleep",
         "overwrite",
         "dig",
+        "dnsname",
         "httpserver",
         "tar",
         "env",
@@ -102,6 +104,10 @@ fn main() {
         "dig" => {
             let (dns, r) = dig_dns(&rest);
             dig::run(out, &dns, &r)
+        }
+        "dnsname" => {
+            let (dns, _) = dig_dns(&rest);
+            dnsname::run(out, &dns, &rest)
         }
         "httpserver" => httpserver::run(out, SystemFs, &rest),
         "tar" => tar::run(out, &SystemFs, &rest),

@@ -2,8 +2,22 @@ pub trait Net {
     fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>>;
 }
 
+pub struct TlsOptions<'a> {
+    pub server_name: &'a str,
+}
+
+pub struct TlsInfo {
+    pub certs: Vec<Vec<u8>>,
+    pub verified: bool,
+}
+
 pub trait TlsCheck {
-    fn check_tls(&self, host: &str, port: u16) -> std::io::Result<()>;
+    fn check_tls(
+        &self,
+        host: &str,
+        port: u16,
+        options: &TlsOptions<'_>,
+    ) -> std::io::Result<TlsInfo>;
 }
 
 pub struct SystemNet;
@@ -232,7 +246,8 @@ struct SystemCertsVerifier {
     ca_ders: Vec<Vec<u8>>,
     host: Option<String>,
     cert_transcript_hash: Option<Vec<u8>>,
-    cert_der: Option<Vec<u8>>,
+    signing_cert_der: Option<Vec<u8>>,
+    cert_ders: Vec<Vec<u8>>,
 }
 
 #[cfg(feature = "embedded-tls")]
@@ -242,7 +257,8 @@ impl SystemCertsVerifier {
             ca_ders,
             host: None,
             cert_transcript_hash: None,
-            cert_der: None,
+            signing_cert_der: None,
+            cert_ders: Vec::new(),
         }
     }
 }
@@ -327,9 +343,12 @@ impl embedded_tls::blocking::TlsVerifier for SystemCertsVerifier {
             Some(CertificateEntryRef::X509(der)) => *der,
             _ => return Err(embedded_tls::TlsError::InvalidCertificate),
         };
+        self.cert_ders.clear();
+        self.cert_ders.push(ee_der.to_vec());
         let intermediates: Vec<&[u8]> = entries
             .filter_map(|e| {
                 if let CertificateEntryRef::X509(d) = e {
+                    self.cert_ders.push((*d).to_vec());
                     Some(*d)
                 } else {
                     None
@@ -364,7 +383,7 @@ impl embedded_tls::blocking::TlsVerifier for SystemCertsVerifier {
                 .map_err(|_| embedded_tls::TlsError::InvalidCertificate)?;
         }
 
-        self.cert_der = Some(ee_der.to_vec());
+        self.signing_cert_der = Some(ee_der.to_vec());
         self.cert_transcript_hash = Some(transcript_hash.to_vec());
         Ok(())
     }
@@ -380,7 +399,7 @@ impl embedded_tls::blocking::TlsVerifier for SystemCertsVerifier {
             .take()
             .ok_or(embedded_tls::TlsError::InvalidCertificate)?;
         let ee_der = self
-            .cert_der
+            .signing_cert_der
             .take()
             .ok_or(embedded_tls::TlsError::InvalidCertificate)?;
 
@@ -1021,7 +1040,7 @@ fn embedded_tls_open_suite<CS>(
     stream: std::net::TcpStream,
     host: &str,
     ca_ders: Vec<Vec<u8>>,
-) -> std::io::Result<()>
+) -> std::io::Result<TlsInfo>
 where
     CS: embedded_tls::blocking::TlsCipherSuite + 'static,
 {
@@ -1034,54 +1053,75 @@ where
         .with_server_name(host)
         .enable_rsa_signatures();
     let mut tls = TlsConnection::<_, CS>::new(FromStd::new(stream), &mut read_buf, &mut write_buf);
+    let mut provider = SystemTlsProvider::<CS>::new(ca_ders);
 
-    tls.open(TlsContext::new(
-        &config,
-        SystemTlsProvider::<CS>::new(ca_ders),
-    ))
-    .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
-    Ok(())
+    tls.open(TlsContext::new(&config, &mut provider))
+        .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
+    Ok(TlsInfo {
+        certs: provider.verifier.cert_ders,
+        verified: true,
+    })
 }
 
 #[cfg(feature = "embedded-tls")]
-fn embedded_tls_open(host: &str, port: u16, stream: std::net::TcpStream) -> std::io::Result<()> {
+fn embedded_tls_open(
+    connect_host: &str,
+    server_name: &str,
+    port: u16,
+    stream: std::net::TcpStream,
+) -> std::io::Result<TlsInfo> {
     use embedded_tls::blocking::{Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256};
 
     let ca_ders = load_system_ca_ders();
 
-    if embedded_tls_open_suite::<Aes128GcmSha256>(stream, host, ca_ders.clone()).is_ok() {
-        return Ok(());
+    if let Ok(info) =
+        embedded_tls_open_suite::<Aes128GcmSha256>(stream, server_name, ca_ders.clone())
+    {
+        return Ok(info);
     }
 
-    if embedded_tls_open_suite::<Aes256GcmSha384>(
-        connect_tls_socket(host, port)?,
-        host,
+    if let Ok(info) = embedded_tls_open_suite::<Aes256GcmSha384>(
+        connect_tls_socket(connect_host, port)?,
+        server_name,
         ca_ders.clone(),
-    )
-    .is_ok()
-    {
-        return Ok(());
+    ) {
+        return Ok(info);
     }
 
     embedded_tls_open_suite::<Chacha20Poly1305Sha256>(
-        connect_tls_socket(host, port)?,
-        host,
+        connect_tls_socket(connect_host, port)?,
+        server_name,
         ca_ders,
     )
 }
 
 impl TlsCheck for SystemNet {
-    fn check_tls(&self, host: &str, port: u16) -> std::io::Result<()> {
-        let stream = connect_tls_socket(host, port)?;
-
+    fn check_tls(
+        &self,
+        host: &str,
+        port: u16,
+        options: &TlsOptions<'_>,
+    ) -> std::io::Result<TlsInfo> {
         #[cfg(feature = "tls-dynamic")]
         {
+            let stream = connect_tls_socket(host, port)?;
             let connector = native_tls::TlsConnector::new()
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
-            connector
-                .connect(host, stream)
+            let tls = connector
+                .connect(options.server_name, stream)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
-            return Ok(());
+            let certs = tls
+                .peer_certificate()
+                .map_err(|e| std::io::Error::other(e.to_string()))?
+                .map(|cert| cert.to_der())
+                .transpose()
+                .map_err(|e| std::io::Error::other(e.to_string()))?
+                .into_iter()
+                .collect();
+            return Ok(TlsInfo {
+                certs,
+                verified: true,
+            });
         }
 
         #[cfg(all(feature = "rustls", not(feature = "tls-dynamic")))]
@@ -1089,6 +1129,7 @@ impl TlsCheck for SystemNet {
             use rustls::pki_types::ServerName;
             use std::sync::Arc;
 
+            let stream = connect_tls_socket(host, port)?;
             let mut stream = stream;
             let mut root_store = rustls::RootCertStore::empty();
             for cert in rustls_native_certs::load_native_certs().certs {
@@ -1099,7 +1140,7 @@ impl TlsCheck for SystemNet {
                     .with_root_certificates(root_store)
                     .with_no_client_auth(),
             );
-            let server_name = ServerName::try_from(host)
+            let server_name = ServerName::try_from(options.server_name)
                 .map_err(|e| std::io::Error::other(e.to_string()))?
                 .to_owned();
             let mut conn = rustls::ClientConnection::new(config, server_name)
@@ -1108,15 +1149,29 @@ impl TlsCheck for SystemNet {
                 conn.complete_io(&mut stream)
                     .map_err(|e| std::io::Error::other(e.to_string()))?;
             }
-            return Ok(());
+            let certs = conn
+                .peer_certificates()
+                .map(|certs| certs.iter().map(|cert| cert.to_vec()).collect())
+                .unwrap_or_default();
+            return Ok(TlsInfo {
+                certs,
+                verified: true,
+            });
         }
 
         #[cfg(all(
             feature = "embedded-tls",
             not(any(feature = "tls-dynamic", feature = "rustls"))
         ))]
-        return embedded_tls_open(host, port, stream);
+        let stream = connect_tls_socket(host, port)?;
+        #[cfg(all(
+            feature = "embedded-tls",
+            not(any(feature = "tls-dynamic", feature = "rustls"))
+        ))]
+        return embedded_tls_open(host, options.server_name, port, stream);
 
+        #[cfg(not(any(feature = "tls-dynamic", feature = "rustls", feature = "embedded-tls")))]
+        let _ = (host, port, options);
         #[cfg(not(any(feature = "tls-dynamic", feature = "rustls", feature = "embedded-tls")))]
         Err(std::io::Error::other(
             "tlscheck requires the native-tls, rustls, or embedded-tls feature",

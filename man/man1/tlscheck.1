@@ -3,18 +3,43 @@
 tlscheck \- verify a TLS handshake
 .SH SYNOPSIS
 .B tlscheck
+.RB [ \-\-cert | \-\-chain | \-\-expiry | \-\-fingerprint ]
+.RB [ \-\-name
+.IR name ]
 .RI [ \-p\ port ]
 .I host[:port]
 .SH DESCRIPTION
 .B tlscheck
 connects to a TLS service, verifies the server certificate against the system
 trust store, verifies the certificate name against
-.I host,
-and prints a short success line.
+.I host
+or the name supplied with
+.BR \-\-name ,
+and prints a short success line or requested certificate details.
 .PP
 The default port is
 .BR 443 .
 .SH OPTIONS
+.TP
+.B \-\-cert
+Print the leaf certificate subject, issuer, validity window, DNS names, and
+verification status.
+.TP
+.B \-\-chain
+Print a one-line subject and issuer summary for each certificate sent by the
+server.
+.TP
+.B \-\-expiry
+Print the leaf certificate expiration time.
+.TP
+.B \-\-fingerprint
+Print the SHA-256 fingerprint of the leaf certificate.
+.TP
+.BI "\-\-name " name
+Use
+.I name
+for SNI and certificate name verification while connecting to
+.IR host .
 .TP
 .BI "\-p " port
 Connect to
@@ -30,6 +55,16 @@ Verify the TLS service at
 .B "tlscheck -p 8443 example.com"
 Verify the TLS service at
 .BR example.com:8443 .
+.TP
+.B "tlscheck --cert example.com"
+Print the leaf certificate summary for
+.BR example.com .
+.TP
+.B "tlscheck --name example.com 127.0.0.1:8443"
+Connect to
+.B 127.0.0.1:8443
+but verify the certificate for
+.BR example.com .
 .SH EXIT STATUS
 .TP
 .B 0
