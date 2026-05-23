@@ -20,6 +20,16 @@ pub trait TlsCheck {
     ) -> std::io::Result<TlsInfo>;
 }
 
+pub struct CipherResult {
+    pub aes128_gcm_sha256: bool,
+    pub aes256_gcm_sha384: bool,
+    pub chacha20_poly1305_sha256: bool,
+}
+
+pub trait CipherProbe {
+    fn probe_ciphers(&self, host: &str, port: u16) -> std::io::Result<CipherResult>;
+}
+
 pub struct SystemNet;
 
 fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
@@ -1176,6 +1186,45 @@ impl TlsCheck for SystemNet {
         Err(std::io::Error::other(
             "tlscheck requires the native-tls, rustls, or embedded-tls feature",
         ))
+    }
+}
+
+impl CipherProbe for SystemNet {
+    fn probe_ciphers(&self, host: &str, port: u16) -> std::io::Result<CipherResult> {
+        #[cfg(feature = "embedded-tls")]
+        {
+            use embedded_tls::blocking::{Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256};
+
+            let ca_ders = load_system_ca_ders();
+            let aes128 = connect_tls_socket(host, port)
+                .and_then(|s| {
+                    embedded_tls_open_suite::<Aes128GcmSha256>(s, host, ca_ders.clone())
+                })
+                .is_ok();
+            let aes256 = connect_tls_socket(host, port)
+                .and_then(|s| {
+                    embedded_tls_open_suite::<Aes256GcmSha384>(s, host, ca_ders.clone())
+                })
+                .is_ok();
+            let chacha = connect_tls_socket(host, port)
+                .and_then(|s| {
+                    embedded_tls_open_suite::<Chacha20Poly1305Sha256>(s, host, ca_ders)
+                })
+                .is_ok();
+            return Ok(CipherResult {
+                aes128_gcm_sha256: aes128,
+                aes256_gcm_sha384: aes256,
+                chacha20_poly1305_sha256: chacha,
+            });
+        }
+
+        #[cfg(not(feature = "embedded-tls"))]
+        {
+            let _ = (host, port);
+            Err(std::io::Error::other(
+                "ciphers requires the embedded-tls feature",
+            ))
+        }
     }
 }
 

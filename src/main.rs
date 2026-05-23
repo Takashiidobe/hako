@@ -1,3 +1,4 @@
+mod ciphers;
 mod deps;
 mod dig;
 mod dnsname;
@@ -65,6 +66,7 @@ fn list_commands() -> Vec<&'static str> {
     cmds.push("ping");
     cmds.push("traceroute");
     cmds.push("tlscheck");
+    cmds.push("ciphers");
     cmds.push("md5sum");
     cmds.push("sha256sum");
     cmds
@@ -126,6 +128,7 @@ fn main() {
             traceroute::run(out, &SystemProbe, &dns, &r)
         }
         "tlscheck" => tlscheck::run(out, &SystemNet, &rest),
+        "ciphers" => ciphers::run(out, &SystemNet, &rest),
         "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
         "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
         _ => {
