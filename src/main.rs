@@ -1,4 +1,5 @@
 mod asn;
+mod completions;
 mod calc;
 mod ciphers;
 mod deps;
@@ -65,6 +66,7 @@ fn list_commands() -> Vec<&'static str> {
         "whois",
         "hostname",
         "uname",
+        "completions",
     ];
     cmds.push("fetch");
     cmds.push("ping");
@@ -140,6 +142,7 @@ fn main() {
         "ciphers" => ciphers::run(out, &SystemNet, &rest),
         "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
         "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
+        "completions" => completions::run(out, &rest),
         _ => {
             eprintln!("usage: {} <{}> [args...]", cmd, list_commands().join("|"));
             return;

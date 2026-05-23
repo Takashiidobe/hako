@@ -16,6 +16,8 @@ cargo run -- --list-commands
 4. Register the module and dispatch in `src/main.rs`. If optional, gate with a Cargo feature.
 5. Run `cargo clippy` and `cargo fmt` — both must pass clean.
 6. Add a man page under `man/`.
+7. Update the completions files.
+8. Update the README.md table with a short blurb on the command.
 
 ## Size Budget
 
