@@ -1036,12 +1036,10 @@ impl Net for SystemNet {
     }
 }
 
-fn connect_tls_socket(host: &str, port: u16) -> std::io::Result<std::net::TcpStream> {
-    use std::time::Duration;
-
+fn connect_tls_socket(host: &str, port: u16, timeout: std::time::Duration) -> std::io::Result<std::net::TcpStream> {
     let stream = std::net::TcpStream::connect((host, port))?;
-    stream.set_read_timeout(Some(Duration::from_secs(10)))?;
-    stream.set_write_timeout(Some(Duration::from_secs(10)))?;
+    stream.set_read_timeout(Some(timeout))?;
+    stream.set_write_timeout(Some(timeout))?;
     Ok(stream)
 }
 
@@ -1091,7 +1089,7 @@ fn embedded_tls_open(
     }
 
     if let Ok(info) = embedded_tls_open_suite::<Aes256GcmSha384>(
-        connect_tls_socket(connect_host, port)?,
+        connect_tls_socket(connect_host, port, std::time::Duration::from_secs(10))?,
         server_name,
         ca_ders.clone(),
     ) {
@@ -1099,7 +1097,7 @@ fn embedded_tls_open(
     }
 
     embedded_tls_open_suite::<Chacha20Poly1305Sha256>(
-        connect_tls_socket(connect_host, port)?,
+        connect_tls_socket(connect_host, port, std::time::Duration::from_secs(10))?,
         server_name,
         ca_ders,
     )
@@ -1114,7 +1112,7 @@ impl TlsCheck for SystemNet {
     ) -> std::io::Result<TlsInfo> {
         #[cfg(feature = "tls-dynamic")]
         {
-            let stream = connect_tls_socket(host, port)?;
+            let stream = connect_tls_socket(host, port, std::time::Duration::from_secs(1))?;
             let connector = native_tls::TlsConnector::new()
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
             let tls = connector
@@ -1139,7 +1137,7 @@ impl TlsCheck for SystemNet {
             use rustls::pki_types::ServerName;
             use std::sync::Arc;
 
-            let stream = connect_tls_socket(host, port)?;
+            let stream = connect_tls_socket(host, port, std::time::Duration::from_secs(1))?;
             let mut stream = stream;
             let mut root_store = rustls::RootCertStore::empty();
             for cert in rustls_native_certs::load_native_certs().certs {
@@ -1173,7 +1171,7 @@ impl TlsCheck for SystemNet {
             feature = "embedded-tls",
             not(any(feature = "tls-dynamic", feature = "rustls"))
         ))]
-        let stream = connect_tls_socket(host, port)?;
+        let stream = connect_tls_socket(host, port, std::time::Duration::from_secs(1))?;
         #[cfg(all(
             feature = "embedded-tls",
             not(any(feature = "tls-dynamic", feature = "rustls"))
@@ -1195,18 +1193,19 @@ impl CipherProbe for SystemNet {
         {
             use embedded_tls::blocking::{Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256};
 
+            let timeout = std::time::Duration::from_secs(1);
             let ca_ders = load_system_ca_ders();
-            let aes128 = connect_tls_socket(host, port)
+            let aes128 = connect_tls_socket(host, port, timeout)
                 .and_then(|s| {
                     embedded_tls_open_suite::<Aes128GcmSha256>(s, host, ca_ders.clone())
                 })
                 .is_ok();
-            let aes256 = connect_tls_socket(host, port)
+            let aes256 = connect_tls_socket(host, port, timeout)
                 .and_then(|s| {
                     embedded_tls_open_suite::<Aes256GcmSha384>(s, host, ca_ders.clone())
                 })
                 .is_ok();
-            let chacha = connect_tls_socket(host, port)
+            let chacha = connect_tls_socket(host, port, timeout)
                 .and_then(|s| {
                     embedded_tls_open_suite::<Chacha20Poly1305Sha256>(s, host, ca_ders)
                 })
