@@ -4,7 +4,11 @@ use std::time::UNIX_EPOCH;
 use crate::deps::Clock;
 
 pub fn run(out: &mut impl Write, clock: &impl Clock) -> io::Result<()> {
-    let secs = clock.now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let secs = clock
+        .now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|_| io::Error::other("clock is before Unix epoch"))?
+        .as_secs();
     let (h, m, s) = (secs % 86400 / 3600, secs % 3600 / 60, secs % 60);
     writeln!(out, "{:02}:{:02}:{:02} UTC", h, m, s)
 }

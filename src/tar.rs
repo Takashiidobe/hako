@@ -67,7 +67,10 @@ fn visit_archive(
 
     loop {
         match parser
-            .parse(&data[offset..])
+            .parse(
+                data.get(offset..)
+                    .ok_or_else(|| io::Error::other("archive offset out of range"))?,
+            )
             .map_err(|e| io::Error::other(e.to_string()))?
         {
             ParseEvent::NeedData { .. } => return Err(io::Error::other("truncated tar archive")),
@@ -100,7 +103,11 @@ fn visit_archive(
                 if end > data.len() {
                     return Err(io::Error::other("truncated tar entry"));
                 }
-                visit(entry, &data[start..end])?;
+                visit(
+                    entry,
+                    data.get(start..end)
+                        .ok_or_else(|| io::Error::other("truncated tar entry"))?,
+                )?;
                 let padded =
                     padded_size(size).ok_or_else(|| io::Error::other("entry padding overflow"))?;
                 offset = start

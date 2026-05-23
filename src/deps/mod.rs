@@ -14,9 +14,8 @@ pub use dns::{Dns, UdpDns};
 pub use env::{Env, SystemEnv};
 pub use fs::{DirFs, Fs, SystemFs};
 pub use icmp::{Icmp, SystemIcmp};
-pub use net::{Net, SystemNet};
+pub use net::{Net, SystemNet, TlsCheck};
 pub use probe::{HopResult, Probe, SystemProbe};
 pub use rng::{Rng, SystemRng};
-#[allow(unused_imports)]
-pub use system::{Hostname, SystemInfo, Uname, UnameInfo};
+pub use system::{Hostname, SystemInfo, Uname};
 pub use whois::{TcpWhois, Whois};

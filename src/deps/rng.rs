@@ -12,8 +12,7 @@ impl SystemRng {
     pub fn new() -> Self {
         let seed = SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .subsec_nanos() as u64;
+            .map_or(0, |d| d.subsec_nanos()) as u64;
         Self {
             state: seed ^ 0x9e3779b97f4a7c15,
         }

@@ -13,26 +13,20 @@ pub enum HopResult {
 }
 
 pub trait Probe {
-    fn probe(
-        &self,
-        dest: Ipv4Addr,
-        ttl: u8,
-        seq: u16,
-        payload: &[u8],
-    ) -> io::Result<HopResult>;
+    fn probe(&self, dest: Ipv4Addr, ttl: u8, seq: u16, payload: &[u8]) -> io::Result<HopResult>;
 }
 
 pub struct SystemProbe;
 
 fn icmp_checksum(data: &[u8]) -> u16 {
     let mut sum: u32 = 0;
-    let mut i = 0;
-    while i + 1 < data.len() {
-        sum += u16::from_be_bytes([data[i], data[i + 1]]) as u32;
-        i += 2;
+    let mut chunks = data.chunks_exact(2);
+    for chunk in &mut chunks {
+        let pair: [u8; 2] = chunk.try_into().unwrap_or([0, 0]);
+        sum += u16::from_be_bytes(pair) as u32;
     }
-    if i < data.len() {
-        sum += (data[i] as u32) << 8;
+    if let Some(byte) = chunks.remainder().first() {
+        sum += (*byte as u32) << 8;
     }
     while sum >> 16 != 0 {
         sum = (sum & 0xffff) + (sum >> 16);
@@ -41,16 +35,20 @@ fn icmp_checksum(data: &[u8]) -> u16 {
 }
 
 fn build_icmp_echo(seq: u16, payload: &[u8]) -> Vec<u8> {
-    let mut pkt = vec![0u8; 8 + payload.len()];
-    pkt[0] = 8; // echo request
-    let [sh, sl] = seq.to_be_bytes();
-    pkt[6] = sh;
-    pkt[7] = sl;
-    pkt[8..].copy_from_slice(payload);
+    let mut pkt = Vec::with_capacity(8 + payload.len());
+    pkt.extend_from_slice(&[8, 0, 0, 0, 0, 0]);
+    pkt.extend_from_slice(&seq.to_be_bytes());
+    pkt.extend_from_slice(payload);
     let ck = icmp_checksum(&pkt);
-    pkt[2] = (ck >> 8) as u8;
-    pkt[3] = ck as u8;
+    let [hi, lo] = ck.to_be_bytes();
+    pkt.splice(2..4, [hi, lo]);
     pkt
+}
+
+fn read_u16(data: &[u8], pos: usize) -> Option<u16> {
+    data.get(pos..pos + 2)
+        .and_then(|bytes| bytes.try_into().ok())
+        .map(u16::from_be_bytes)
 }
 
 // ----- Linux -------------------------------------------------------------------
@@ -60,27 +58,19 @@ fn build_icmp_echo(seq: u16, payload: &[u8]) -> Vec<u8> {
 
 #[cfg(target_os = "linux")]
 impl Probe for SystemProbe {
-    fn probe(
-        &self,
-        dest: Ipv4Addr,
-        ttl: u8,
-        seq: u16,
-        payload: &[u8],
-    ) -> io::Result<HopResult> {
+    fn probe(&self, dest: Ipv4Addr, ttl: u8, seq: u16, payload: &[u8]) -> io::Result<HopResult> {
         use socket2::{Domain, Protocol, Socket, Type};
         use std::net::SocketAddrV4;
         use std::time::Instant;
 
-        let (sock, is_raw) =
-            match Socket::new(Domain::IPV4, Type::RAW, Some(Protocol::ICMPV4)) {
-                Ok(s) => (s, true),
-                Err(e) if e.kind() == io::ErrorKind::PermissionDenied => {
-                    let s =
-                        Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::ICMPV4))?;
-                    (s, false)
-                }
-                Err(e) => return Err(e),
-            };
+        let (sock, is_raw) = match Socket::new(Domain::IPV4, Type::RAW, Some(Protocol::ICMPV4)) {
+            Ok(s) => (s, true),
+            Err(e) if e.kind() == io::ErrorKind::PermissionDenied => {
+                let s = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::ICMPV4))?;
+                (s, false)
+            }
+            Err(e) => return Err(e),
+        };
 
         sock.set_ttl_v4(ttl as u32)?;
         sock.set_nonblocking(true)?;
@@ -122,9 +112,11 @@ fn poll_icmp(
 
         let timeout_ms =
             u16::try_from(remaining.as_millis().min(u16::MAX as u128)).unwrap_or(u16::MAX);
-        let mut pfds = [PollFd::new(sock.as_fd(), PollFlags::POLLIN | PollFlags::POLLERR)];
-        let ready = poll(&mut pfds, PollTimeout::from(timeout_ms))
-            .map_err(io::Error::from)?;
+        let mut pfds = [PollFd::new(
+            sock.as_fd(),
+            PollFlags::POLLIN | PollFlags::POLLERR,
+        )];
+        let ready = poll(&mut pfds, PollTimeout::from(timeout_ms)).map_err(io::Error::from)?;
         if ready == 0 {
             return Ok(HopResult::Timeout);
         }
@@ -134,7 +126,11 @@ fn poll_icmp(
 
         if revents.contains(PollFlags::POLLERR) && !is_raw {
             if let Some(hop) = recv_error_queue(sock, seq)? {
-                return Ok(HopResult::Reply { from: hop, rtt, reached: false });
+                return Ok(HopResult::Reply {
+                    from: hop,
+                    rtt,
+                    reached: false,
+                });
             }
             continue;
         }
@@ -143,15 +139,14 @@ fn poll_icmp(
             let mut buf = [MaybeUninit::<u8>::uninit(); 1500];
             match sock.recv_from(&mut buf) {
                 Ok((n, from_addr)) => {
-                    let data =
-                        unsafe { std::slice::from_raw_parts(buf.as_ptr() as *const u8, n) };
+                    let data = unsafe { std::slice::from_raw_parts(buf.as_ptr() as *const u8, n) };
 
                     // RAW: full IP packet (skip 20-byte header); DGRAM: starts at ICMP header.
                     let icmp = if is_raw {
                         if data.len() < 28 {
                             continue;
                         }
-                        &data[20..]
+                        data.get(20..).unwrap_or(&[])
                     } else {
                         if data.len() < 8 {
                             continue;
@@ -159,29 +154,40 @@ fn poll_icmp(
                         data
                     };
 
-                    let from_ip =
-                        from_addr.as_socket_ipv4().map(|s| *s.ip()).unwrap_or(dest);
+                    let from_ip = from_addr.as_socket_ipv4().map(|s| *s.ip()).unwrap_or(dest);
 
-                    match icmp[0] {
-                        0 => {
-                            // Echo Reply
-                            let reply_seq = u16::from_be_bytes([icmp[6], icmp[7]]);
+                    match icmp.first().copied() {
+                        Some(0) => {
+                            let Some(reply_seq) = read_u16(icmp, 6) else {
+                                continue;
+                            };
                             if reply_seq != seq {
                                 continue;
                             }
-                            return Ok(HopResult::Reply { from: from_ip, rtt, reached: true });
+                            return Ok(HopResult::Reply {
+                                from: from_ip,
+                                rtt,
+                                reached: true,
+                            });
                         }
-                        11 if is_raw => {
-                            // Time Exceeded (raw socket: inner IP + ICMP headers follow)
+                        Some(11) if is_raw => {
                             if icmp.len() < 8 + 20 + 8 {
                                 continue;
                             }
-                            let inner = &icmp[8 + 20..];
-                            let inner_seq = u16::from_be_bytes([inner[6], inner[7]]);
+                            let Some(inner) = icmp.get(8 + 20..) else {
+                                continue;
+                            };
+                            let Some(inner_seq) = read_u16(inner, 6) else {
+                                continue;
+                            };
                             if inner_seq != seq {
                                 continue;
                             }
-                            return Ok(HopResult::Reply { from: from_ip, rtt, reached: false });
+                            return Ok(HopResult::Reply {
+                                from: from_ip,
+                                rtt,
+                                reached: false,
+                            });
                         }
                         _ => continue,
                     }
@@ -225,7 +231,7 @@ fn recv_error_queue(sock: &socket2::Socket, seq: u16) -> io::Result<Option<Ipv4A
         .iovs()
         .next()
         .filter(|s| s.len() >= 8)
-        .map(|s| u16::from_be_bytes([s[6], s[7]]));
+        .and_then(|s| read_u16(s, 6));
     if pkt_seq != Some(seq) {
         return Ok(None);
     }
@@ -248,13 +254,7 @@ fn recv_error_queue(sock: &socket2::Socket, seq: u16) -> io::Result<Option<Ipv4A
 
 #[cfg(all(unix, not(target_os = "linux")))]
 impl Probe for SystemProbe {
-    fn probe(
-        &self,
-        dest: Ipv4Addr,
-        ttl: u8,
-        seq: u16,
-        payload: &[u8],
-    ) -> io::Result<HopResult> {
+    fn probe(&self, dest: Ipv4Addr, ttl: u8, seq: u16, payload: &[u8]) -> io::Result<HopResult> {
         use socket2::{Domain, Protocol, Socket, Type};
         use std::mem::MaybeUninit;
         use std::net::SocketAddrV4;
@@ -281,8 +281,7 @@ impl Probe for SystemProbe {
                 Err(e) => return Err(e),
                 Ok((n, from)) => {
                     let rtt = t0.elapsed();
-                    let data =
-                        unsafe { std::slice::from_raw_parts(buf.as_ptr() as *const u8, n) };
+                    let data = unsafe { std::slice::from_raw_parts(buf.as_ptr() as *const u8, n) };
                     if data.len() < 28 {
                         continue;
                     }
@@ -296,7 +295,11 @@ impl Probe for SystemProbe {
                             if reply_seq != seq {
                                 continue;
                             }
-                            return Ok(HopResult::Reply { from: from_ip, rtt, reached: true });
+                            return Ok(HopResult::Reply {
+                                from: from_ip,
+                                rtt,
+                                reached: true,
+                            });
                         }
                         11 => {
                             if icmp.len() < 8 + 20 + 8 {
@@ -307,7 +310,11 @@ impl Probe for SystemProbe {
                             if inner_seq != seq {
                                 continue;
                             }
-                            return Ok(HopResult::Reply { from: from_ip, rtt, reached: false });
+                            return Ok(HopResult::Reply {
+                                from: from_ip,
+                                rtt,
+                                reached: false,
+                            });
                         }
                         _ => continue,
                     }
@@ -341,6 +348,8 @@ impl Probe for SystemProbe {
         _seq: u16,
         _payload: &[u8],
     ) -> io::Result<HopResult> {
-        Err(io::Error::other("traceroute not supported on this platform"))
+        Err(io::Error::other(
+            "traceroute not supported on this platform",
+        ))
     }
 }

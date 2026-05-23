@@ -33,7 +33,11 @@ pub fn run(
         for probe_num in 0..nprobes {
             let seq = (ttl as u16).wrapping_mul(3).wrapping_add(probe_num as u16);
             match probe.probe(dest, ttl, seq, PAYLOAD)? {
-                HopResult::Reply { from, rtt, reached: r } => {
+                HopResult::Reply {
+                    from,
+                    rtt,
+                    reached: r,
+                } => {
                     if hop_addr.is_none() {
                         hop_addr = Some(from);
                     }
@@ -72,11 +76,7 @@ pub fn run(
 /// "https://example.com/path" → "example.com"
 /// "example.com" → "example.com"
 fn strip_url(s: &str) -> String {
-    let without_scheme = match s.find("://") {
-        Some(i) => &s[i + 3..],
-        None => s,
-    };
-    // drop port and path
+    let without_scheme = s.split_once("://").map(|(_, rest)| rest).unwrap_or(s);
     without_scheme
         .split(['/', '?', '#', ':'])
         .next()
@@ -91,8 +91,8 @@ fn parse_args(args: &[String]) -> io::Result<(String, u8, u8)> {
     let mut nprobes: u8 = 3;
     let mut i = 0;
 
-    while i < args.len() {
-        match args[i].as_str() {
+    while let Some(arg) = args.get(i) {
+        match arg.as_str() {
             "-m" => {
                 i += 1;
                 max_hops = args
@@ -108,17 +108,19 @@ fn parse_args(args: &[String]) -> io::Result<(String, u8, u8)> {
                     .filter(|&n| n > 0)
                     .ok_or_else(|| io::Error::other(USAGE))?;
             }
-            arg if !arg.starts_with('-') => {
-                if host.is_none() {
-                    host = Some(arg.to_string());
-                }
+            arg if !arg.starts_with('-') && host.is_none() => {
+                host = Some(arg.to_string());
             }
             _ => {}
         }
         i += 1;
     }
 
-    Ok((host.ok_or_else(|| io::Error::other(USAGE))?, max_hops, nprobes))
+    Ok((
+        host.ok_or_else(|| io::Error::other(USAGE))?,
+        max_hops,
+        nprobes,
+    ))
 }
 
 #[cfg(test)]
@@ -132,13 +134,37 @@ mod tests {
         let dns = FakeDns(vec![]);
         let probe = FakeProbe::new(vec![
             // ttl=1: Time Exceeded from 10.0.0.1
-            HopResult::Reply { from: Ipv4Addr::new(10, 0, 0, 1), rtt: Duration::from_millis(1), reached: false },
-            HopResult::Reply { from: Ipv4Addr::new(10, 0, 0, 1), rtt: Duration::from_millis(2), reached: false },
-            HopResult::Reply { from: Ipv4Addr::new(10, 0, 0, 1), rtt: Duration::from_millis(3), reached: false },
+            HopResult::Reply {
+                from: Ipv4Addr::new(10, 0, 0, 1),
+                rtt: Duration::from_millis(1),
+                reached: false,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(10, 0, 0, 1),
+                rtt: Duration::from_millis(2),
+                reached: false,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(10, 0, 0, 1),
+                rtt: Duration::from_millis(3),
+                reached: false,
+            },
             // ttl=2: Echo Reply from destination
-            HopResult::Reply { from: Ipv4Addr::new(1, 2, 3, 4), rtt: Duration::from_millis(10), reached: true },
-            HopResult::Reply { from: Ipv4Addr::new(1, 2, 3, 4), rtt: Duration::from_millis(11), reached: true },
-            HopResult::Reply { from: Ipv4Addr::new(1, 2, 3, 4), rtt: Duration::from_millis(12), reached: true },
+            HopResult::Reply {
+                from: Ipv4Addr::new(1, 2, 3, 4),
+                rtt: Duration::from_millis(10),
+                reached: true,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(1, 2, 3, 4),
+                rtt: Duration::from_millis(11),
+                reached: true,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(1, 2, 3, 4),
+                rtt: Duration::from_millis(12),
+                reached: true,
+            },
         ]);
 
         let mut out = Vec::new();
@@ -157,9 +183,21 @@ mod tests {
     fn resolves_hostname() {
         let dns = FakeDns(vec![Ipv4Addr::new(5, 6, 7, 8)]);
         let probe = FakeProbe::new(vec![
-            HopResult::Reply { from: Ipv4Addr::new(5, 6, 7, 8), rtt: Duration::from_millis(5), reached: true },
-            HopResult::Reply { from: Ipv4Addr::new(5, 6, 7, 8), rtt: Duration::from_millis(5), reached: true },
-            HopResult::Reply { from: Ipv4Addr::new(5, 6, 7, 8), rtt: Duration::from_millis(5), reached: true },
+            HopResult::Reply {
+                from: Ipv4Addr::new(5, 6, 7, 8),
+                rtt: Duration::from_millis(5),
+                reached: true,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(5, 6, 7, 8),
+                rtt: Duration::from_millis(5),
+                reached: true,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(5, 6, 7, 8),
+                rtt: Duration::from_millis(5),
+                reached: true,
+            },
         ]);
 
         let mut out = Vec::new();
@@ -176,9 +214,21 @@ mod tests {
             HopResult::Timeout,
             HopResult::Timeout,
             HopResult::Timeout,
-            HopResult::Reply { from: Ipv4Addr::new(1, 2, 3, 4), rtt: Duration::from_millis(5), reached: true },
-            HopResult::Reply { from: Ipv4Addr::new(1, 2, 3, 4), rtt: Duration::from_millis(5), reached: true },
-            HopResult::Reply { from: Ipv4Addr::new(1, 2, 3, 4), rtt: Duration::from_millis(5), reached: true },
+            HopResult::Reply {
+                from: Ipv4Addr::new(1, 2, 3, 4),
+                rtt: Duration::from_millis(5),
+                reached: true,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(1, 2, 3, 4),
+                rtt: Duration::from_millis(5),
+                reached: true,
+            },
+            HopResult::Reply {
+                from: Ipv4Addr::new(1, 2, 3, 4),
+                rtt: Duration::from_millis(5),
+                reached: true,
+            },
         ]);
 
         let mut out = Vec::new();
@@ -193,17 +243,26 @@ mod tests {
     #[test]
     fn custom_max_hops_and_nprobes() {
         let dns = FakeDns(vec![]);
-        let probe = FakeProbe::new(vec![
-            HopResult::Reply { from: Ipv4Addr::new(1, 1, 1, 1), rtt: Duration::from_millis(1), reached: true },
-        ]);
+        let probe = FakeProbe::new(vec![HopResult::Reply {
+            from: Ipv4Addr::new(1, 1, 1, 1),
+            rtt: Duration::from_millis(1),
+            reached: true,
+        }]);
 
         let mut out = Vec::new();
         run(
             &mut out,
             &probe,
             &dns,
-            &["1.2.3.4".into(), "-m".into(), "5".into(), "-q".into(), "1".into()],
-        ).unwrap();
+            &[
+                "1.2.3.4".into(),
+                "-m".into(),
+                "5".into(),
+                "-q".into(),
+                "1".into(),
+            ],
+        )
+        .unwrap();
         let body = String::from_utf8(out).unwrap();
         assert!(body.contains("5 hops max"));
     }
@@ -241,7 +300,8 @@ mod tests {
             "10".into(),
             "-q".into(),
             "2".into(),
-        ]).unwrap();
+        ])
+        .unwrap();
         assert_eq!(host, "example.com");
         assert_eq!(max_hops, 10);
         assert_eq!(nprobes, 2);
@@ -255,7 +315,8 @@ mod tests {
             "-q".into(),
             "2".into(),
             "example.com".into(),
-        ]).unwrap();
+        ])
+        .unwrap();
         assert_eq!(host, "example.com");
         assert_eq!(max_hops, 10);
         assert_eq!(nprobes, 2);

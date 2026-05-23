@@ -72,11 +72,15 @@ fn parse_args(args: &[String]) -> io::Result<(String, u16)> {
     if args.is_empty() {
         return Err(io::Error::other("usage: ping <host> [-c count]"));
     }
-    let host = args[0].clone();
+    let host = args
+        .first()
+        .ok_or_else(|| io::Error::other("usage: ping <host> [-c count]"))?
+        .clone();
     let count = args
         .windows(2)
-        .find(|w| w[0] == "-c")
-        .and_then(|w| w[1].parse::<u16>().ok())
+        .find(|w| w.first().map(String::as_str) == Some("-c"))
+        .and_then(|w| w.get(1))
+        .and_then(|w| w.parse::<u16>().ok())
         .unwrap_or(4);
     Ok((host, count))
 }

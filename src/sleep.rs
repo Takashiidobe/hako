@@ -8,7 +8,9 @@ pub fn run(_out: &mut impl Write, sleeper: &impl Sleeper, args: &[String]) -> io
         return Err(io::Error::other("usage: sleep <seconds>"));
     }
 
-    let secs = args[0]
+    let secs = args
+        .first()
+        .ok_or_else(|| io::Error::other("usage: sleep <seconds>"))?
         .parse::<u64>()
         .map_err(|_| io::Error::other("seconds must be a non-negative integer"))?;
     sleeper.sleep(Duration::from_secs(secs));

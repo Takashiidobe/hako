@@ -23,8 +23,7 @@ impl Dns for UdpDns {
 
         let id = SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .subsec_nanos() as u16;
+            .map_or(0, |d| d.subsec_nanos()) as u16;
 
         let socket = UdpSocket::bind("0.0.0.0:0")?;
         socket.set_read_timeout(Some(std::time::Duration::from_secs(5)))?;
@@ -35,7 +34,11 @@ impl Dns for UdpDns {
 
         let mut buf = [0u8; 512];
         let (n, _) = socket.recv_from(&mut buf)?;
-        parse_a_records(&buf[..n], id)
+        parse_a_records(
+            buf.get(..n)
+                .ok_or_else(|| std::io::Error::other("invalid DNS response length"))?,
+            id,
+        )
     }
 }
 
@@ -66,20 +69,29 @@ fn skip_name(buf: &[u8], mut pos: usize) -> Option<usize> {
     }
 }
 
+fn read_u16(buf: &[u8], pos: usize) -> std::io::Result<u16> {
+    let bytes: [u8; 2] = buf
+        .get(pos..pos + 2)
+        .ok_or_else(|| std::io::Error::other("truncated DNS response"))?
+        .try_into()
+        .map_err(|_| std::io::Error::other("truncated DNS response"))?;
+    Ok(u16::from_be_bytes(bytes))
+}
+
 fn parse_a_records(buf: &[u8], id: u16) -> std::io::Result<Vec<Ipv4Addr>> {
     if buf.len() < 12 {
         return Err(std::io::Error::other("response too short"));
     }
-    if u16::from_be_bytes([buf[0], buf[1]]) != id {
+    if read_u16(buf, 0)? != id {
         return Err(std::io::Error::other("ID mismatch"));
     }
-    let rcode = u16::from_be_bytes([buf[2], buf[3]]) & 0xf;
+    let rcode = read_u16(buf, 2)? & 0xf;
     if rcode != 0 {
         return Err(std::io::Error::other(format!("DNS rcode {rcode}")));
     }
 
-    let qdcount = u16::from_be_bytes([buf[4], buf[5]]) as usize;
-    let ancount = u16::from_be_bytes([buf[6], buf[7]]) as usize;
+    let qdcount = read_u16(buf, 4)? as usize;
+    let ancount = read_u16(buf, 6)? as usize;
 
     let mut pos = 12;
     for _ in 0..qdcount {
@@ -93,19 +105,19 @@ fn parse_a_records(buf: &[u8], id: u16) -> std::io::Result<Vec<Ipv4Addr>> {
         if pos + 10 > buf.len() {
             return Err(std::io::Error::other("truncated answer"));
         }
-        let rtype = u16::from_be_bytes([buf[pos], buf[pos + 1]]);
-        let rdlen = u16::from_be_bytes([buf[pos + 8], buf[pos + 9]]) as usize;
+        let rtype = read_u16(buf, pos)?;
+        let rdlen = read_u16(buf, pos + 8)? as usize;
         pos += 10;
         if pos + rdlen > buf.len() {
             return Err(std::io::Error::other("truncated rdata"));
         }
         if rtype == 1 && rdlen == 4 {
-            addrs.push(Ipv4Addr::new(
-                buf[pos],
-                buf[pos + 1],
-                buf[pos + 2],
-                buf[pos + 3],
-            ));
+            let octets: [u8; 4] = buf
+                .get(pos..pos + 4)
+                .ok_or_else(|| std::io::Error::other("truncated A record"))?
+                .try_into()
+                .map_err(|_| std::io::Error::other("truncated A record"))?;
+            addrs.push(Ipv4Addr::from(octets));
         }
         pos += rdlen;
     }

@@ -14,6 +14,7 @@ mod rand;
 mod sleep;
 mod tar;
 mod time;
+mod tlscheck;
 mod traceroute;
 mod uname;
 mod which;
@@ -31,7 +32,8 @@ fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
     let ns = args
         .iter()
         .find(|a| a.starts_with('@'))
-        .and_then(|a| a[1..].parse::<Ipv4Addr>().ok())
+        .and_then(|a| a.strip_prefix('@'))
+        .and_then(|a| a.parse::<Ipv4Addr>().ok())
         .unwrap_or(Ipv4Addr::new(8, 8, 8, 8));
     let rest = args
         .iter()
@@ -60,6 +62,7 @@ fn list_commands() -> Vec<&'static str> {
     cmds.push("fetch");
     cmds.push("ping");
     cmds.push("traceroute");
+    cmds.push("tlscheck");
     cmds.push("md5sum");
     cmds.push("sha256sum");
     cmds
@@ -116,6 +119,7 @@ fn main() {
             let (dns, r) = dig_dns(&rest);
             traceroute::run(out, &SystemProbe, &dns, &r)
         }
+        "tlscheck" => tlscheck::run(out, &SystemNet, &rest),
         "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
         "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
         _ => {

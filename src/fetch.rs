@@ -20,8 +20,8 @@ impl<'a> FetchRequest<'a> {
         let mut urls = Vec::new();
         let mut i = 0;
 
-        while i < args.len() {
-            match args[i].as_str() {
+        while let Some(arg) = args.get(i) {
+            match arg.as_str() {
                 "-X" | "--request" => {
                     i += 1;
                     method = args.get(i).map(String::as_str).ok_or_else(|| {

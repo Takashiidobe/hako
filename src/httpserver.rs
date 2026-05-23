@@ -285,7 +285,11 @@ where
         if n == 0 {
             break;
         }
-        buf.extend_from_slice(&chunk[..n]);
+        buf.extend_from_slice(
+            chunk
+                .get(..n)
+                .ok_or_else(|| io::Error::other("invalid TLS read length"))?,
+        );
         if buf.len() > MAX_HTTP_HEADER_BYTES {
             return Err(io::Error::other("HTTP request headers too large"));
         }
@@ -344,7 +348,10 @@ where
     let mut pos = 0;
     while pos < data.len() {
         let n = tls
-            .write(&data[pos..])
+            .write(
+                data.get(pos..)
+                    .ok_or_else(|| io::Error::other("invalid TLS write offset"))?,
+            )
             .await
             .map_err(|e| io::Error::other(format!("TLS write: {e:?}")))?;
         if n == 0 {
@@ -559,16 +566,16 @@ impl Response {
 
     fn to_bytes(&self) -> Vec<u8> {
         let mut out = Vec::new();
-        write!(out, "HTTP/1.1 {} {}\r\n", self.status, self.reason).unwrap();
-        write!(out, "Content-Type: {}\r\n", self.content_type).unwrap();
-        write!(out, "Content-Length: {}\r\n", self.body.len()).unwrap();
+        out.extend_from_slice(format!("HTTP/1.1 {} {}\r\n", self.status, self.reason).as_bytes());
+        out.extend_from_slice(format!("Content-Type: {}\r\n", self.content_type).as_bytes());
+        out.extend_from_slice(format!("Content-Length: {}\r\n", self.body.len()).as_bytes());
         if let Some(loc) = &self.location {
-            write!(out, "Location: {loc}\r\n").unwrap();
+            out.extend_from_slice(format!("Location: {loc}\r\n").as_bytes());
         }
         if let Some(allow) = self.allow {
-            write!(out, "Allow: {allow}\r\n").unwrap();
+            out.extend_from_slice(format!("Allow: {allow}\r\n").as_bytes());
         }
-        write!(out, "Connection: close\r\n\r\n").unwrap();
+        out.extend_from_slice(b"Connection: close\r\n\r\n");
         if self.send_body {
             out.extend_from_slice(&self.body);
         }
@@ -667,8 +674,10 @@ fn local_addrs() -> Vec<Ipv4Addr> {
     let lines: Vec<&str> = content.lines().collect();
     let mut addrs = Vec::new();
     for w in lines.windows(2) {
-        if w[1].contains("host LOCAL") {
-            let candidate = w[0].split_whitespace().last().unwrap_or("");
+        if let [candidate_line, marker_line] = w
+            && marker_line.contains("host LOCAL")
+        {
+            let candidate = candidate_line.split_whitespace().last().unwrap_or("");
             if let Ok(addr) = candidate.parse::<Ipv4Addr>()
                 && !addr.is_loopback()
                 && !addr.is_unspecified()

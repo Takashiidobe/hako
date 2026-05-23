@@ -37,7 +37,8 @@ pub fn run(out: &mut impl Write, sys: &impl Uname, args: &[String]) -> io::Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deps::{Uname, UnameInfo};
+    use crate::deps::Uname;
+    use crate::deps::system::UnameInfo;
 
     struct FakeUname;
     impl Uname for FakeUname {

@@ -11,13 +11,13 @@ pub struct SystemIcmp;
 
 fn icmp_checksum(data: &[u8]) -> u16 {
     let mut sum: u32 = 0;
-    let mut i = 0;
-    while i + 1 < data.len() {
-        sum += u16::from_be_bytes([data[i], data[i + 1]]) as u32;
-        i += 2;
+    let mut chunks = data.chunks_exact(2);
+    for chunk in &mut chunks {
+        let pair: [u8; 2] = chunk.try_into().unwrap_or([0, 0]);
+        sum += u16::from_be_bytes(pair) as u32;
     }
-    if i < data.len() {
-        sum += (data[i] as u32) << 8;
+    if let Some(byte) = chunks.remainder().first() {
+        sum += (*byte as u32) << 8;
     }
     while sum >> 16 != 0 {
         sum = (sum & 0xffff) + (sum >> 16);
@@ -26,15 +26,13 @@ fn icmp_checksum(data: &[u8]) -> u16 {
 }
 
 fn build_icmp_echo(seq: u16, payload: &[u8]) -> Vec<u8> {
-    let mut pkt = vec![0u8; 8 + payload.len()];
-    pkt[0] = 8; // echo request
-    let [sh, sl] = seq.to_be_bytes();
-    pkt[6] = sh;
-    pkt[7] = sl;
-    pkt[8..].copy_from_slice(payload);
+    let mut pkt = Vec::with_capacity(8 + payload.len());
+    pkt.extend_from_slice(&[8, 0, 0, 0, 0, 0]);
+    pkt.extend_from_slice(&seq.to_be_bytes());
+    pkt.extend_from_slice(payload);
     let ck = icmp_checksum(&pkt);
-    pkt[2] = (ck >> 8) as u8;
-    pkt[3] = ck as u8;
+    let [hi, lo] = ck.to_be_bytes();
+    pkt.splice(2..4, [hi, lo]);
     pkt
 }
 
@@ -69,10 +67,13 @@ impl Icmp for SystemIcmp {
         if data.len() < 8 {
             return Err(std::io::Error::other("ICMP response too short"));
         }
-        if data[0] != 0 {
+        let icmp_type = data
+            .first()
+            .ok_or_else(|| std::io::Error::other("ICMP response too short"))?;
+        if *icmp_type != 0 {
             return Err(std::io::Error::other(format!(
                 "unexpected ICMP type {}",
-                data[0]
+                icmp_type
             )));
         }
 

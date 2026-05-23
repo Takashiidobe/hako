@@ -1,0 +1,42 @@
+.TH TLSCHECK 1 "2026-05-23" "hako" "hako utilities"
+.SH NAME
+tlscheck \- verify a TLS handshake
+.SH SYNOPSIS
+.B tlscheck
+.RI [ \-p\ port ]
+.I host[:port]
+.SH DESCRIPTION
+.B tlscheck
+connects to a TLS service, verifies the server certificate against the system
+trust store, verifies the certificate name against
+.I host,
+and prints a short success line.
+.PP
+The default port is
+.BR 443 .
+.SH OPTIONS
+.TP
+.BI "\-p " port
+Connect to
+.I port
+instead of the default port or the port embedded in
+.IR host[:port] .
+.SH EXAMPLES
+.TP
+.B "tlscheck example.com"
+Verify the TLS service at
+.BR example.com:443 .
+.TP
+.B "tlscheck -p 8443 example.com"
+Verify the TLS service at
+.BR example.com:8443 .
+.SH EXIT STATUS
+.TP
+.B 0
+The TLS handshake and certificate verification succeeded.
+.TP
+.B 1
+Wrong arguments, connection failure, or certificate verification failure.
+.SH SEE ALSO
+.BR fetch (1),
+.BR hako (1)

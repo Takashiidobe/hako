@@ -2,6 +2,10 @@ pub trait Net {
     fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>>;
 }
 
+pub trait TlsCheck {
+    fn check_tls(&self, host: &str, port: u16) -> std::io::Result<()>;
+}
+
 pub struct SystemNet;
 
 fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
@@ -14,8 +18,8 @@ fn parse_url(url: &str) -> std::io::Result<(bool, String, u16, String)> {
             "URL must start with http:// or https://",
         ));
     };
-    let (authority, path) = match rest.find('/') {
-        Some(i) => (&rest[..i], rest[i..].to_string()),
+    let (authority, path) = match rest.split_once('/') {
+        Some((authority, path)) => (authority, format!("/{path}")),
         None => (rest, "/".to_string()),
     };
     let default_port = if tls { 443 } else { 80 };
@@ -579,7 +583,10 @@ where
     loop {
         match tls.read(&mut buf).await {
             Ok(0) | Err(_) => break,
-            Ok(n) => raw.extend_from_slice(&buf[..n]),
+            Ok(n) => raw.extend_from_slice(
+                buf.get(..n)
+                    .ok_or_else(|| std::io::Error::other("invalid read length"))?,
+            ),
         }
     }
 
@@ -587,8 +594,11 @@ where
         .windows(4)
         .position(|w| w == b"\r\n\r\n")
         .ok_or_else(|| std::io::Error::other("no header end in response"))?;
+    let header_bytes = raw
+        .get(..sep)
+        .ok_or_else(|| std::io::Error::other("no header end in response"))?;
     let header_text =
-        std::str::from_utf8(&raw[..sep]).map_err(|_| std::io::Error::other("non-utf8 headers"))?;
+        std::str::from_utf8(header_bytes).map_err(|_| std::io::Error::other("non-utf8 headers"))?;
     let mut lines = header_text.lines();
     let status = parse_http_status(lines.next().unwrap_or(""))?;
     let mut headers = Vec::new();
@@ -600,31 +610,40 @@ where
     Ok(HttpResponse {
         status,
         headers,
-        body: raw[sep + 4..].to_vec(),
+        body: raw
+            .get(sep + 4..)
+            .ok_or_else(|| std::io::Error::other("no response body"))?
+            .to_vec(),
     })
 }
 
 #[cfg(all(feature = "fetch-smol", feature = "embedded-tls"))]
 enum AnyAsyncTls<'a> {
     Aes128(
-        embedded_tls::TlsConnection<
-            'a,
-            embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
-            embedded_tls::Aes128GcmSha256,
+        Box<
+            embedded_tls::TlsConnection<
+                'a,
+                embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
+                embedded_tls::Aes128GcmSha256,
+            >,
         >,
     ),
     Aes256(
-        embedded_tls::TlsConnection<
-            'a,
-            embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
-            embedded_tls::Aes256GcmSha384,
+        Box<
+            embedded_tls::TlsConnection<
+                'a,
+                embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
+                embedded_tls::Aes256GcmSha384,
+            >,
         >,
     ),
     Chacha(
-        embedded_tls::TlsConnection<
-            'a,
-            embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
-            embedded_tls::Chacha20Poly1305Sha256,
+        Box<
+            embedded_tls::TlsConnection<
+                'a,
+                embedded_io_adapters::futures_03::FromFutures<smol::net::TcpStream>,
+                embedded_tls::Chacha20Poly1305Sha256,
+            >,
         >,
     ),
 }
@@ -698,7 +717,7 @@ async fn embedded_tls_async_http_response(
             .is_ok()
         {
             return embedded_tls_async_exchange(
-                &mut AnyAsyncTls::Aes128(tls),
+                &mut AnyAsyncTls::Aes128(Box::new(tls)),
                 method,
                 host,
                 path,
@@ -726,7 +745,7 @@ async fn embedded_tls_async_http_response(
             .is_ok()
         {
             return embedded_tls_async_exchange(
-                &mut AnyAsyncTls::Aes256(tls),
+                &mut AnyAsyncTls::Aes256(Box::new(tls)),
                 method,
                 host,
                 path,
@@ -753,7 +772,14 @@ async fn embedded_tls_async_http_response(
     ))
     .await
     .map_err(|e| std::io::Error::other(format!("embedded-tls: {e}")))?;
-    embedded_tls_async_exchange(&mut AnyAsyncTls::Chacha(tls), method, host, path, body).await
+    embedded_tls_async_exchange(
+        &mut AnyAsyncTls::Chacha(Box::new(tls)),
+        method,
+        host,
+        path,
+        body,
+    )
+    .await
 }
 
 // ── sync Net impl ─────────────────────────────────────────────────────────────
@@ -978,6 +1004,123 @@ async fn async_request_once(url: &str, method: &str, body: &[u8]) -> std::io::Re
 impl Net for SystemNet {
     fn request(&self, method: &str, url: &str, body: &[u8]) -> std::io::Result<Vec<u8>> {
         smol::block_on(async_request(url, method, body))
+    }
+}
+
+fn connect_tls_socket(host: &str, port: u16) -> std::io::Result<std::net::TcpStream> {
+    use std::time::Duration;
+
+    let stream = std::net::TcpStream::connect((host, port))?;
+    stream.set_read_timeout(Some(Duration::from_secs(10)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(10)))?;
+    Ok(stream)
+}
+
+#[cfg(feature = "embedded-tls")]
+fn embedded_tls_open_suite<CS>(
+    stream: std::net::TcpStream,
+    host: &str,
+    ca_ders: Vec<Vec<u8>>,
+) -> std::io::Result<()>
+where
+    CS: embedded_tls::blocking::TlsCipherSuite + 'static,
+{
+    use embedded_io_adapters::std::FromStd;
+    use embedded_tls::blocking::{TlsConfig, TlsConnection, TlsContext};
+
+    let mut read_buf = [0u8; 16640];
+    let mut write_buf = [0u8; 16640];
+    let config = TlsConfig::new()
+        .with_server_name(host)
+        .enable_rsa_signatures();
+    let mut tls = TlsConnection::<_, CS>::new(FromStd::new(stream), &mut read_buf, &mut write_buf);
+
+    tls.open(TlsContext::new(
+        &config,
+        SystemTlsProvider::<CS>::new(ca_ders),
+    ))
+    .map_err(|e| std::io::Error::other(format!("embedded-tls open: {e}")))?;
+    Ok(())
+}
+
+#[cfg(feature = "embedded-tls")]
+fn embedded_tls_open(host: &str, port: u16, stream: std::net::TcpStream) -> std::io::Result<()> {
+    use embedded_tls::blocking::{Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256};
+
+    let ca_ders = load_system_ca_ders();
+
+    if embedded_tls_open_suite::<Aes128GcmSha256>(stream, host, ca_ders.clone()).is_ok() {
+        return Ok(());
+    }
+
+    if embedded_tls_open_suite::<Aes256GcmSha384>(
+        connect_tls_socket(host, port)?,
+        host,
+        ca_ders.clone(),
+    )
+    .is_ok()
+    {
+        return Ok(());
+    }
+
+    embedded_tls_open_suite::<Chacha20Poly1305Sha256>(
+        connect_tls_socket(host, port)?,
+        host,
+        ca_ders,
+    )
+}
+
+impl TlsCheck for SystemNet {
+    fn check_tls(&self, host: &str, port: u16) -> std::io::Result<()> {
+        let stream = connect_tls_socket(host, port)?;
+
+        #[cfg(feature = "tls-dynamic")]
+        {
+            let connector = native_tls::TlsConnector::new()
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            connector
+                .connect(host, stream)
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            return Ok(());
+        }
+
+        #[cfg(all(feature = "rustls", not(feature = "tls-dynamic")))]
+        {
+            use rustls::pki_types::ServerName;
+            use std::sync::Arc;
+
+            let mut stream = stream;
+            let mut root_store = rustls::RootCertStore::empty();
+            for cert in rustls_native_certs::load_native_certs().certs {
+                root_store.add(cert).ok();
+            }
+            let config = Arc::new(
+                rustls::ClientConfig::builder()
+                    .with_root_certificates(root_store)
+                    .with_no_client_auth(),
+            );
+            let server_name = ServerName::try_from(host)
+                .map_err(|e| std::io::Error::other(e.to_string()))?
+                .to_owned();
+            let mut conn = rustls::ClientConnection::new(config, server_name)
+                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            while conn.is_handshaking() {
+                conn.complete_io(&mut stream)
+                    .map_err(|e| std::io::Error::other(e.to_string()))?;
+            }
+            return Ok(());
+        }
+
+        #[cfg(all(
+            feature = "embedded-tls",
+            not(any(feature = "tls-dynamic", feature = "rustls"))
+        ))]
+        return embedded_tls_open(host, port, stream);
+
+        #[cfg(not(any(feature = "tls-dynamic", feature = "rustls", feature = "embedded-tls")))]
+        Err(std::io::Error::other(
+            "tlscheck requires the native-tls, rustls, or embedded-tls feature",
+        ))
     }
 }
 
