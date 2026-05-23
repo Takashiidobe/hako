@@ -194,7 +194,7 @@ impl DirFs for FakeFs {
             .borrow()
             .keys()
             .filter(|k| k.starts_with(&prefix))
-            .map(|k| k[prefix.len()..].to_string())
+            .filter_map(|k| k.get(prefix.len()..).map(str::to_string))
             .collect();
         entries.sort();
         Ok(entries)

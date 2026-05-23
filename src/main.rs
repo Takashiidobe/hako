@@ -1,3 +1,4 @@
+mod asn;
 mod ciphers;
 mod deps;
 mod dig;
@@ -52,6 +53,7 @@ fn list_commands() -> Vec<&'static str> {
         "rand",
         "sleep",
         "overwrite",
+        "asn",
         "dig",
         "dnsname",
         "httpserver",
@@ -103,6 +105,10 @@ fn main() {
         "rand" => rand::run(out, &mut SystemRng::new()),
         "sleep" => sleep::run(out, &SystemClock, &rest),
         "overwrite" => overwrite::run(out, &SystemFs, &rest),
+        "asn" => {
+            let (dns, r) = dig_dns(&rest);
+            asn::run(out, &dns, &TcpWhois, &r)
+        }
         "dig" => {
             let (dns, r) = dig_dns(&rest);
             dig::run(out, &dns, &r)

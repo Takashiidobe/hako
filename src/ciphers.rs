@@ -7,9 +7,21 @@ pub fn run(out: &mut impl Write, probe: &impl CipherProbe, args: &[String]) -> i
     let r = probe.probe_ciphers(&host, port)?;
 
     let s = |ok: bool| if ok { "ok" } else { "no" };
-    writeln!(out, "TLS_AES_128_GCM_SHA256       {}", s(r.aes128_gcm_sha256))?;
-    writeln!(out, "TLS_AES_256_GCM_SHA384       {}", s(r.aes256_gcm_sha384))?;
-    writeln!(out, "TLS_CHACHA20_POLY1305_SHA256 {}", s(r.chacha20_poly1305_sha256))
+    writeln!(
+        out,
+        "TLS_AES_128_GCM_SHA256       {}",
+        s(r.aes128_gcm_sha256)
+    )?;
+    writeln!(
+        out,
+        "TLS_AES_256_GCM_SHA384       {}",
+        s(r.aes256_gcm_sha384)
+    )?;
+    writeln!(
+        out,
+        "TLS_CHACHA20_POLY1305_SHA256 {}",
+        s(r.chacha20_poly1305_sha256)
+    )
 }
 
 fn parse_target(args: &[String]) -> io::Result<(String, u16)> {
@@ -27,14 +39,18 @@ fn parse_target(args: &[String]) -> io::Result<(String, u16)> {
         return Err(usage());
     }
 
-    if authority.matches(':').count() == 1 {
-        if let Some((host, port_str)) = authority.rsplit_once(':') {
-            if host.is_empty() {
-                return Err(usage());
-            }
-            let port = port_str.parse::<u16>().ok().filter(|&p| p != 0).ok_or_else(usage)?;
-            return Ok((host.to_string(), port));
+    if authority.matches(':').count() == 1
+        && let Some((host, port_str)) = authority.rsplit_once(':')
+    {
+        if host.is_empty() {
+            return Err(usage());
         }
+        let port = port_str
+            .parse::<u16>()
+            .ok()
+            .filter(|&p| p != 0)
+            .ok_or_else(usage)?;
+        return Ok((host.to_string(), port));
     }
 
     Ok((authority.to_string(), 443))
@@ -47,8 +63,8 @@ fn usage() -> io::Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::deps::net::CipherResult;
     use crate::deps::CipherProbe;
+    use crate::deps::net::CipherResult;
 
     struct AllSupported;
 

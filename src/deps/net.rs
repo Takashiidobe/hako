@@ -1036,7 +1036,11 @@ impl Net for SystemNet {
     }
 }
 
-fn connect_tls_socket(host: &str, port: u16, timeout: std::time::Duration) -> std::io::Result<std::net::TcpStream> {
+fn connect_tls_socket(
+    host: &str,
+    port: u16,
+    timeout: std::time::Duration,
+) -> std::io::Result<std::net::TcpStream> {
     let stream = std::net::TcpStream::connect((host, port))?;
     stream.set_read_timeout(Some(timeout))?;
     stream.set_write_timeout(Some(timeout))?;
@@ -1191,30 +1195,26 @@ impl CipherProbe for SystemNet {
     fn probe_ciphers(&self, host: &str, port: u16) -> std::io::Result<CipherResult> {
         #[cfg(feature = "embedded-tls")]
         {
-            use embedded_tls::blocking::{Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256};
+            use embedded_tls::blocking::{
+                Aes128GcmSha256, Aes256GcmSha384, Chacha20Poly1305Sha256,
+            };
 
             let timeout = std::time::Duration::from_secs(1);
             let ca_ders = load_system_ca_ders();
             let aes128 = connect_tls_socket(host, port, timeout)
-                .and_then(|s| {
-                    embedded_tls_open_suite::<Aes128GcmSha256>(s, host, ca_ders.clone())
-                })
+                .and_then(|s| embedded_tls_open_suite::<Aes128GcmSha256>(s, host, ca_ders.clone()))
                 .is_ok();
             let aes256 = connect_tls_socket(host, port, timeout)
-                .and_then(|s| {
-                    embedded_tls_open_suite::<Aes256GcmSha384>(s, host, ca_ders.clone())
-                })
+                .and_then(|s| embedded_tls_open_suite::<Aes256GcmSha384>(s, host, ca_ders.clone()))
                 .is_ok();
             let chacha = connect_tls_socket(host, port, timeout)
-                .and_then(|s| {
-                    embedded_tls_open_suite::<Chacha20Poly1305Sha256>(s, host, ca_ders)
-                })
+                .and_then(|s| embedded_tls_open_suite::<Chacha20Poly1305Sha256>(s, host, ca_ders))
                 .is_ok();
-            return Ok(CipherResult {
+            Ok(CipherResult {
                 aes128_gcm_sha256: aes128,
                 aes256_gcm_sha384: aes256,
                 chacha20_poly1305_sha256: chacha,
-            });
+            })
         }
 
         #[cfg(not(feature = "embedded-tls"))]
