@@ -1,0 +1,58 @@
+.TH PING 1 "2026-05-22" "hako" "hako utilities"
+.SH NAME
+ping \- send ICMP echo requests and report round-trip times
+.SH SYNOPSIS
+.B ping
+.RI [@ nameserver ]
+.I host
+.RB [ \-c
+.IR count ]
+.SH DESCRIPTION
+.B ping
+sends ICMP echo-request packets to
+.I host
+and prints the round-trip time (RTT) for each reply.
+.I host
+may be an IPv4 address or a hostname; if a hostname is given it is resolved
+to an IPv4 address via DNS before the first packet is sent.
+.PP
+A one-second pause is inserted between successive probes.
+After all probes, a statistics summary is printed showing the number of packets
+transmitted and received, the packet-loss percentage, and the minimum, average,
+and maximum RTTs.
+.PP
+By default the nameserver
+.B 8.8.8.8
+is used for hostname resolution.
+An alternate resolver can be given with
+.BI @ address
+before the host argument.
+.SH OPTIONS
+.TP
+.BI "\-c " count
+Send
+.I count
+probes.
+Defaults to
+.BR 4 .
+.SH EXAMPLES
+.TP
+.B "ping 8.8.8.8"
+Ping Google's public DNS server four times.
+.TP
+.B "ping -c 10 example.com"
+Send ten probes to
+.BR example.com .
+.TP
+.B "ping @1.1.1.1 -c 1 example.com"
+Use Cloudflare's resolver and send one probe.
+.SH EXIT STATUS
+.TP
+.B 0
+All probes completed (some may have timed out).
+.TP
+.B 1
+Missing or invalid arguments, or hostname resolution failed.
+.SH SEE ALSO
+.BR ping (8),
+.BR hako (1)

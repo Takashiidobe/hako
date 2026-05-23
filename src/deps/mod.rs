@@ -4,6 +4,7 @@ pub mod env;
 pub mod fs;
 pub mod icmp;
 pub mod net;
+pub mod probe;
 pub mod rng;
 pub mod system;
 pub mod whois;
@@ -14,6 +15,7 @@ pub use env::{Env, SystemEnv};
 pub use fs::{DirFs, Fs, SystemFs};
 pub use icmp::{Icmp, SystemIcmp};
 pub use net::{Net, SystemNet};
+pub use probe::{HopResult, Probe, SystemProbe};
 pub use rng::{Rng, SystemRng};
 #[allow(unused_imports)]
 pub use system::{Hostname, SystemInfo, Uname, UnameInfo};

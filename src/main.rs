@@ -14,6 +14,7 @@ mod rand;
 mod sleep;
 mod tar;
 mod time;
+mod traceroute;
 mod uname;
 mod which;
 mod whois;
@@ -22,8 +23,8 @@ use std::io;
 use std::net::Ipv4Addr;
 
 use deps::{
-    SystemClock, SystemEnv, SystemFs, SystemIcmp, SystemInfo, SystemNet, SystemRng, TcpWhois,
-    UdpDns,
+    SystemClock, SystemEnv, SystemFs, SystemIcmp, SystemInfo, SystemNet, SystemProbe, SystemRng,
+    TcpWhois, UdpDns,
 };
 
 fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
@@ -58,6 +59,7 @@ fn list_commands() -> Vec<&'static str> {
     ];
     cmds.push("fetch");
     cmds.push("ping");
+    cmds.push("traceroute");
     cmds.push("md5sum");
     cmds.push("sha256sum");
     cmds
@@ -109,6 +111,10 @@ fn main() {
         "ping" => {
             let (dns, r) = dig_dns(&rest);
             ping::run(out, &SystemIcmp, &dns, &r)
+        }
+        "traceroute" => {
+            let (dns, r) = dig_dns(&rest);
+            traceroute::run(out, &SystemProbe, &dns, &r)
         }
         "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
         "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),

@@ -1,0 +1,74 @@
+.TH FETCH 1 "2026-05-22" "hako" "hako utilities"
+.SH NAME
+fetch \- make HTTP requests and print responses
+.SH SYNOPSIS
+.B fetch
+.RB [ \-X
+.IR method ]
+.RB [ \-d
+.IR body ]
+.IR url \ [...]
+.SH DESCRIPTION
+.B fetch
+sends an HTTP request to each
+.I url
+and writes the response body to standard output.
+If multiple URLs are given their responses are concatenated in order.
+.PP
+Supported methods are
+.BR GET ,
+.BR HEAD ,
+.BR POST ,
+.BR PUT ,
+.BR PATCH ,
+.BR DELETE ,
+and
+.BR OPTIONS .
+The default method is
+.BR GET .
+Providing
+.B \-d
+without an explicit
+.B \-X
+switches the method to
+.BR POST .
+.SH OPTIONS
+.TP
+.BI "\-X " method "\fR,\fP \-\-request " method
+Use
+.I method
+as the HTTP request method.
+.TP
+.BI "\-d " body "\fR,\fP \-\-data " body
+Send
+.I body
+as the request body.
+Implicitly sets the method to
+.B POST
+unless
+.B \-X
+is also given.
+.SH EXAMPLES
+.TP
+.B "fetch https://example.com"
+Fetch a URL with GET.
+.TP
+.B "fetch -X DELETE https://api.example.com/resource/1"
+Send a DELETE request.
+.TP
+.B "fetch -d 'name=hako' https://api.example.com/items"
+POST form data.
+.TP
+.B "fetch -X PUT -d 'name=hako' https://api.example.com/items/1"
+PUT with an explicit method.
+.SH EXIT STATUS
+.TP
+.B 0
+All requests succeeded.
+.TP
+.B 1
+Missing URL, unsupported method, or a network error.
+.SH SEE ALSO
+.BR curl (1),
+.BR wget (1),
+.BR hako (1)

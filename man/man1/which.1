@@ -1,0 +1,40 @@
+.TH WHICH 1 "2026-05-22" "hako" "hako utilities"
+.SH NAME
+which \- locate a command in PATH
+.SH SYNOPSIS
+.B which
+.I command
+.RI [ command ...]
+.SH DESCRIPTION
+.B which
+searches each directory listed in the
+.B PATH
+environment variable, in order, for each
+.I command
+name given and prints the full path of the first match to standard output.
+.PP
+If a command is not found in any
+.B PATH
+directory, its name is reported to standard error.
+After processing all arguments,
+.B which
+exits 1 if any command was not found.
+.SH EXAMPLES
+.TP
+.B "which ls"
+Print the full path of
+.BR ls .
+.TP
+.B "which ls grep cat"
+Print the paths of all three commands.
+.SH EXIT STATUS
+.TP
+.B 0
+All commands were found.
+.TP
+.B 1
+No arguments were given, or one or more commands could not be found.
+.SH SEE ALSO
+.BR which (1),
+.BR type (1),
+.BR hako (1)

@@ -1,0 +1,39 @@
+.TH HELLO 1 "2026-05-22" "hako" "hako utilities"
+.SH NAME
+hello \- print a greeting
+.SH SYNOPSIS
+.B hello
+.RI [ name ...]
+.SH DESCRIPTION
+.B hello
+prints a greeting to standard output.
+With no arguments it prints
+.BR hello .
+With one or more
+.I name
+arguments it prints
+.BI "hello " name1 " and " name2 " and ..."
+joining all names with " and ".
+.SH EXAMPLES
+.TP
+.B hello
+Prints:
+.EX
+hello
+.EE
+.TP
+.B "hello alice"
+Prints:
+.EX
+hello alice
+.EE
+.TP
+.B "hello alice bob"
+Prints:
+.EX
+hello alice and bob
+.EE
+.SH EXIT STATUS
+Always exits 0.
+.SH SEE ALSO
+.BR hako (1)

@@ -1,0 +1,42 @@
+.TH OVERWRITE 1 "2026-05-22" "hako" "hako utilities"
+.SH NAME
+overwrite \- copy the contents of one file to another
+.SH SYNOPSIS
+.B overwrite
+.I src
+.I dst
+.SH DESCRIPTION
+.B overwrite
+reads the contents of
+.I src
+and writes them to
+.IR dst ,
+creating or replacing
+.IR dst .
+On success it prints
+.BI src " -> " dst
+to standard output.
+.PP
+Unlike
+.BR cp (1),
+.B overwrite
+always replaces the destination in its entirety; partial writes are not possible.
+.SH EXAMPLES
+.EX
+$ overwrite input.txt output.txt
+input.txt -> output.txt
+.EE
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Wrong number of arguments, or
+.I src
+cannot be read, or
+.I dst
+cannot be written.
+.SH SEE ALSO
+.BR cp (1),
+.BR hako (1)

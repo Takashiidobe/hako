@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
-use crate::deps::{DirFs, Dns, Env, Fs, Icmp, Net, Sleeper};
+use crate::deps::{DirFs, Dns, Env, Fs, HopResult, Icmp, Net, Probe, Sleeper};
 
 pub struct FakeDns(pub Vec<Ipv4Addr>);
 
@@ -178,5 +178,28 @@ impl DirFs for FakeFs {
             .collect();
         entries.sort();
         Ok(entries)
+    }
+}
+
+pub struct FakeProbe(pub RefCell<std::collections::VecDeque<HopResult>>);
+
+impl FakeProbe {
+    pub fn new(results: Vec<HopResult>) -> Self {
+        Self(RefCell::new(results.into()))
+    }
+}
+
+impl Probe for FakeProbe {
+    fn probe(
+        &self,
+        _dest: std::net::Ipv4Addr,
+        _ttl: u8,
+        _seq: u16,
+        _payload: &[u8],
+    ) -> std::io::Result<HopResult> {
+        self.0
+            .borrow_mut()
+            .pop_front()
+            .ok_or_else(|| std::io::Error::other("FakeProbe: no more results"))
     }
 }

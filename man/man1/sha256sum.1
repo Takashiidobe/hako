@@ -1,0 +1,41 @@
+.TH SHA256SUM 1 "2026-05-22" "hako" "hako utilities"
+.SH NAME
+sha256sum \- compute SHA-256 message digests
+.SH SYNOPSIS
+.B sha256sum
+.RI [ file ...]
+.SH DESCRIPTION
+.B sha256sum
+computes the SHA-256 digest of each
+.I file
+and prints it to standard output in the format
+.EX
+\fIhash\fR  \fIfile\fR
+.EE
+.PP
+If no
+.I file
+arguments are given, or if a filename of
+.B \-
+is specified, standard input is read.
+.PP
+If a file cannot be opened, an error is printed to standard error and processing
+continues with the next file.
+.SH EXAMPLES
+.TP
+.B sha256sum file.txt
+Compute the digest of
+.BR file.txt .
+.TP
+.B "sha256sum a.txt b.txt"
+Compute digests for both files.
+.TP
+.B "echo hello | sha256sum"
+Digest standard input.
+.SH EXIT STATUS
+Always exits 0 (errors for individual files are reported to stderr but do not
+affect the exit code).
+.SH SEE ALSO
+.BR sha256sum (1),
+.BR md5sum (1),
+.BR hako (1)
