@@ -1,0 +1,59 @@
+.TH CALC 1 "2026-05-23" "hako" "hako utilities"
+.SH NAME
+calc \- evaluate arithmetic expressions
+.SH SYNOPSIS
+.B calc
+.RI [ expression ...]
+.SH DESCRIPTION
+.B calc
+evaluates arithmetic expressions using decimal, hexadecimal, and binary
+number literals.
+With no arguments it starts a small REPL.
+With arguments it joins them with spaces and evaluates one expression.
+.PP
+The supported operators are
+.BR + ,
+.BR - ,
+.BR * ,
+.BR / ,
+.BR % ,
+and
+.BR ^ .
+Parentheses and unary minus are supported.
+.PP
+In the REPL, bindings are created or replaced with:
+.EX
+let name = expression
+.EE
+Bindings have no scoping and last until the process exits.
+Use
+.B :q
+or
+.B :quit
+to leave the REPL.
+.SH EXAMPLES
+.EX
+$ calc 2 + 3 '*' 4
+14
+
+$ calc
+> let kb = 1024
+1024
+> let mib = kb * kb
+1048576
+> 5 * mib
+5242880
+> 0xff + 0b1010
+265
+> :q
+.EE
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+The expression could not be evaluated, or an input/output error occurred.
+.SH SEE ALSO
+.BR bc (1),
+.BR hako (1)

@@ -1,4 +1,5 @@
 mod asn;
+mod calc;
 mod ciphers;
 mod deps;
 mod dig;
@@ -54,6 +55,7 @@ fn list_commands() -> Vec<&'static str> {
         "sleep",
         "overwrite",
         "asn",
+        "calc",
         "dig",
         "dnsname",
         "httpserver",
@@ -109,6 +111,7 @@ fn main() {
             let (dns, r) = dig_dns(&rest);
             asn::run(out, &dns, &TcpWhois, &r)
         }
+        "calc" => calc::run(io::stdin().lock(), out, &rest),
         "dig" => {
             let (dns, r) = dig_dns(&rest);
             dig::run(out, &dns, &r)
