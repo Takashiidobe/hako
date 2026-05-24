@@ -4,10 +4,13 @@
 .SH NAME
 hako\-dig \- DNS lookup
 .SH SYNOPSIS
-\fBhako dig\fR [\fIdomain\fR] 
+\fBhako dig\fR [\fB\-t\fR|\fB\-\-type\fR] [\fIdomain\fR] 
 .SH DESCRIPTION
 DNS lookup
 .SH OPTIONS
+.TP
+\fB\-t\fR, \fB\-\-type\fR \fI<type>\fR
+record type (A, AAAA, MX, TXT, NS, CNAME)
 .TP
 [\fIdomain\fR]
 

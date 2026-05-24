@@ -4,6 +4,11 @@ use std::time::SystemTime;
 pub trait Dns {
     fn lookup_a(&self, domain: &str) -> std::io::Result<Vec<Ipv4Addr>>;
     fn lookup_ptr(&self, addr: &Ipv4Addr) -> std::io::Result<Vec<String>>;
+    fn lookup_aaaa(&self, domain: &str) -> std::io::Result<Vec<String>>;
+    fn lookup_mx(&self, domain: &str) -> std::io::Result<Vec<String>>;
+    fn lookup_txt(&self, domain: &str) -> std::io::Result<Vec<String>>;
+    fn lookup_ns(&self, domain: &str) -> std::io::Result<Vec<String>>;
+    fn lookup_cname(&self, domain: &str) -> std::io::Result<Vec<String>>;
 }
 
 pub struct UdpDns {
@@ -29,6 +34,31 @@ impl Dns for UdpDns {
         let arpa = format!("{}.{}.{}.{}.in-addr.arpa", oct[3], oct[2], oct[1], oct[0]);
         let buf = self.query(&arpa, 12)?;
         parse_ptr_records(&buf)
+    }
+
+    fn lookup_aaaa(&self, domain: &str) -> std::io::Result<Vec<String>> {
+        let buf = self.query(domain, 28)?;
+        parse_aaaa_records(&buf)
+    }
+
+    fn lookup_mx(&self, domain: &str) -> std::io::Result<Vec<String>> {
+        let buf = self.query(domain, 15)?;
+        parse_mx_records(&buf)
+    }
+
+    fn lookup_txt(&self, domain: &str) -> std::io::Result<Vec<String>> {
+        let buf = self.query(domain, 16)?;
+        parse_txt_records(&buf)
+    }
+
+    fn lookup_ns(&self, domain: &str) -> std::io::Result<Vec<String>> {
+        let buf = self.query(domain, 2)?;
+        parse_name_records(&buf, 2)
+    }
+
+    fn lookup_cname(&self, domain: &str) -> std::io::Result<Vec<String>> {
+        let buf = self.query(domain, 5)?;
+        parse_name_records(&buf, 5)
     }
 }
 
@@ -183,6 +213,123 @@ fn parse_a_records(buf: &[u8]) -> std::io::Result<Vec<Ipv4Addr>> {
         pos += rdlen;
     }
     Ok(addrs)
+}
+
+fn parse_aaaa_records(buf: &[u8]) -> std::io::Result<Vec<String>> {
+    let qdcount = read_u16(buf, 4)? as usize;
+    let ancount = read_u16(buf, 6)? as usize;
+    let mut pos = skip_questions(buf, qdcount)?;
+    let mut addrs = Vec::new();
+    for _ in 0..ancount {
+        pos = skip_name(buf, pos).ok_or_else(|| std::io::Error::other("malformed answer"))?;
+        if pos + 10 > buf.len() {
+            return Err(std::io::Error::other("truncated answer"));
+        }
+        let rtype = read_u16(buf, pos)?;
+        let rdlen = read_u16(buf, pos + 8)? as usize;
+        pos += 10;
+        if pos + rdlen > buf.len() {
+            return Err(std::io::Error::other("truncated rdata"));
+        }
+        if rtype == 28 && rdlen == 16 {
+            let octets: [u8; 16] = buf[pos..pos + 16]
+                .try_into()
+                .map_err(|_| std::io::Error::other("truncated AAAA record"))?;
+            addrs.push(std::net::Ipv6Addr::from(octets).to_string());
+        }
+        pos += rdlen;
+    }
+    Ok(addrs)
+}
+
+fn parse_mx_records(buf: &[u8]) -> std::io::Result<Vec<String>> {
+    let qdcount = read_u16(buf, 4)? as usize;
+    let ancount = read_u16(buf, 6)? as usize;
+    let mut pos = skip_questions(buf, qdcount)?;
+    let mut records = Vec::new();
+    for _ in 0..ancount {
+        pos = skip_name(buf, pos).ok_or_else(|| std::io::Error::other("malformed answer"))?;
+        if pos + 10 > buf.len() {
+            return Err(std::io::Error::other("truncated answer"));
+        }
+        let rtype = read_u16(buf, pos)?;
+        let rdlen = read_u16(buf, pos + 8)? as usize;
+        pos += 10;
+        if pos + rdlen > buf.len() {
+            return Err(std::io::Error::other("truncated rdata"));
+        }
+        if rtype == 15 {
+            let pref = read_u16(buf, pos)?;
+            let (exchange, _) = read_name(buf, pos + 2)?;
+            records.push(format!("{pref} {exchange}"));
+        }
+        pos += rdlen;
+    }
+    Ok(records)
+}
+
+fn parse_txt_records(buf: &[u8]) -> std::io::Result<Vec<String>> {
+    let qdcount = read_u16(buf, 4)? as usize;
+    let ancount = read_u16(buf, 6)? as usize;
+    let mut pos = skip_questions(buf, qdcount)?;
+    let mut records = Vec::new();
+    for _ in 0..ancount {
+        pos = skip_name(buf, pos).ok_or_else(|| std::io::Error::other("malformed answer"))?;
+        if pos + 10 > buf.len() {
+            return Err(std::io::Error::other("truncated answer"));
+        }
+        let rtype = read_u16(buf, pos)?;
+        let rdlen = read_u16(buf, pos + 8)? as usize;
+        pos += 10;
+        if pos + rdlen > buf.len() {
+            return Err(std::io::Error::other("truncated rdata"));
+        }
+        if rtype == 16 {
+            // TXT rdata: one or more length-prefixed character strings
+            let mut txt = String::new();
+            let end = pos + rdlen;
+            let mut cur = pos;
+            while cur < end {
+                let len =
+                    *buf.get(cur).ok_or_else(|| std::io::Error::other("truncated TXT"))? as usize;
+                cur += 1;
+                let s = buf
+                    .get(cur..cur + len)
+                    .ok_or_else(|| std::io::Error::other("truncated TXT data"))?;
+                txt.push_str(&String::from_utf8_lossy(s));
+                cur += len;
+            }
+            records.push(txt);
+        }
+        pos += rdlen;
+    }
+    Ok(records)
+}
+
+// NS (qtype 2) and CNAME (qtype 5) both store a single domain name in rdata.
+fn parse_name_records(buf: &[u8], expected_type: u16) -> std::io::Result<Vec<String>> {
+    let qdcount = read_u16(buf, 4)? as usize;
+    let ancount = read_u16(buf, 6)? as usize;
+    let mut pos = skip_questions(buf, qdcount)?;
+    let mut names = Vec::new();
+    for _ in 0..ancount {
+        pos = skip_name(buf, pos).ok_or_else(|| std::io::Error::other("malformed answer"))?;
+        if pos + 10 > buf.len() {
+            return Err(std::io::Error::other("truncated answer"));
+        }
+        let rtype = read_u16(buf, pos)?;
+        let rdlen = read_u16(buf, pos + 8)? as usize;
+        pos += 10;
+        if pos + rdlen > buf.len() {
+            return Err(std::io::Error::other("truncated rdata"));
+        }
+        if rtype == expected_type {
+            let (name, _) = read_name(buf, pos)?;
+            names.push(name);
+        }
+        pos += rdlen;
+    }
+    Ok(names)
 }
 
 fn parse_ptr_records(buf: &[u8]) -> std::io::Result<Vec<String>> {

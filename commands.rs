@@ -26,7 +26,7 @@ macro_rules! hako_commands {
         hako_commands!(@call $command, [$($ctx)?], calc, "evaluate math expressions", [], {
             calc::run(io::stdin().lock(), $out, &$rest)
         });
-        hako_commands!(@call $command, [$($ctx)?], dig, "DNS lookup", [arg_value("domain", "domain")], {
+        hako_commands!(@call $command, [$($ctx)?], dig, "DNS lookup", [arg_short_long_value("type", 't', "type", "type", "record type (A, AAAA, MX, TXT, NS, CNAME)"), arg_value("domain", "domain")], {
             let (dns, r) = dig_dns(&$rest);
             dig::run($out, &dns, &r)
         });

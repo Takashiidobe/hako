@@ -15,6 +15,26 @@ impl Dns for FakeDns {
     fn lookup_ptr(&self, _addr: &Ipv4Addr) -> std::io::Result<Vec<String>> {
         Ok(vec![])
     }
+
+    fn lookup_aaaa(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_mx(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_txt(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_ns(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_cname(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
 }
 
 pub struct FailDns;
@@ -25,6 +45,26 @@ impl Dns for FailDns {
     }
 
     fn lookup_ptr(&self, _addr: &Ipv4Addr) -> std::io::Result<Vec<String>> {
+        Err(std::io::Error::other("timeout"))
+    }
+
+    fn lookup_aaaa(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Err(std::io::Error::other("timeout"))
+    }
+
+    fn lookup_mx(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Err(std::io::Error::other("timeout"))
+    }
+
+    fn lookup_txt(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Err(std::io::Error::other("timeout"))
+    }
+
+    fn lookup_ns(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Err(std::io::Error::other("timeout"))
+    }
+
+    fn lookup_cname(&self, _domain: &str) -> std::io::Result<Vec<String>> {
         Err(std::io::Error::other("timeout"))
     }
 }
@@ -38,6 +78,26 @@ impl Dns for FakePtrDns {
 
     fn lookup_ptr(&self, _addr: &Ipv4Addr) -> std::io::Result<Vec<String>> {
         Ok(self.0.clone())
+    }
+
+    fn lookup_aaaa(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_mx(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_txt(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_ns(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
+    }
+
+    fn lookup_cname(&self, _domain: &str) -> std::io::Result<Vec<String>> {
+        Ok(vec![])
     }
 }
 
