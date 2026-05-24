@@ -41,7 +41,10 @@ mod tests {
             Ok(self
                 .0
                 .iter()
-                .map(|&(status, url)| RedirectStep { status, url: url.to_string() })
+                .map(|&(status, url)| RedirectStep {
+                    status,
+                    url: url.to_string(),
+                })
                 .collect())
         }
     }
@@ -76,7 +79,10 @@ mod tests {
         impl Redirect for CaptureFake {
             fn follow(&self, url: &str) -> io::Result<Vec<RedirectStep>> {
                 self.0.set(url.to_string());
-                Ok(vec![RedirectStep { status: 200, url: url.to_string() }])
+                Ok(vec![RedirectStep {
+                    status: 200,
+                    url: url.to_string(),
+                }])
             }
         }
         let net = CaptureFake(std::cell::Cell::new(String::new()));

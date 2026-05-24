@@ -1226,7 +1226,10 @@ fn sync_follow_redirects(start: &str) -> std::io::Result<Vec<RedirectStep>> {
             sync_http_response(stream, "GET", &host, &path, &[])?
         };
 
-        steps.push(RedirectStep { status: response.status, url: url.clone() });
+        steps.push(RedirectStep {
+            status: response.status,
+            url: url.clone(),
+        });
 
         if !(300..400).contains(&response.status) {
             return Ok(steps);
@@ -1255,7 +1258,10 @@ async fn async_follow_redirects(start: &str) -> std::io::Result<Vec<RedirectStep
 
     for _ in 0..=10 {
         let response = async_request_once(&url, "GET", &[]).await?;
-        steps.push(RedirectStep { status: response.status, url: url.clone() });
+        steps.push(RedirectStep {
+            status: response.status,
+            url: url.clone(),
+        });
 
         if !(300..400).contains(&response.status) {
             return Ok(steps);
@@ -1301,13 +1307,15 @@ impl TlsPing for SystemNet {
             let t1 = Instant::now();
             embedded_tls_open(host, host, port, stream)?;
             let tls_ms = t1.elapsed().as_millis();
-            return Ok(TlsPingResult { tcp_ms, tls_ms });
+            Ok(TlsPingResult { tcp_ms, tls_ms })
         }
 
         #[cfg(not(feature = "embedded-tls"))]
         {
             let _ = stream;
-            Err(std::io::Error::other("tlsping requires the embedded-tls feature"))
+            Err(std::io::Error::other(
+                "tlsping requires the embedded-tls feature",
+            ))
         }
     }
 }

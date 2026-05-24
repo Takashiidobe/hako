@@ -24,12 +24,7 @@ pub fn run(out: &mut impl Write, tls: &impl TlsCheck, args: &[String]) -> io::Re
     Ok(())
 }
 
-fn print_expiry(
-    out: &mut impl Write,
-    label: &str,
-    info: &TlsInfo,
-    today: i64,
-) -> io::Result<()> {
+fn print_expiry(out: &mut impl Write, label: &str, info: &TlsInfo, today: i64) -> io::Result<()> {
     match crate::tlscheck::leaf_expiry(info) {
         Ok(expiry) => {
             let days = expiry_days(&expiry) - today;
@@ -85,8 +80,7 @@ fn ymd_to_unix_days(y: i64, m: i64, d: i64) -> i64 {
     let a = (14 - m) / 12;
     let y = y + 4800 - a;
     let m = m + 12 * a - 3;
-    let jdn =
-        d + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
+    let jdn = d + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
     jdn - 2_440_588 // JDN of 1970-01-01
 }
 
@@ -113,7 +107,10 @@ mod tests {
             _port: u16,
             _opts: &TlsOptions<'_>,
         ) -> io::Result<TlsInfo> {
-            Ok(TlsInfo { certs: self.certs.clone(), verified: true })
+            Ok(TlsInfo {
+                certs: self.certs.clone(),
+                verified: true,
+            })
         }
     }
 
@@ -130,7 +127,9 @@ mod tests {
 
     #[test]
     fn prints_expiry_for_valid_cert() {
-        let tls = FakeTls { certs: vec![test_cert()] };
+        let tls = FakeTls {
+            certs: vec![test_cert()],
+        };
         let mut out = Vec::new();
         run(&mut out, &tls, &["example.com".into()]).unwrap();
         let text = String::from_utf8(out).unwrap();
@@ -163,9 +162,16 @@ mod tests {
 
     #[test]
     fn aligns_multiple_hosts() {
-        let tls = FakeTls { certs: vec![test_cert()] };
+        let tls = FakeTls {
+            certs: vec![test_cert()],
+        };
         let mut out = Vec::new();
-        run(&mut out, &tls, &["a.com".into(), "longer.example.com".into()]).unwrap();
+        run(
+            &mut out,
+            &tls,
+            &["a.com".into(), "longer.example.com".into()],
+        )
+        .unwrap();
         let text = String::from_utf8(out).unwrap();
         let lines: Vec<&str> = text.lines().collect();
         assert_eq!(lines.len(), 2);
@@ -177,7 +183,9 @@ mod tests {
 
     #[test]
     fn wrong_args_error() {
-        let tls = FakeTls { certs: vec![test_cert()] };
+        let tls = FakeTls {
+            certs: vec![test_cert()],
+        };
         let mut out = Vec::new();
         assert!(run(&mut out, &tls, &[]).is_err());
     }

@@ -1,0 +1,31 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH hako-tlscheck 1  "tlscheck " 
+.SH NAME
+hako\-tlscheck \- inspect TLS certificate
+.SH SYNOPSIS
+\fBhako tlscheck\fR [\fB\-p \fR] [\fB\-\-name\fR] [\fB\-\-fingerprint\fR] [\fB\-\-cert\fR] [\fB\-\-chain\fR] [\fB\-\-expiry\fR] [\fIhost\fR] 
+.SH DESCRIPTION
+inspect TLS certificate
+.SH OPTIONS
+.TP
+\fB\-p\fR \fI<port>\fR
+port
+.TP
+\fB\-\-name\fR \fI<name>\fR
+SNI name override
+.TP
+\fB\-\-fingerprint\fR
+show fingerprint
+.TP
+\fB\-\-cert\fR
+show certificate
+.TP
+\fB\-\-chain\fR
+show certificate chain
+.TP
+\fB\-\-expiry\fR
+show expiry date
+.TP
+[\fIhost\fR]
+

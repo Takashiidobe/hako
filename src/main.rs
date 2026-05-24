@@ -1,8 +1,8 @@
 mod asn;
-mod certwatch;
-mod completions;
 mod calc;
+mod certwatch;
 mod ciphers;
+mod completions;
 mod deps;
 mod dig;
 mod dnsname;
@@ -18,11 +18,11 @@ mod overwrite;
 mod ping;
 mod rand;
 mod redirect;
-mod tlsping;
 mod sleep;
 mod tar;
 mod time;
 mod tlscheck;
+mod tlsping;
 mod traceroute;
 mod uname;
 mod which;
@@ -35,6 +35,8 @@ use deps::{
     SystemClock, SystemEnv, SystemFs, SystemIcmp, SystemInfo, SystemNet, SystemProbe, SystemRng,
     TcpWhois, UdpDns,
 };
+
+include!("../commands.rs");
 
 fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
     let ns = args
@@ -52,36 +54,7 @@ fn dig_dns(args: &[String]) -> (UdpDns, Vec<String>) {
 }
 
 fn list_commands() -> Vec<&'static str> {
-    let mut cmds = vec![
-        "hello",
-        "time",
-        "rand",
-        "sleep",
-        "overwrite",
-        "asn",
-        "calc",
-        "dig",
-        "dnsname",
-        "httpserver",
-        "tar",
-        "env",
-        "which",
-        "whois",
-        "hostname",
-        "uname",
-        "completions",
-        "redirect",
-        "certwatch",
-        "tlsping",
-    ];
-    cmds.push("fetch");
-    cmds.push("ping");
-    cmds.push("traceroute");
-    cmds.push("tlscheck");
-    cmds.push("ciphers");
-    cmds.push("md5sum");
-    cmds.push("sha256sum");
-    cmds
+    include!(concat!(env!("OUT_DIR"), "/command-names.rs")).to_vec()
 }
 
 fn main() {
@@ -109,50 +82,20 @@ fn main() {
     };
 
     let out = &mut io::stdout();
-    let result = match subcmd {
-        "hello" => hello::run(out, &rest),
-        "time" => time::run(out, &SystemClock),
-        "rand" => rand::run(out, &mut SystemRng::new()),
-        "sleep" => sleep::run(out, &SystemClock, &rest),
-        "overwrite" => overwrite::run(out, &SystemFs, &rest),
-        "asn" => {
-            let (dns, r) = dig_dns(&rest);
-            asn::run(out, &dns, &TcpWhois, &r)
-        }
-        "calc" => calc::run(io::stdin().lock(), out, &rest),
-        "dig" => {
-            let (dns, r) = dig_dns(&rest);
-            dig::run(out, &dns, &r)
-        }
-        "dnsname" => {
-            let (dns, _) = dig_dns(&rest);
-            dnsname::run(out, &dns, &rest)
-        }
-        "httpserver" => httpserver::run(out, SystemFs, &rest),
-        "tar" => tar::run(out, &SystemFs, &rest),
-        "env" => env::run(out, &SystemEnv, &rest),
-        "which" => which::run(out, &SystemEnv, &SystemFs, &rest),
-        "whois" => whois::run(out, &TcpWhois, &rest),
-        "hostname" => hostname::run(out, &SystemInfo),
-        "uname" => uname::run(out, &SystemInfo, &rest),
-        "fetch" => fetch::run(out, &SystemNet, &rest),
-        "ping" => {
-            let (dns, r) = dig_dns(&rest);
-            ping::run(out, &SystemIcmp, &dns, &r)
-        }
-        "traceroute" => {
-            let (dns, r) = dig_dns(&rest);
-            traceroute::run(out, &SystemProbe, &dns, &r)
-        }
-        "tlscheck" => tlscheck::run(out, &SystemNet, &rest),
-        "ciphers" => ciphers::run(out, &SystemNet, &rest),
-        "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
-        "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
-        "completions" => completions::run(out, &rest),
-        "redirect" => redirect::run(out, &SystemNet, &rest),
-        "certwatch" => certwatch::run(out, &SystemNet, &rest),
-        "tlsping" => tlsping::run(out, &SystemNet, &rest),
-        _ => {
+    let mut result = None;
+    macro_rules! dispatch_command {
+        ($name:ident, $desc:expr, [$($arg:expr),* $(,)?], $run:block) => {
+            if result.is_none() && subcmd == stringify!($name) {
+                result = Some($run);
+            }
+        };
+    }
+
+    hako_commands!(dispatch_command, out, rest);
+
+    let result = match result {
+        Some(result) => result,
+        None => {
             eprintln!("usage: {} <{}> [args...]", cmd, list_commands().join("|"));
             return;
         }
