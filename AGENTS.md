@@ -10,14 +10,13 @@ cargo run -- --list-commands
 
 ## Adding A Command
 
-1. If the command needs a new dependency (clock, rng, network, etc.), define a trait for it in `src/deps/` with a real system-backed implementation and unit tests in the same file.
-2. Create `src/<command>.rs`. Expose `pub fn run(...) -> io::Result<()>`. Inject traits from `src/deps/` — never call `std::fs`, sockets, or `SystemTime::now()` directly from command logic.
-3. Write unit tests in the same file using small fake trait impls (see existing commands for the pattern).
-4. Register the module and dispatch in `src/main.rs`. If optional, gate with a Cargo feature.
-5. Run `cargo clippy` and `cargo fmt` — both must pass clean.
-6. Add a man page under `man/`.
-7. Update the completions files.
-8. Update the README.md table with a short blurb on the command.
+1. Add the command to the commands.rs file in the root of the dir.
+2. If the command needs a new dependency (clock, rng, network, etc.), define a trait for it in `src/deps/` with a real system-backed implementation and unit tests in the same file.
+3. Create `src/<command>.rs`. Expose `pub fn run(...) -> io::Result<()>`. Inject traits from `src/deps/` — never call `std::fs`, sockets, or `SystemTime::now()` directly from command logic.
+4. Write unit tests in the same file using small fake trait impls (see existing commands for the pattern).
+5. Register the module and dispatch in `src/main.rs`. If optional, gate with a Cargo feature.
+6. Run `cargo clippy` and `cargo fmt` — both must pass clean.
+7. Update the README.md table with a short blurb on the command.
 
 ## Size Budget
 
