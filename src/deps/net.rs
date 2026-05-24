@@ -1191,6 +1191,129 @@ impl TlsCheck for SystemNet {
     }
 }
 
+// ── Redirect trait ────────────────────────────────────────────────────────────
+
+pub struct RedirectStep {
+    pub status: u16,
+    pub url: String,
+}
+
+pub trait Redirect {
+    fn follow(&self, url: &str) -> std::io::Result<Vec<RedirectStep>>;
+}
+
+#[cfg(not(feature = "fetch-smol"))]
+fn sync_follow_redirects(start: &str) -> std::io::Result<Vec<RedirectStep>> {
+    use std::net::TcpStream;
+    use std::time::Duration;
+
+    let mut url = start.to_string();
+    let mut steps = Vec::new();
+
+    for _ in 0..=10 {
+        let (tls, host, port, path) = parse_url(&url)?;
+        let stream = TcpStream::connect((&*host, port))?;
+        stream.set_read_timeout(Some(Duration::from_secs(10)))?;
+
+        let response = if tls {
+            #[cfg(feature = "embedded-tls")]
+            {
+                embedded_tls_http_response(stream, "GET", &host, port, &path, &[])?
+            }
+            #[cfg(not(feature = "embedded-tls"))]
+            return Err(std::io::Error::other("https requires embedded-tls"));
+        } else {
+            sync_http_response(stream, "GET", &host, &path, &[])?
+        };
+
+        steps.push(RedirectStep { status: response.status, url: url.clone() });
+
+        if !(300..400).contains(&response.status) {
+            return Ok(steps);
+        }
+
+        match redirect_location(&response.headers, &url)? {
+            Some(next) => url = next,
+            None => return Ok(steps),
+        }
+    }
+
+    Err(std::io::Error::other("too many redirects"))
+}
+
+#[cfg(not(feature = "fetch-smol"))]
+impl Redirect for SystemNet {
+    fn follow(&self, url: &str) -> std::io::Result<Vec<RedirectStep>> {
+        sync_follow_redirects(url)
+    }
+}
+
+#[cfg(feature = "fetch-smol")]
+async fn async_follow_redirects(start: &str) -> std::io::Result<Vec<RedirectStep>> {
+    let mut url = start.to_string();
+    let mut steps = Vec::new();
+
+    for _ in 0..=10 {
+        let response = async_request_once(&url, "GET", &[]).await?;
+        steps.push(RedirectStep { status: response.status, url: url.clone() });
+
+        if !(300..400).contains(&response.status) {
+            return Ok(steps);
+        }
+
+        match redirect_location(&response.headers, &url)? {
+            Some(next) => url = next,
+            None => return Ok(steps),
+        }
+    }
+
+    Err(std::io::Error::other("too many redirects"))
+}
+
+#[cfg(feature = "fetch-smol")]
+impl Redirect for SystemNet {
+    fn follow(&self, url: &str) -> std::io::Result<Vec<RedirectStep>> {
+        smol::block_on(async_follow_redirects(url))
+    }
+}
+
+// ── TlsPing trait ─────────────────────────────────────────────────────────────
+
+pub struct TlsPingResult {
+    pub tcp_ms: u128,
+    pub tls_ms: u128,
+}
+
+pub trait TlsPing {
+    fn ping(&self, host: &str, port: u16) -> std::io::Result<TlsPingResult>;
+}
+
+impl TlsPing for SystemNet {
+    fn ping(&self, host: &str, port: u16) -> std::io::Result<TlsPingResult> {
+        use std::time::Instant;
+
+        let t0 = Instant::now();
+        let stream = connect_tls_socket(host, port, std::time::Duration::from_secs(10))?;
+        let tcp_ms = t0.elapsed().as_millis();
+
+        #[cfg(feature = "embedded-tls")]
+        {
+            let t1 = Instant::now();
+            embedded_tls_open(host, host, port, stream)?;
+            let tls_ms = t1.elapsed().as_millis();
+            return Ok(TlsPingResult { tcp_ms, tls_ms });
+        }
+
+        #[cfg(not(feature = "embedded-tls"))]
+        {
+            let _ = stream;
+            Err(std::io::Error::other("tlsping requires the embedded-tls feature"))
+        }
+    }
+}
+
+// ── CipherProbe impl ──────────────────────────────────────────────────────────
+
 impl CipherProbe for SystemNet {
     fn probe_ciphers(&self, host: &str, port: u16) -> std::io::Result<CipherResult> {
         #[cfg(feature = "embedded-tls")]

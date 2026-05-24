@@ -27,6 +27,9 @@ complete -c hako -f -n '__fish_use_subcommand' -a 'ciphers'    -d 'list supporte
 complete -c hako -f -n '__fish_use_subcommand' -a 'md5sum'     -d 'compute MD5 checksum'
 complete -c hako -f -n '__fish_use_subcommand' -a 'sha256sum'  -d 'compute SHA-256 checksum'
 complete -c hako -f -n '__fish_use_subcommand' -a 'completions' -d 'print shell completions'
+complete -c hako -f -n '__fish_use_subcommand' -a 'redirect'    -d 'trace HTTP redirect chain'
+complete -c hako -f -n '__fish_use_subcommand' -a 'certwatch'   -d 'batch TLS certificate expiry check'
+complete -c hako -f -n '__fish_use_subcommand' -a 'tlsping'     -d 'measure TCP + TLS handshake latency'
 
 # fetch
 complete -c hako -f -n '__fish_seen_subcommand_from fetch' -s X -l request -r -d 'HTTP method' -a 'GET POST PUT PATCH DELETE HEAD OPTIONS'
@@ -65,6 +68,8 @@ complete -c hako -f -n '__fish_seen_subcommand_from whois' -s h -r -d 'whois ser
 # completions
 complete -c hako -f -n '__fish_seen_subcommand_from completions' -a 'bash zsh fish' -d 'shell'
 
+# redirect / certwatch / tlsping — host/URL args, no special flags
+
 # file-completing subcommands
 complete -c hako -n '__fish_seen_subcommand_from md5sum sha256sum overwrite tar' -F
 "#;
@@ -82,7 +87,8 @@ _hako() {
     if [[ "$COMP_CWORD" -eq 1 ]]; then
         local cmds="hello time rand sleep overwrite asn calc dig dnsname
                     httpserver tar env which whois hostname uname fetch ping
-                    traceroute tlscheck ciphers md5sum sha256sum completions"
+                    traceroute tlscheck ciphers md5sum sha256sum completions
+                    redirect certwatch tlsping"
         COMPREPLY=( $(compgen -W "$cmds" -- "$cur") )
         return
     fi
@@ -181,6 +187,9 @@ _hako() {
                 'md5sum:compute MD5 checksum'
                 'sha256sum:compute SHA-256 checksum'
                 'completions:print shell completions'
+                'redirect:trace HTTP redirect chain'
+                'certwatch:batch TLS certificate expiry check'
+                'tlsping:measure TCP + TLS handshake latency'
             )
             _describe 'subcommand' subcmds
             ;;

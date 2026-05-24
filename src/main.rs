@@ -1,4 +1,5 @@
 mod asn;
+mod certwatch;
 mod completions;
 mod calc;
 mod ciphers;
@@ -16,6 +17,8 @@ mod mock;
 mod overwrite;
 mod ping;
 mod rand;
+mod redirect;
+mod tlsping;
 mod sleep;
 mod tar;
 mod time;
@@ -67,6 +70,9 @@ fn list_commands() -> Vec<&'static str> {
         "hostname",
         "uname",
         "completions",
+        "redirect",
+        "certwatch",
+        "tlsping",
     ];
     cmds.push("fetch");
     cmds.push("ping");
@@ -143,6 +149,9 @@ fn main() {
         "md5sum" => hash::run(out, &SystemFs, hash::Algo::Md5, &rest),
         "sha256sum" => hash::run(out, &SystemFs, hash::Algo::Sha256, &rest),
         "completions" => completions::run(out, &rest),
+        "redirect" => redirect::run(out, &SystemNet, &rest),
+        "certwatch" => certwatch::run(out, &SystemNet, &rest),
+        "tlsping" => tlsping::run(out, &SystemNet, &rest),
         _ => {
             eprintln!("usage: {} <{}> [args...]", cmd, list_commands().join("|"));
             return;

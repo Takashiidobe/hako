@@ -14,7 +14,9 @@ pub use dns::{Dns, UdpDns};
 pub use env::{Env, SystemEnv};
 pub use fs::{DirFs, Fs, SystemFs};
 pub use icmp::{Icmp, SystemIcmp};
-pub use net::{CipherProbe, Net, SystemNet, TlsCheck, TlsInfo, TlsOptions};
+pub use net::{
+    CipherProbe, Net, Redirect, RedirectStep, SystemNet, TlsCheck, TlsInfo, TlsOptions, TlsPing,
+};
 pub use probe::{HopResult, Probe, SystemProbe};
 pub use rng::{Rng, SystemRng};
 pub use system::{Hostname, SystemInfo, Uname};

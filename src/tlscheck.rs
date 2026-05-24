@@ -124,6 +124,11 @@ fn usage() -> io::Error {
     )
 }
 
+pub(crate) fn leaf_expiry(info: &TlsInfo) -> io::Result<String> {
+    let cert = CertInfo::parse(leaf(info)?)?;
+    Ok(cert.not_after)
+}
+
 fn leaf(info: &TlsInfo) -> io::Result<&[u8]> {
     info.certs
         .first()
